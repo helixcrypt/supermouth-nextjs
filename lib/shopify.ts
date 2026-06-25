@@ -1,7 +1,8 @@
 const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN!
 const storefrontAccessToken = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN!
 
-const endpoint = `https://${domain}/api/2024-04/graphql.json`
+// Try both API versions
+const endpoint = `https://${domain}/api/2024-01/graphql.json`
 
 async function shopifyFetch<T>({ query, variables }: { query: string; variables?: object }): Promise<T> {
   const response = await fetch(endpoint, {
@@ -14,13 +15,14 @@ async function shopifyFetch<T>({ query, variables }: { query: string; variables?
     next: { revalidate: 60 },
   })
 
+  const json = await response.json()
+
   if (!response.ok) {
-    throw new Error(`Shopify API error: ${response.statusText}`)
+    throw new Error(`Shopify API HTTP error: ${response.status} ${response.statusText}`)
   }
 
-  const json = await response.json()
   if (json.errors) {
-    throw new Error(json.errors[0].message)
+    throw new Error(`Shopify GraphQL error: ${json.errors[0].message}`)
   }
 
   return json.data
@@ -38,6 +40,8 @@ export async function getAllProducts(first = 50) {
             title
             handle
             description
+            productType
+            tags
             priceRange {
               minVariantPrice { amount currencyCode }
             }
@@ -49,20 +53,23 @@ export async function getAllProducts(first = 50) {
                 node {
                   id
                   title
-                  price { amount currencyCode }
                   availableForSale
+                  price { amount currencyCode }
                 }
               }
             }
-            tags
-            productType
           }
         }
       }
     }
   `
-  const data = await shopifyFetch<any>({ query, variables: { first } })
-  return data.products.edges.map((e: any) => e.node)
+  try {
+    const data = await shopifyFetch<any>({ query, variables: { first } })
+    return data.products.edges.map((e: any) => e.node)
+  } catch (error) {
+    console.error('getAllProducts error:', error)
+    return []
+  }
 }
 
 export async function getProductByHandle(handle: string) {
@@ -74,6 +81,9 @@ export async function getProductByHandle(handle: string) {
         handle
         description
         descriptionHtml
+        vendor
+        tags
+        productType
         priceRange {
           minVariantPrice { amount currencyCode }
           maxVariantPrice { amount currencyCode }
@@ -86,16 +96,13 @@ export async function getProductByHandle(handle: string) {
             node {
               id
               title
+              availableForSale
               price { amount currencyCode }
               compareAtPrice { amount currencyCode }
-              availableForSale
               selectedOptions { name value }
             }
           }
         }
-        tags
-        productType
-        vendor
       }
     }
   `
@@ -119,6 +126,7 @@ export async function getCollectionByHandle(handle: string, first = 50) {
               id
               title
               handle
+              tags
               priceRange {
                 minVariantPrice { amount currencyCode }
               }
@@ -134,7 +142,6 @@ export async function getCollectionByHandle(handle: string, first = 50) {
                   }
                 }
               }
-              tags
             }
           }
         }
@@ -184,7 +191,11 @@ export async function createCart() {
                     id
                     title
                     price { amount currencyCode }
-                    product { title handle images(first:1){ edges{ node{ url } } } }
+                    product {
+                      title
+                      handle
+                      images(first: 1) { edges { node { url } } }
+                    }
                   }
                 }
               }
@@ -219,7 +230,11 @@ export async function addToCart(cartId: string, variantId: string, quantity = 1)
                     id
                     title
                     price { amount currencyCode }
-                    product { title handle images(first:1){ edges{ node{ url } } } }
+                    product {
+                      title
+                      handle
+                      images(first: 1) { edges { node { url } } }
+                    }
                   }
                 }
               }
@@ -256,7 +271,11 @@ export async function getCart(cartId: string) {
                   id
                   title
                   price { amount currencyCode }
-                  product { title handle images(first:1){ edges{ node{ url } } } }
+                  product {
+                    title
+                    handle
+                    images(first: 1) { edges { node { url } } }
+                  }
                 }
               }
             }
@@ -289,7 +308,11 @@ export async function removeFromCart(cartId: string, lineId: string) {
                     id
                     title
                     price { amount currencyCode }
-                    product { title handle images(first:1){ edges{ node{ url } } } }
+                    product {
+                      title
+                      handle
+                      images(first: 1) { edges { node { url } } }
+                    }
                   }
                 }
               }
