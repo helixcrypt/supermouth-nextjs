@@ -25,17 +25,51 @@ const whyLinks: NavLink[] = [
   { label: 'Play', href: '/play' },
 ]
 
+const shopByPerson = [
+  { label: 'Babies & Toddlers', href: '/collections/shop-all-kids', tag: '0–24 mo' },
+  { label: 'Little Kids', href: '/collections/shop-all-kids', tag: 'Ages 2–5' },
+  { label: 'Big Kids', href: '/collections/shop-all-kids', tag: 'Ages 6–12' },
+  { label: 'All Kids', href: '/collections/shop-all-kids', tag: 'Ages 0–12', teal: true },
+  { label: 'Teens & Adults', href: '/collections/ages-13-and-up' },
+  { label: 'Pregnancy', href: '/collections/pregnancy', tag: 'All trimesters & nursing' },
+  { label: 'Orthodontics', href: '/collections/ortho', tag: 'Braces & aligners' },
+]
+
+const shopProducts = [
+  { label: 'Toothpastes', href: '/collections/mouthpaste' },
+  { label: 'Mouthwashes', href: '/collections/mouthwash' },
+  { label: 'Floss & Flossers', href: '/collections/mouthfloss' },
+  { label: 'Mouth Sprays', href: '/collections/mouthspray-1' },
+  { label: 'Tongue Cleaners', href: '/collections/tongue-scrapers' },
+  { label: 'Essential Accessories', href: '/collections/essential-accessories-1' },
+]
+
+const systemLinks = [
+  { label: 'Babies & Toddlers', tag: '0–24 mo', href: '/systems/teething-to-24-months' },
+  { label: 'Little Kids', tag: 'Ages 2–5', href: '/systems/2-to-5' },
+  { label: 'Big Kids', tag: 'Ages 6–12', href: '/systems/6-to-12' },
+  { label: 'Teens & Adults', href: '/systems/teens-and-adults' },
+  { label: 'Pregnancy', tag: 'All trimesters & nursing', href: '/systems/pregnancy' },
+  { label: 'Orthodontics', tag: 'Braces & aligners', href: '/systems/orthodontics' },
+]
+
 export default function Navbar() {
   const { openCart, itemCount } = useCart()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+
+  // Close all menus — called on any link click
+  const closeAll = () => {
+    setActiveDropdown(null)
+    setMobileOpen(false)
+  }
 
   return (
     <header className="sticky top-0 z-50">
       {/* Promo bar */}
       <div className="bg-sm-navy text-white text-center text-xs py-2 px-4">
         Up to $75 in store credit back and lock in a 15% discount on subscriptions for life!{' '}
-        <Link href="/shop-all" className="underline ml-1 font-semibold">Shop Now</Link>
+        <Link href="/shop-all" onClick={closeAll} className="underline ml-1 font-semibold">Shop Now</Link>
       </div>
 
       {/* Main nav */}
@@ -44,7 +78,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16">
 
             {/* Logo */}
-            <Link href="/" className="flex-shrink-0">
+            <Link href="/" onClick={closeAll} className="flex-shrink-0">
               <Image
                 src="https://cdn.supermouth.com/website/Supermouth-full-logo_reversed.png"
                 alt="SuperMouth"
@@ -67,23 +101,17 @@ export default function Navbar() {
                 {activeDropdown === 'shop' && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 bg-white text-sm-navy shadow-2xl border border-gray-100 rounded-2xl z-50 w-[820px] p-6">
                     <div className="grid grid-cols-4 gap-6">
-                      {/* Column 1 */}
+
+                      {/* Column 1 — Shop by Person */}
                       <div>
                         <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-3">Shop by Person</p>
                         <div className="border-t-2 border-sm-teal mb-3" />
-                        <Link href="/shop-all" className="block text-sm font-bold text-sm-teal hover:opacity-80 mb-3">Shop All →</Link>
+                        <Link href="/shop-all" onClick={closeAll} className="block text-sm font-bold text-sm-teal hover:opacity-80 mb-3">Shop All →</Link>
                         <ul className="space-y-2">
-                          {[
-                            { label: 'Babies & Toddlers', href: '/collections/shop-all-kids', tag: '0–24 mo' },
-                            { label: 'Little Kids', href: '/collections/shop-all-kids', tag: 'Ages 2–5' },
-                            { label: 'Big Kids', href: '/collections/shop-all-kids', tag: 'Ages 6–12' },
-                            { label: 'All Kids', href: '/collections/shop-all-kids', tag: 'Ages 0–12', teal: true },
-                            { label: 'Teens & Adults', href: '/collections/ages-13-and-up' },
-                            { label: 'Pregnancy', href: '/collections/pregnancy', tag: 'All trimesters & nursing' },
-                            { label: 'Orthodontics', href: '/collections/ortho', tag: 'Braces & aligners' },
-                          ].map(item => (
+                          {shopByPerson.map(item => (
                             <li key={item.label}>
-                              <Link href={item.href} className={`text-sm hover:text-sm-teal transition-colors flex items-baseline justify-between gap-2 ${item.teal ? 'font-bold text-sm-teal' : 'text-sm-navy'}`}>
+                              <Link href={item.href} onClick={closeAll}
+                                className={`text-sm hover:text-sm-teal transition-colors flex items-baseline justify-between gap-2 ${item.teal ? 'font-bold text-sm-teal' : 'text-sm-navy'}`}>
                                 <span>{item.label}{item.teal ? ' →' : ''}</span>
                                 {item.tag && <span className="text-xs text-sm-gray flex-shrink-0">{item.tag}</span>}
                               </Link>
@@ -91,31 +119,27 @@ export default function Navbar() {
                           ))}
                         </ul>
                       </div>
-                      {/* Column 2 */}
+
+                      {/* Column 2 — Shop Products */}
                       <div>
                         <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-3">Shop Products</p>
                         <div className="border-t-2 border-sm-teal mb-3" />
-                        <Link href="/shop-all" className="block text-sm font-bold text-sm-teal hover:opacity-80 mb-3">Shop All Products →</Link>
+                        <Link href="/shop-all" onClick={closeAll} className="block text-sm font-bold text-sm-teal hover:opacity-80 mb-3">Shop All Products →</Link>
                         <ul className="space-y-2">
-                          {[
-                            { label: 'Toothpastes', href: '/collections/mouthpaste' },
-                            { label: 'Mouthwashes', href: '/collections/mouthwash' },
-                            { label: 'Floss & Flossers', href: '/collections/mouthfloss' },
-                            { label: 'Mouth Sprays', href: '/collections/mouthspray-1' },
-                            { label: 'Tongue Cleaners', href: '/collections/tongue-scrapers' },
-                            { label: 'Essential Accessories', href: '/collections/essential-accessories-1' },
-                          ].map(item => (
+                          {shopProducts.map(item => (
                             <li key={item.label}>
-                              <Link href={item.href} className="text-sm text-sm-navy hover:text-sm-teal transition-colors">{item.label}</Link>
+                              <Link href={item.href} onClick={closeAll} className="text-sm text-sm-navy hover:text-sm-teal transition-colors">{item.label}</Link>
                             </li>
                           ))}
                         </ul>
                       </div>
-                      {/* Column 3 */}
+
+                      {/* Column 3 — Toothbrushes */}
                       <div>
                         <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-3">Toothbrushes</p>
                         <div className="border-t-2 border-sm-teal mb-3" />
-                        <Link href="/collections/mouthbrushes" className="block text-sm font-bold text-sm-teal hover:opacity-80 mb-3">All Toothbrushes →</Link>
+                        <Link href="/collections/mouthbrushes" onClick={closeAll} className="block text-sm font-bold text-sm-teal hover:opacity-80 mb-3">All Toothbrushes →</Link>
+
                         <p className="text-xs font-black uppercase tracking-widest text-sm-gray mt-3 mb-2">Adults</p>
                         <ul className="space-y-1.5 mb-3">
                           {[
@@ -123,10 +147,14 @@ export default function Navbar() {
                             { label: 'Adult Manual Toothbrushes', href: '/collections/mouthbrushes' },
                           ].map(item => (
                             <li key={item.label}>
-                              <Link href={item.href} className={`text-sm hover:text-sm-teal transition-colors ${item.highlight ? 'bg-yellow-50 px-2 py-1 rounded-lg block' : 'text-sm-navy'}`}>{item.label}</Link>
+                              <Link href={item.href} onClick={closeAll}
+                                className={`text-sm hover:text-sm-teal transition-colors ${item.highlight ? 'bg-yellow-50 px-2 py-1 rounded-lg block' : 'text-sm-navy'}`}>
+                                {item.label}
+                              </Link>
                             </li>
                           ))}
                         </ul>
+
                         <p className="text-xs font-black uppercase tracking-widest text-sm-gray mt-3 mb-2">Kids</p>
                         <ul className="space-y-1.5 mb-3">
                           {[
@@ -136,10 +164,14 @@ export default function Navbar() {
                             { label: 'Kids Musical Toothbrushes', href: '/collections/mouthbrushes' },
                           ].map(item => (
                             <li key={item.label}>
-                              <Link href={item.href} className={`text-sm hover:text-sm-teal transition-colors ${item.teal ? 'font-bold text-sm-teal' : 'text-sm-navy'}`}>{item.label}{item.teal ? ' →' : ''}</Link>
+                              <Link href={item.href} onClick={closeAll}
+                                className={`text-sm hover:text-sm-teal transition-colors ${item.teal ? 'font-bold text-sm-teal' : 'text-sm-navy'}`}>
+                                {item.label}{item.teal ? ' →' : ''}
+                              </Link>
                             </li>
                           ))}
                         </ul>
+
                         <p className="text-xs font-black uppercase tracking-widest text-sm-gray mt-3 mb-2">Braces & Aligners</p>
                         <ul className="space-y-1.5">
                           {[
@@ -147,7 +179,8 @@ export default function Navbar() {
                             { label: 'Manual Toothbrush for Braces', href: '/products/ortho-toothbrush-s-bristles-braces' },
                           ].map(item => (
                             <li key={item.label}>
-                              <Link href={item.href} className={`text-sm hover:text-sm-teal transition-colors flex items-center gap-2 ${item.highlight ? 'bg-yellow-50 px-2 py-1 rounded-lg' : 'text-sm-navy'}`}>
+                              <Link href={item.href} onClick={closeAll}
+                                className={`text-sm hover:text-sm-teal transition-colors flex items-center gap-2 ${item.highlight ? 'bg-yellow-50 px-2 py-1 rounded-lg' : 'text-sm-navy'}`}>
                                 <span>{item.label}</span>
                                 {item.isNew && <span className="text-xs bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded flex-shrink-0">NEW</span>}
                               </Link>
@@ -155,7 +188,8 @@ export default function Navbar() {
                           ))}
                         </ul>
                       </div>
-                      {/* Column 4 */}
+
+                      {/* Column 4 — Systems & Bundles */}
                       <div>
                         <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-3">Systems & Bundles</p>
                         <div className="border-t-2 border-sm-teal mb-3" />
@@ -163,36 +197,32 @@ export default function Navbar() {
                           <span className="font-black text-sm-teal text-sm">SAVE 15%</span>
                         </div>
                         <p className="text-xs text-sm-gray mb-4">Save up to 25% with subscription</p>
+
                         <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-1">Systems</p>
                         <p className="text-xs text-sm-gray italic mb-2">Everything you need in one box — dentist-curated for your age & stage</p>
-                        <Link href="/systems-overview" className="block text-sm font-bold text-sm-teal hover:opacity-80 mb-3">All Systems →</Link>
+                        <Link href="/systems-overview" onClick={closeAll} className="block text-sm font-bold text-sm-teal hover:opacity-80 mb-3">All Systems →</Link>
                         <ul className="space-y-1.5 mb-4">
-                          {[
-                            { label: 'Babies & Toddlers', tag: '0–24 mo' },
-                            { label: 'Little Kids', tag: 'Ages 2–5' },
-                            { label: 'Big Kids', tag: 'Ages 6–12' },
-                            { label: 'Teens & Adults' },
-                            { label: 'Pregnancy', tag: 'All trimesters & nursing' },
-                            { label: 'Orthodontics', tag: 'Braces & aligners' },
-                          ].map(item => (
+                          {systemLinks.map(item => (
                             <li key={item.label}>
-                              <Link href="/systems-overview" className="text-sm text-sm-navy hover:text-sm-teal transition-colors flex items-baseline justify-between gap-2">
+                              <Link href={item.href} onClick={closeAll}
+                                className="text-sm text-sm-navy hover:text-sm-teal transition-colors flex items-baseline justify-between gap-2">
                                 <span>{item.label}</span>
                                 {item.tag && <span className="text-xs text-sm-gray flex-shrink-0">{item.tag}</span>}
                               </Link>
                             </li>
                           ))}
                         </ul>
+
                         <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-1">Bundles</p>
                         <p className="text-xs text-sm-gray italic mb-2">Save 15% on pre-bundled sets of nano-hydroxyapatite, fluoride, flavor varieties & more</p>
-                        <Link href="/supermouth-bundles" className="block text-sm font-bold text-sm-teal hover:opacity-80">All Bundles →</Link>
+                        <Link href="/supermouth-bundles" onClick={closeAll} className="block text-sm font-bold text-sm-teal hover:opacity-80">All Bundles →</Link>
                       </div>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* LEARN & EARN — links left, featured article right */}
+              {/* LEARN & EARN */}
               <div
                 className="relative"
                 onMouseEnter={() => setActiveDropdown('learn')}
@@ -202,25 +232,23 @@ export default function Navbar() {
                 {activeDropdown === 'learn' && (
                   <div className="absolute top-full left-0 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 w-[480px]">
                     <div className="grid grid-cols-2">
-                      {/* Links */}
                       <div className="py-4 px-5 border-r border-gray-100">
                         <p className="text-xs font-black uppercase tracking-widest text-sm-gray mb-3">Learn & Earn</p>
                         {learnLinks.map(l => (
-                          <Link key={l.href} href={l.href}
+                          <Link key={l.href} href={l.href} onClick={closeAll}
                             className="block py-2.5 text-sm text-sm-navy hover:text-sm-teal transition-colors font-medium border-b border-gray-50 last:border-0">
                             {l.label}
                           </Link>
                         ))}
                       </div>
-                      {/* Featured article graphic */}
-                      <div className="relative overflow-hidden rounded-r-2xl">
-                        <Link href="/learn">
+                      <div className="relative overflow-hidden rounded-r-2xl min-h-[200px]">
+                        <Link href="/learn" onClick={closeAll}>
                           <Image
                             src="https://cdn.supermouth.com/website/Blogs_and_News_Hero_Image_option_4_%282%29.png"
                             alt="Explore the science behind superior oral care"
                             width={400}
                             height={300}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover absolute inset-0"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                           <div className="absolute bottom-0 p-4">
@@ -235,7 +263,7 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* WHY SUPERMOUTH — links left, hero image right */}
+              {/* WHY SUPERMOUTH */}
               <div
                 className="relative"
                 onMouseEnter={() => setActiveDropdown('why')}
@@ -245,32 +273,30 @@ export default function Navbar() {
                 {activeDropdown === 'why' && (
                   <div className="absolute top-full left-0 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 w-[520px]">
                     <div className="grid grid-cols-2">
-                      {/* Links */}
                       <div className="py-4 px-5 border-r border-gray-100">
                         <p className="text-xs font-black uppercase tracking-widest text-sm-gray mb-3">Why SuperMouth?</p>
                         {whyLinks.map(l => (
-                          <Link key={l.href} href={l.href}
+                          <Link key={l.href} href={l.href} onClick={closeAll}
                             className="block py-2.5 text-sm text-sm-navy hover:text-sm-teal transition-colors font-medium border-b border-gray-50 last:border-0">
                             {l.label}
                           </Link>
                         ))}
                       </div>
-                      {/* Featured graphic — WhySuperMouthHeader */}
-                      <div className="relative overflow-hidden rounded-r-2xl">
-                        <Link href="/what-makes-us-super">
+                      <div className="relative overflow-hidden rounded-r-2xl min-h-[200px]">
+                        <Link href="/what-makes-us-super" onClick={closeAll}>
                           <Image
                             src="https://cdn.supermouth.com/website/WhySuperMouthHeader.jpg"
                             alt="Why SuperMouth"
                             width={400}
                             height={400}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover absolute inset-0"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                           <div className="absolute bottom-0 p-4">
                             <p className="text-white font-display font-bold text-sm leading-snug mb-1">
                               Revolutionizing oral care with safe, effective, and fun products
                             </p>
-                            <p className="text-white/70 text-xs mb-2">Founded by dentists who could not find the right oral care products — so they invented them!</p>
+                            <p className="text-white/70 text-xs mb-2">Founded by dentists who couldn't find the right products — so they invented them!</p>
                             <span className="text-sm-yellow text-xs font-semibold">Read Our Story →</span>
                           </div>
                         </Link>
@@ -280,7 +306,7 @@ export default function Navbar() {
                 )}
               </div>
 
-              <Link href="https://supermouthpro.com" target="_blank"
+              <Link href="https://supermouthpro.com" target="_blank" onClick={closeAll}
                 className="text-sm font-semibold italic hover:text-sm-yellow transition-colors">
                 For Dental Pros
               </Link>
@@ -288,11 +314,11 @@ export default function Navbar() {
 
             {/* Right actions */}
             <div className="flex items-center gap-3">
-              <Link href="/assessment"
+              <Link href="/assessment" onClick={closeAll}
                 className="hidden md:block bg-sm-yellow text-sm-navy font-bold px-4 py-2 rounded-full text-xs hover:opacity-90 transition-opacity whitespace-nowrap">
                 TAKE ASSESSMENT
               </Link>
-              <Link href="/account"
+              <Link href="/account" onClick={closeAll}
                 className="hidden md:block text-sm font-semibold border border-white/40 px-3 py-1.5 rounded-full text-xs hover:bg-white/10 transition-colors">
                 SIGN IN
               </Link>
@@ -326,41 +352,28 @@ export default function Navbar() {
             <p className="text-xs text-white/50 font-bold uppercase tracking-widest mt-4 mb-2">Shop by Person</p>
             {[
               { label: 'Shop All', href: '/shop-all' },
-              { label: 'Babies & Toddlers', href: '/collections/shop-all-kids' },
-              { label: 'Little Kids (2–5)', href: '/collections/shop-all-kids' },
-              { label: 'Big Kids (6–12)', href: '/collections/shop-all-kids' },
-              { label: 'All Kids', href: '/collections/shop-all-kids' },
-              { label: 'Teens & Adults', href: '/collections/ages-13-and-up' },
-              { label: 'Pregnancy', href: '/collections/pregnancy' },
-              { label: 'Orthodontics', href: '/collections/ortho' },
-            ].map(l => <Link key={l.href + l.label} href={l.href} onClick={() => setMobileOpen(false)} className="block py-2 text-sm hover:text-sm-yellow">{l.label}</Link>)}
+              ...shopByPerson,
+            ].map(l => <Link key={l.href + l.label} href={l.href} onClick={closeAll} className="block py-2 text-sm hover:text-sm-yellow">{l.label}</Link>)}
 
             <p className="text-xs text-white/50 font-bold uppercase tracking-widest mt-4 mb-2">Shop Products</p>
-            {[
-              { label: 'Shop All Products', href: '/shop-all' },
-              { label: 'Toothpastes', href: '/collections/mouthpaste' },
-              { label: 'Mouthwashes', href: '/collections/mouthwash' },
-              { label: 'Toothbrushes', href: '/collections/mouthbrushes' },
-              { label: 'Floss & Flossers', href: '/collections/mouthfloss' },
-              { label: 'Mouth Sprays', href: '/collections/mouthspray-1' },
-              { label: 'Tongue Cleaners', href: '/collections/tongue-scrapers' },
-              { label: 'Essential Accessories', href: '/collections/essential-accessories-1' },
-            ].map(l => <Link key={l.href + l.label} href={l.href} onClick={() => setMobileOpen(false)} className="block py-2 text-sm hover:text-sm-yellow">{l.label}</Link>)}
+            {[{ label: 'Shop All Products', href: '/shop-all' }, ...shopProducts].map(l => (
+              <Link key={l.href + l.label} href={l.href} onClick={closeAll} className="block py-2 text-sm hover:text-sm-yellow">{l.label}</Link>
+            ))}
 
             <p className="text-xs text-white/50 font-bold uppercase tracking-widest mt-4 mb-2">Systems & Bundles</p>
             {[
               { label: 'All Systems — Save 15%', href: '/systems-overview' },
               { label: 'All Bundles', href: '/supermouth-bundles' },
-            ].map(l => <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className="block py-2 text-sm hover:text-sm-yellow">{l.label}</Link>)}
+            ].map(l => <Link key={l.href} href={l.href} onClick={closeAll} className="block py-2 text-sm hover:text-sm-yellow">{l.label}</Link>)}
 
             <p className="text-xs text-white/50 font-bold uppercase tracking-widest mt-4 mb-2">Learn & Earn</p>
-            {learnLinks.map(l => <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className="block py-2 text-sm hover:text-sm-yellow">{l.label}</Link>)}
+            {learnLinks.map(l => <Link key={l.href} href={l.href} onClick={closeAll} className="block py-2 text-sm hover:text-sm-yellow">{l.label}</Link>)}
 
             <p className="text-xs text-white/50 font-bold uppercase tracking-widest mt-4 mb-2">Why SuperMouth?</p>
-            {whyLinks.map(l => <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className="block py-2 text-sm hover:text-sm-yellow">{l.label}</Link>)}
+            {whyLinks.map(l => <Link key={l.href} href={l.href} onClick={closeAll} className="block py-2 text-sm hover:text-sm-yellow">{l.label}</Link>)}
 
             <div className="pt-4">
-              <Link href="/assessment" onClick={() => setMobileOpen(false)}
+              <Link href="/assessment" onClick={closeAll}
                 className="block w-full text-center bg-sm-yellow text-sm-navy font-bold py-3 rounded-full text-sm">
                 TAKE ASSESSMENT
               </Link>
