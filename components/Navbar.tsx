@@ -9,16 +9,27 @@ const shopLinks = [
   { label: 'Shop All Products', href: '/shop-all' },
   { label: 'Shop All Systems', href: '/systems-overview' },
   { label: 'Shop All Bundles', href: '/supermouth-bundles' },
+  { label: '─────────', href: '#', divider: true },
   { label: 'Kids', href: '/collections/shop-all-kids' },
   { label: 'Teens & Adults', href: '/collections/ages-13-and-up' },
   { label: 'Orthodontics', href: '/collections/ortho' },
   { label: 'Pregnancy', href: '/collections/pregnancy' },
+  { label: '─────────', href: '#', divider: true },
+  { label: 'Toothpaste', href: '/collections/toothpaste' },
+  { label: 'Mouthwash', href: '/collections/mouthwash' },
+  { label: 'Toothbrushes', href: '/collections/mouthbrushes' },
+  { label: 'Floss', href: '/collections/floss' },
+  { label: 'Mouth Spray', href: '/collections/mouth-spray' },
+  { label: 'Tongue Scrapers', href: '/collections/tongue-scrapers' },
+  { label: 'Accessories', href: '/collections/essential-accessories-1' },
 ]
 
 const learnLinks = [
   { label: 'Take Assessment', href: '/assessment' },
   { label: 'Articles & Guides', href: '/learn' },
   { label: 'FAQs', href: '/faqs' },
+  { label: 'Subscription Benefits', href: '/subscription-benefits' },
+  { label: 'Rewards Program', href: '/rewards' },
 ]
 
 const whyLinks = [
@@ -26,7 +37,9 @@ const whyLinks = [
   { label: 'Our Story', href: '/our-story' },
   { label: 'Protecting the Planet', href: '/sustainability' },
   { label: 'Giving Back', href: '/philanthropy' },
+  { label: 'Our Happy Customers', href: '/our-happy-customers' },
   { label: 'In the News', href: '/in-the-news' },
+  { label: 'Play', href: '/play' },
 ]
 
 export default function Navbar() {
@@ -42,7 +55,7 @@ export default function Navbar() {
         <Link href="/shop-all" className="underline ml-1 font-semibold">Shop Now</Link>
       </div>
 
-      {/* Main nav — navy background */}
+      {/* Main nav */}
       <div className="bg-sm-navy text-white border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -75,16 +88,20 @@ export default function Navbar() {
                     {menu.label}
                   </button>
                   {activeDropdown === menu.key && (
-                    <div className="absolute top-full left-0 bg-white border border-gray-100 rounded-xl shadow-xl py-2 w-56 z-50">
-                      {menu.links.map(l => (
-                        <Link
-                          key={l.href}
-                          href={l.href}
-                          className="block px-4 py-2.5 text-sm text-sm-navy hover:bg-sm-bg hover:text-sm-purple transition-colors font-medium"
-                        >
-                          {l.label}
-                        </Link>
-                      ))}
+                    <div className="absolute top-full left-0 bg-white border border-gray-100 rounded-xl shadow-xl py-2 w-60 z-50 max-h-[80vh] overflow-y-auto">
+                      {menu.links.map((l, i) =>
+                        l.divider ? (
+                          <div key={i} className="border-t border-gray-100 my-1" />
+                        ) : (
+                          <Link
+                            key={l.href}
+                            href={l.href}
+                            className="block px-4 py-2.5 text-sm text-sm-navy hover:bg-sm-bg hover:text-sm-purple transition-colors font-medium"
+                          >
+                            {l.label}
+                          </Link>
+                        )
+                      )}
                     </div>
                   )}
                 </div>
@@ -101,24 +118,18 @@ export default function Navbar() {
 
             {/* Right actions */}
             <div className="flex items-center gap-3">
-              {/* Take Assessment — yellow pill CTA */}
               <Link
                 href="/assessment"
                 className="hidden md:block bg-sm-yellow text-sm-navy font-bold px-4 py-2 rounded-full text-xs hover:opacity-90 transition-opacity whitespace-nowrap"
               >
                 TAKE ASSESSMENT
               </Link>
-
               <Link href="/account" className="hidden md:block text-sm font-semibold border border-white/40 px-3 py-1.5 rounded-full text-xs hover:bg-white/10 transition-colors">
                 SIGN IN
               </Link>
 
               {/* Cart */}
-              <button
-                onClick={openCart}
-                className="relative p-2 hover:text-sm-yellow transition-colors"
-                aria-label="Open cart"
-              >
+              <button onClick={openCart} className="relative p-2 hover:text-sm-yellow transition-colors" aria-label="Open cart">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
                 </svg>
@@ -145,7 +156,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-sm-navy text-white border-t border-white/10 px-4 pb-6">
+        <div className="md:hidden bg-sm-navy text-white border-t border-white/10 px-4 pb-6 overflow-y-auto max-h-[80vh]">
           <div className="pt-4 space-y-1">
             {[
               { label: 'SHOP', links: shopLinks },
@@ -154,11 +165,15 @@ export default function Navbar() {
             ].map(section => (
               <div key={section.label}>
                 <p className="text-xs text-white/50 font-bold uppercase tracking-widest mt-4 mb-2">{section.label}</p>
-                {section.links.map(l => (
-                  <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className="block py-2 text-sm hover:text-sm-yellow">
-                    {l.label}
-                  </Link>
-                ))}
+                {section.links.map((l, i) =>
+                  l.divider ? (
+                    <div key={i} className="border-t border-white/10 my-2" />
+                  ) : (
+                    <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className="block py-2 text-sm hover:text-sm-yellow">
+                      {l.label}
+                    </Link>
+                  )
+                )}
               </div>
             ))}
             <div className="pt-4">
