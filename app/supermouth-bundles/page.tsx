@@ -3,7 +3,6 @@ import Link from 'next/link'
 import Footer from '@/components/Footer'
 import { getCollectionByHandle } from '@/lib/shopify'
 import ProductCard from '@/components/ProductCard'
-import BundleVideoCarousel from '@/components/BundleVideoCarousel'
 
 export const metadata = {
   title: 'Bundle & Save — SuperMouth',
@@ -21,18 +20,36 @@ export default async function BundlesPage() {
 
   return (
     <div className="bg-sm-bg text-sm-navy">
-      {/* Hero — desktop banner */}
-      <section className="w-full">
-        <div className="hidden md:block w-full">
-          <Image
-            src="https://cdn.supermouth.com/website/Bundle_Banner.jpg"
-            alt="Bundle & Save"
-            width={1440}
-            height={500}
-            className="w-full h-auto object-contain"
-            priority
-          />
+
+      {/* Hero — two-column layout matching original: text left, image right */}
+      <section className="bg-sm-teal">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-0 items-center min-h-[200px]">
+            {/* Left — text */}
+            <div className="py-10 pr-6">
+              <h1 className="font-display font-black text-3xl md:text-4xl text-white mb-4">Bundle & Save</h1>
+              <p className="text-white/90 text-sm leading-relaxed">
+                Upgrade your oral care and save up to 15%! Our curated bundles blend{' '}
+                <strong>dentist-backed formulations</strong>,{' '}
+                <strong>delicious flavors</strong>, and{' '}
+                <strong>clean, safe ingredients</strong> — perfect for{' '}
+                <strong>first-timers</strong>,{' '}
+                <strong>gifts</strong>, or anyone craving a fresh routine.
+              </p>
+            </div>
+            {/* Right — product image */}
+            <div className="hidden md:flex justify-end items-end h-full">
+              <Image
+                src="https://cdn.supermouth.com/website/SM-website%202.0-%20bundles%20page-header%20image%20mobile%20400x400-v2.jpg"
+                alt="Bundle & Save"
+                width={400}
+                height={400}
+                className="h-full w-auto object-contain max-h-56"
+              />
+            </div>
+          </div>
         </div>
+        {/* Mobile — show image below text */}
         <div className="md:hidden w-full">
           <Image
             src="https://cdn.supermouth.com/website/SM-website%202.0-%20bundles%20page-header%20image%20mobile%20400x400-v2.jpg"
@@ -40,23 +57,14 @@ export default async function BundlesPage() {
             width={400}
             height={400}
             className="w-full h-auto object-contain"
-            priority
           />
         </div>
       </section>
 
-      {/* Intro text */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h1 className="font-display font-black text-4xl md:text-5xl mb-4 text-sm-navy">Bundle & Save</h1>
-        <p className="text-sm-gray text-sm max-w-2xl leading-relaxed">
-          Upgrade your oral care and save up to 15%! Our curated bundles blend <strong className="text-sm-navy">dentist-backed formulations</strong>, <strong className="text-sm-navy">delicious flavors</strong>, and <strong className="text-sm-navy">clean, safe ingredients</strong> — perfect for <strong className="text-sm-navy">first-timers</strong>, <strong className="text-sm-navy">gifts</strong>, or anyone craving a fresh routine.
-        </p>
-      </section>
-
       {/* Bundled Products */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="font-display font-black text-2xl text-center mb-2 text-sm-navy">Bundled Products</h2>
-        <p className="text-sm-teal text-sm text-center mb-8">Keep Every MouthCare Essential Neat, Clean, and Ready to Use</p>
+        <p className="text-sm-teal text-sm font-semibold text-center mb-8">Keep Every MouthCare Essential Neat, Clean, and Ready to Use</p>
 
         {products.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl">
@@ -76,15 +84,53 @@ export default async function BundlesPage() {
         )}
       </section>
 
-      {/* Video Carousel */}
+      {/* Social proof video section — placeholder for social embed */}
       <section className="bg-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-display font-bold text-xl mb-6 text-sm-navy">See SuperMouth in Action</h2>
-          <BundleVideoCarousel />
+          <h2 className="font-display font-bold text-xl mb-2 text-sm-navy">See SuperMouth in Action</h2>
+          <p className="text-sm-gray text-sm mb-8">Real people, real results — from our community on TikTok & Instagram</p>
+
+          {/* Video cards — links to social content */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            {[
+              { title: 'Toothpaste For Every Stage', handle: '@mysupermouth', platform: 'TikTok', bg: 'bg-sm-teal-bg' },
+              { title: 'Power Clean for Braces', handle: '@mysupermouth', platform: 'TikTok', bg: 'bg-sm-peach' },
+              { title: 'SuperMouth Flavor Splash', handle: '@mysupermouth', platform: 'TikTok', bg: 'bg-yellow-100' },
+              { title: 'SuperMouth Rinse Revolution', handle: '@mysupermouth', platform: 'TikTok', bg: 'bg-purple-100' },
+              { title: 'What if Toothpaste Tastes Like Ice Cream', handle: '@mysupermouth', platform: 'TikTok', bg: 'bg-blue-100' },
+            ].map(video => (
+              <a
+                key={video.title}
+                href="https://www.tiktok.com/@mysupermouth"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${video.bg} rounded-2xl overflow-hidden group cursor-pointer hover:shadow-md transition-shadow`}
+              >
+                <div className="relative h-40 flex items-center justify-center">
+                  {/* Play button */}
+                  <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-sm-navy ml-0.5">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                  <span className="absolute top-2 right-2 text-xs font-bold text-sm-navy bg-white/80 px-2 py-0.5 rounded-full">{video.platform}</span>
+                </div>
+                <div className="p-3 bg-sm-navy">
+                  <p className="text-white text-xs font-bold leading-snug">{video.title}</p>
+                  <p className="text-white/50 text-xs mt-1">{video.handle}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+          <p className="text-xs text-sm-gray mt-4 text-center">
+            Follow us{' '}
+            <a href="https://www.tiktok.com/@mysupermouth" target="_blank" rel="noopener noreferrer" className="text-sm-teal hover:underline font-semibold">@mysupermouth</a>
+            {' '}for more
+          </p>
         </div>
       </section>
 
-      {/* Bundle for whole family */}
+      {/* Bundle for the whole family — image + text side by side */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="w-full rounded-2xl overflow-hidden">
