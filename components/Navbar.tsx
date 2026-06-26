@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useCart } from '@/lib/cart-context'
 
-type NavLink = { label: string; href: string; tag?: string; isNew?: boolean }
+type NavLink = { label: string; href: string; tag?: string; teal?: boolean; highlight?: boolean; isNew?: boolean }
 
 const learnLinks: NavLink[] = [
   { label: 'Take Assessment', href: '/assessment' },
@@ -57,21 +57,17 @@ export default function Navbar() {
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-6">
 
-              {/* SHOP — Mega Menu */}
+              {/* SHOP — 4-column Mega Menu */}
               <div
                 className="relative"
                 onMouseEnter={() => setActiveDropdown('shop')}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <button className="text-sm font-semibold tracking-wide hover:text-sm-yellow transition-colors py-4">
-                  SHOP
-                </button>
-
+                <button className="text-sm font-semibold tracking-wide hover:text-sm-yellow transition-colors py-4">SHOP</button>
                 {activeDropdown === 'shop' && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 bg-white text-sm-navy shadow-2xl border border-gray-100 rounded-2xl z-50 w-[820px] p-6">
                     <div className="grid grid-cols-4 gap-6">
-
-                      {/* Column 1 — Shop by Person */}
+                      {/* Column 1 */}
                       <div>
                         <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-3">Shop by Person</p>
                         <div className="border-t-2 border-sm-teal mb-3" />
@@ -81,23 +77,21 @@ export default function Navbar() {
                             { label: 'Babies & Toddlers', href: '/collections/shop-all-kids', tag: '0–24 mo' },
                             { label: 'Little Kids', href: '/collections/shop-all-kids', tag: 'Ages 2–5' },
                             { label: 'Big Kids', href: '/collections/shop-all-kids', tag: 'Ages 6–12' },
-                            { label: 'All Kids', href: '/collections/shop-all-kids', tag: 'Ages 0–12', highlight: true },
+                            { label: 'All Kids', href: '/collections/shop-all-kids', tag: 'Ages 0–12', teal: true },
                             { label: 'Teens & Adults', href: '/collections/ages-13-and-up' },
                             { label: 'Pregnancy', href: '/collections/pregnancy', tag: 'All trimesters & nursing' },
                             { label: 'Orthodontics', href: '/collections/ortho', tag: 'Braces & aligners' },
                           ].map(item => (
                             <li key={item.label}>
-                              <Link href={item.href}
-                                className={`text-sm hover:text-sm-teal transition-colors flex items-baseline justify-between gap-2 ${(item as any).highlight ? 'font-bold text-sm-teal' : 'text-sm-navy'}`}>
-                                <span>{item.label}{(item as any).highlight ? ' →' : ''}</span>
+                              <Link href={item.href} className={`text-sm hover:text-sm-teal transition-colors flex items-baseline justify-between gap-2 ${item.teal ? 'font-bold text-sm-teal' : 'text-sm-navy'}`}>
+                                <span>{item.label}{item.teal ? ' →' : ''}</span>
                                 {item.tag && <span className="text-xs text-sm-gray flex-shrink-0">{item.tag}</span>}
                               </Link>
                             </li>
                           ))}
                         </ul>
                       </div>
-
-                      {/* Column 2 — Shop Products */}
+                      {/* Column 2 */}
                       <div>
                         <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-3">Shop Products</p>
                         <div className="border-t-2 border-sm-teal mb-3" />
@@ -112,20 +106,16 @@ export default function Navbar() {
                             { label: 'Essential Accessories', href: '/collections/essential-accessories-1' },
                           ].map(item => (
                             <li key={item.label}>
-                              <Link href={item.href} className="text-sm text-sm-navy hover:text-sm-teal transition-colors">
-                                {item.label}
-                              </Link>
+                              <Link href={item.href} className="text-sm text-sm-navy hover:text-sm-teal transition-colors">{item.label}</Link>
                             </li>
                           ))}
                         </ul>
                       </div>
-
-                      {/* Column 3 — Toothbrushes */}
+                      {/* Column 3 */}
                       <div>
                         <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-3">Toothbrushes</p>
                         <div className="border-t-2 border-sm-teal mb-3" />
                         <Link href="/collections/mouthbrushes" className="block text-sm font-bold text-sm-teal hover:opacity-80 mb-3">All Toothbrushes →</Link>
-
                         <p className="text-xs font-black uppercase tracking-widest text-sm-gray mt-3 mb-2">Adults</p>
                         <ul className="space-y-1.5 mb-3">
                           {[
@@ -133,14 +123,10 @@ export default function Navbar() {
                             { label: 'Adult Manual Toothbrushes', href: '/collections/mouthbrushes' },
                           ].map(item => (
                             <li key={item.label}>
-                              <Link href={item.href}
-                                className={`text-sm hover:text-sm-teal transition-colors ${(item as any).highlight ? 'bg-yellow-50 px-2 py-1 rounded-lg block' : 'text-sm-navy'}`}>
-                                {item.label}
-                              </Link>
+                              <Link href={item.href} className={`text-sm hover:text-sm-teal transition-colors ${item.highlight ? 'bg-yellow-50 px-2 py-1 rounded-lg block' : 'text-sm-navy'}`}>{item.label}</Link>
                             </li>
                           ))}
                         </ul>
-
                         <p className="text-xs font-black uppercase tracking-widest text-sm-gray mt-3 mb-2">Kids</p>
                         <ul className="space-y-1.5 mb-3">
                           {[
@@ -150,45 +136,34 @@ export default function Navbar() {
                             { label: 'Kids Musical Toothbrushes', href: '/collections/mouthbrushes' },
                           ].map(item => (
                             <li key={item.label}>
-                              <Link href={item.href}
-                                className={`text-sm hover:text-sm-teal transition-colors ${(item as any).teal ? 'font-bold text-sm-teal' : 'text-sm-navy'}`}>
-                                {item.label}{(item as any).teal ? ' →' : ''}
-                              </Link>
+                              <Link href={item.href} className={`text-sm hover:text-sm-teal transition-colors ${item.teal ? 'font-bold text-sm-teal' : 'text-sm-navy'}`}>{item.label}{item.teal ? ' →' : ''}</Link>
                             </li>
                           ))}
                         </ul>
-
                         <p className="text-xs font-black uppercase tracking-widest text-sm-gray mt-3 mb-2">Braces & Aligners</p>
                         <ul className="space-y-1.5">
                           {[
-                            { label: 'ULTIM8 Electric Toothbrush for Braces', href: '/products/supermouth-ultim8-ortho-system', highlight: true, isNew: true },
+                            { label: 'ULTIM8 for Braces', href: '/products/supermouth-ultim8-ortho-system', highlight: true, isNew: true },
                             { label: 'Manual Toothbrush for Braces', href: '/products/ortho-toothbrush-s-bristles-braces' },
                           ].map(item => (
                             <li key={item.label}>
-                              <Link href={item.href}
-                                className={`text-sm hover:text-sm-teal transition-colors flex items-center gap-2 ${(item as any).highlight ? 'bg-yellow-50 px-2 py-1 rounded-lg' : 'text-sm-navy'}`}>
+                              <Link href={item.href} className={`text-sm hover:text-sm-teal transition-colors flex items-center gap-2 ${item.highlight ? 'bg-yellow-50 px-2 py-1 rounded-lg' : 'text-sm-navy'}`}>
                                 <span>{item.label}</span>
-                                {(item as any).isNew && (
-                                  <span className="text-xs bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded flex-shrink-0">NEW</span>
-                                )}
+                                {item.isNew && <span className="text-xs bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded flex-shrink-0">NEW</span>}
                               </Link>
                             </li>
                           ))}
                         </ul>
                       </div>
-
-                      {/* Column 4 — Systems & Bundles */}
+                      {/* Column 4 */}
                       <div>
                         <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-3">Systems & Bundles</p>
                         <div className="border-t-2 border-sm-teal mb-3" />
-
-                        {/* Save 15% badge */}
                         <div className="border-2 border-sm-teal rounded-xl px-3 py-2 mb-3 inline-block">
                           <span className="font-black text-sm-teal text-sm">SAVE 15%</span>
                         </div>
                         <p className="text-xs text-sm-gray mb-4">Save up to 25% with subscription</p>
-
-                        <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-2">Systems</p>
+                        <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-1">Systems</p>
                         <p className="text-xs text-sm-gray italic mb-2">Everything you need in one box — dentist-curated for your age & stage</p>
                         <Link href="/systems-overview" className="block text-sm font-bold text-sm-teal hover:opacity-80 mb-3">All Systems →</Link>
                         <ul className="space-y-1.5 mb-4">
@@ -201,63 +176,106 @@ export default function Navbar() {
                             { label: 'Orthodontics', tag: 'Braces & aligners' },
                           ].map(item => (
                             <li key={item.label}>
-                              <Link href="/systems-overview"
-                                className="text-sm text-sm-navy hover:text-sm-teal transition-colors flex items-baseline justify-between gap-2">
+                              <Link href="/systems-overview" className="text-sm text-sm-navy hover:text-sm-teal transition-colors flex items-baseline justify-between gap-2">
                                 <span>{item.label}</span>
                                 {item.tag && <span className="text-xs text-sm-gray flex-shrink-0">{item.tag}</span>}
                               </Link>
                             </li>
                           ))}
                         </ul>
-
                         <p className="text-xs font-black uppercase tracking-widest text-sm-navy mb-1">Bundles</p>
                         <p className="text-xs text-sm-gray italic mb-2">Save 15% on pre-bundled sets of nano-hydroxyapatite, fluoride, flavor varieties & more</p>
                         <Link href="/supermouth-bundles" className="block text-sm font-bold text-sm-teal hover:opacity-80">All Bundles →</Link>
                       </div>
-
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* LEARN & EARN */}
+              {/* LEARN & EARN — links left, featured article right */}
               <div
                 className="relative"
                 onMouseEnter={() => setActiveDropdown('learn')}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <button className="text-sm font-semibold tracking-wide hover:text-sm-yellow transition-colors py-4">
-                  LEARN & EARN
-                </button>
+                <button className="text-sm font-semibold tracking-wide hover:text-sm-yellow transition-colors py-4">LEARN & EARN</button>
                 {activeDropdown === 'learn' && (
-                  <div className="absolute top-full left-0 bg-white border border-gray-100 rounded-xl shadow-xl py-2 w-56 z-50">
-                    {learnLinks.map(l => (
-                      <Link key={l.href} href={l.href}
-                        className="block px-4 py-2.5 text-sm text-sm-navy hover:bg-sm-bg hover:text-sm-teal transition-colors font-medium">
-                        {l.label}
-                      </Link>
-                    ))}
+                  <div className="absolute top-full left-0 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 w-[480px]">
+                    <div className="grid grid-cols-2">
+                      {/* Links */}
+                      <div className="py-4 px-5 border-r border-gray-100">
+                        <p className="text-xs font-black uppercase tracking-widest text-sm-gray mb-3">Learn & Earn</p>
+                        {learnLinks.map(l => (
+                          <Link key={l.href} href={l.href}
+                            className="block py-2.5 text-sm text-sm-navy hover:text-sm-teal transition-colors font-medium border-b border-gray-50 last:border-0">
+                            {l.label}
+                          </Link>
+                        ))}
+                      </div>
+                      {/* Featured article graphic */}
+                      <div className="relative overflow-hidden rounded-r-2xl">
+                        <Link href="/learn">
+                          <Image
+                            src="https://cdn.supermouth.com/website/Blogs_and_News_Hero_Image_option_4_%282%29.png"
+                            alt="Explore the science behind superior oral care"
+                            width={400}
+                            height={300}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                          <div className="absolute bottom-0 p-4">
+                            <p className="text-white text-xs font-bold uppercase tracking-wide mb-1">Featured</p>
+                            <p className="text-white font-display font-bold text-sm leading-snug">Explore the science behind superior oral care</p>
+                            <span className="text-sm-yellow text-xs mt-2 block font-semibold">Read Articles →</span>
+                          </div>
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* WHY SUPERMOUTH */}
+              {/* WHY SUPERMOUTH — links left, hero image right */}
               <div
                 className="relative"
                 onMouseEnter={() => setActiveDropdown('why')}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <button className="text-sm font-semibold tracking-wide hover:text-sm-yellow transition-colors py-4">
-                  WHY SUPERMOUTH?
-                </button>
+                <button className="text-sm font-semibold tracking-wide hover:text-sm-yellow transition-colors py-4">WHY SUPERMOUTH?</button>
                 {activeDropdown === 'why' && (
-                  <div className="absolute top-full left-0 bg-white border border-gray-100 rounded-xl shadow-xl py-2 w-60 z-50">
-                    {whyLinks.map(l => (
-                      <Link key={l.href} href={l.href}
-                        className="block px-4 py-2.5 text-sm text-sm-navy hover:bg-sm-bg hover:text-sm-teal transition-colors font-medium">
-                        {l.label}
-                      </Link>
-                    ))}
+                  <div className="absolute top-full left-0 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 w-[520px]">
+                    <div className="grid grid-cols-2">
+                      {/* Links */}
+                      <div className="py-4 px-5 border-r border-gray-100">
+                        <p className="text-xs font-black uppercase tracking-widest text-sm-gray mb-3">Why SuperMouth?</p>
+                        {whyLinks.map(l => (
+                          <Link key={l.href} href={l.href}
+                            className="block py-2.5 text-sm text-sm-navy hover:text-sm-teal transition-colors font-medium border-b border-gray-50 last:border-0">
+                            {l.label}
+                          </Link>
+                        ))}
+                      </div>
+                      {/* Featured graphic — WhySuperMouthHeader */}
+                      <div className="relative overflow-hidden rounded-r-2xl">
+                        <Link href="/what-makes-us-super">
+                          <Image
+                            src="https://cdn.supermouth.com/website/WhySuperMouthHeader.jpg"
+                            alt="Why SuperMouth"
+                            width={400}
+                            height={400}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                          <div className="absolute bottom-0 p-4">
+                            <p className="text-white font-display font-bold text-sm leading-snug mb-1">
+                              Revolutionizing oral care with safe, effective, and fun products
+                            </p>
+                            <p className="text-white/70 text-xs mb-2">Founded by dentists who could not find the right oral care products — so they invented them!</p>
+                            <span className="text-sm-yellow text-xs font-semibold">Read Our Story →</span>
+                          </div>
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
