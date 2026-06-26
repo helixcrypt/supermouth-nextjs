@@ -2,10 +2,11 @@ import { getAllProducts } from '@/lib/shopify'
 import ProductCard from '@/components/ProductCard'
 import Footer from '@/components/Footer'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const metadata = {
   title: 'Shop All Products — SuperMouth',
-  description: 'Browse nearly 200 groundbreaking oral care products designed for all ages.',
+  description: 'Shop all SuperMouth products. Find toothbrushes, toothpaste, mouthwash, mouthspray, floss, tongue scrapers, and essential accessories.',
 }
 
 const FILTERS = [
@@ -26,7 +27,6 @@ export default async function ShopAllPage({
   searchParams: { type?: string; sort?: string }
 }) {
   let products: any[] = []
-
   try {
     products = await getAllProducts(200)
   } catch (e) {
@@ -48,24 +48,37 @@ export default async function ShopAllPage({
   })
 
   return (
-    <>
-      <section className="bg-sm-dark border-b border-white/10 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-sm-accent text-xs font-bold uppercase tracking-widest mb-2">SuperMouth Store</p>
-          <h1 className="font-display font-black text-4xl md:text-5xl mb-3">Shop All Products</h1>
-          <p className="text-sm-gray text-sm max-w-xl">
-            Groundbreaking oral care products designed for every age and stage.
-          </p>
-          <div className="flex flex-wrap items-center gap-4 mt-4 text-xs text-sm-gray">
-            <span>★★★★★ <strong className="text-white">4.8/5</strong> — 10,000+ reviews</span>
-            <span>500,000+ orders shipped</span>
-            <span>30-Day Money-Back Guarantee</span>
-          </div>
+    <div className="bg-sm-bg text-sm-navy">
+      {/* Hero — exact images from original */}
+      <section className="relative w-full">
+        <div className="hidden md:block w-full">
+          <Image
+            src="https://cdn.supermouth.com/images/SM-website_2.0-_shop_products_page-header_image-ni.jpg"
+            alt="Shop All Products"
+            width={1440}
+            height={500}
+            className="w-full h-auto object-contain"
+            priority
+          />
+        </div>
+        <div className="md:hidden w-full">
+          <Image
+            src="https://cdn.supermouth.com/website/SM-website_2.0-shop_products_page-header_image_mobile_400x400.jpg"
+            alt="Shop All Products"
+            width={400}
+            height={400}
+            className="w-full h-auto object-contain"
+            priority
+          />
+        </div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+          <h1 className="font-display font-black text-3xl md:text-5xl text-white drop-shadow-lg mb-2">Your Ultimate Oral Care Destination</h1>
+          <p className="text-white/80 text-sm drop-shadow">World-class solutions for every age and stage — crafted to perfection</p>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Type filters */}
+        {/* Filters */}
         <div className="flex flex-wrap gap-2 mb-6">
           {FILTERS.map(f => (
             <Link
@@ -73,8 +86,8 @@ export default async function ShopAllPage({
               href={f.value ? `/shop-all?type=${encodeURIComponent(f.value)}` : '/shop-all'}
               className={`px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
                 activeType === f.value
-                  ? 'bg-sm-accent text-sm-navy border-sm-accent'
-                  : 'border-white/20 text-sm-gray hover:border-sm-accent hover:text-sm-accent'
+                  ? 'bg-sm-navy text-white border-sm-navy'
+                  : 'border-sm-navy/20 text-sm-navy hover:border-sm-navy hover:bg-white'
               }`}
             >
               {f.label}
@@ -84,7 +97,7 @@ export default async function ShopAllPage({
 
         {/* Sort links */}
         <div className="flex items-center gap-3 mb-6 text-xs">
-          <span className="text-sm-gray">Sort:</span>
+          <span className="text-sm-gray font-semibold">Sort:</span>
           {[
             { label: 'Featured', value: 'default' },
             { label: 'A–Z', value: 'title' },
@@ -96,8 +109,8 @@ export default async function ShopAllPage({
               href={`/shop-all?${activeType ? `type=${encodeURIComponent(activeType)}&` : ''}sort=${s.value}`}
               className={`px-3 py-1.5 rounded-full border text-xs transition-all ${
                 sort === s.value
-                  ? 'border-sm-accent text-sm-accent'
-                  : 'border-white/10 text-sm-gray hover:text-white'
+                  ? 'border-sm-navy bg-sm-navy text-white'
+                  : 'border-sm-navy/20 text-sm-gray hover:text-sm-navy'
               }`}
             >
               {s.label}
@@ -110,11 +123,11 @@ export default async function ShopAllPage({
         </p>
 
         {sorted.length === 0 ? (
-          <div className="text-center py-20 bg-white/5 rounded-2xl">
+          <div className="text-center py-20 bg-white rounded-2xl">
             <div className="text-5xl mb-4">🦷</div>
-            <h3 className="font-display font-bold text-xl mb-2">Products coming soon!</h3>
+            <h3 className="font-display font-bold text-xl mb-2 text-sm-navy">Products coming soon!</h3>
             <p className="text-sm-gray text-sm mb-6">We're adding products to the store. Check back shortly.</p>
-            <Link href="/systems-overview" className="bg-sm-accent text-sm-navy font-bold px-6 py-3 rounded-full text-sm hover:opacity-90 transition-opacity">
+            <Link href="/systems-overview" className="bg-sm-yellow text-sm-navy font-bold px-6 py-3 rounded-full text-sm hover:opacity-90 transition-opacity">
               Shop Systems →
             </Link>
           </div>
@@ -128,6 +141,6 @@ export default async function ShopAllPage({
       </div>
 
       <Footer />
-    </>
+    </div>
   )
 }
