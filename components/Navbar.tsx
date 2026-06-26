@@ -5,16 +5,22 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useCart } from '@/lib/cart-context'
 
-const shopLinks = [
+type NavLink = {
+  label: string
+  href: string
+  divider?: boolean
+}
+
+const shopLinks: NavLink[] = [
   { label: 'Shop All Products', href: '/shop-all' },
   { label: 'Shop All Systems', href: '/systems-overview' },
   { label: 'Shop All Bundles', href: '/supermouth-bundles' },
-  { label: '─────────', href: '#', divider: true },
+  { label: '', href: '#', divider: true },
   { label: 'Kids', href: '/collections/shop-all-kids' },
   { label: 'Teens & Adults', href: '/collections/ages-13-and-up' },
   { label: 'Orthodontics', href: '/collections/ortho' },
   { label: 'Pregnancy', href: '/collections/pregnancy' },
-  { label: '─────────', href: '#', divider: true },
+  { label: '', href: '#', divider: true },
   { label: 'Toothpaste', href: '/collections/toothpaste' },
   { label: 'Mouthwash', href: '/collections/mouthwash' },
   { label: 'Toothbrushes', href: '/collections/mouthbrushes' },
@@ -24,7 +30,7 @@ const shopLinks = [
   { label: 'Accessories', href: '/collections/essential-accessories-1' },
 ]
 
-const learnLinks = [
+const learnLinks: NavLink[] = [
   { label: 'Take Assessment', href: '/assessment' },
   { label: 'Articles & Guides', href: '/learn' },
   { label: 'FAQs', href: '/faqs' },
@@ -32,7 +38,7 @@ const learnLinks = [
   { label: 'Rewards Program', href: '/rewards' },
 ]
 
-const whyLinks = [
+const whyLinks: NavLink[] = [
   { label: 'What Makes Us S.U.P.E.R.', href: '/what-makes-us-super' },
   { label: 'Our Story', href: '/our-story' },
   { label: 'Protecting the Planet', href: '/sustainability' },
@@ -94,7 +100,7 @@ export default function Navbar() {
                           <div key={i} className="border-t border-gray-100 my-1" />
                         ) : (
                           <Link
-                            key={l.href}
+                            key={l.href + i}
                             href={l.href}
                             className="block px-4 py-2.5 text-sm text-sm-navy hover:bg-sm-bg hover:text-sm-purple transition-colors font-medium"
                           >
@@ -169,7 +175,7 @@ export default function Navbar() {
                   l.divider ? (
                     <div key={i} className="border-t border-white/10 my-2" />
                   ) : (
-                    <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)} className="block py-2 text-sm hover:text-sm-yellow">
+                    <Link key={l.href + i} href={l.href} onClick={() => setMobileOpen(false)} className="block py-2 text-sm hover:text-sm-yellow">
                       {l.label}
                     </Link>
                   )
