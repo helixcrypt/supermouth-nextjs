@@ -18,27 +18,31 @@ interface Product {
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem, isLoading } = useCart()
+
   const image = product.images.edges[0]?.node
-  const variant = product.variants.edges[0]?.node
+  const variants = product.variants.edges.map(e => e.node)
+  const firstVariant = variants[0]
+  const hasMultipleVariants = variants.length > 1
   const price = parseFloat(product.priceRange.minVariantPrice.amount)
+  const isAvailable = variants.some(v => v.availableForSale)
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
-    if (!variant?.availableForSale) return
-    await addItem(variant.id)
+    if (!firstVariant?.availableForSale || hasMultipleVariants) return
+    await addItem(firstVariant.id)
   }
 
   return (
     <Link href={`/products/${product.handle}`} className="group block">
-      <div className="bg-white/5 rounded-2xl overflow-hidden hover:bg-white/8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-sm-accent/10">
+      <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
         {/* Image */}
-        <div className="relative aspect-square bg-white/10 overflow-hidden">
+        <div className="relative aspect-square bg-sm-bg overflow-hidden">
           {image ? (
             <Image
               src={image.url}
               alt={image.altText ?? product.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-sm-gray">
@@ -48,7 +52,7 @@ export default function ProductCard({ product }: { product: Product }) {
             </div>
           )}
           {product.tags.includes('new') && (
-            <span className="absolute top-3 left-3 bg-sm-green text-sm-navy text-xs font-bold px-2 py-1 rounded-full">
+            <span className="absolute top-3 left-3 bg-sm-green text-white text-xs font-bold px-2 py-1 rounded-full">
               NEW
             </span>
           )}
@@ -56,19 +60,44 @@ export default function ProductCard({ product }: { product: Product }) {
 
         {/* Info */}
         <div className="p-4">
-          <h3 className="font-semibold text-sm leading-snug mb-1 line-clamp-2 group-hover:text-sm-accent transition-colors">
+          <h3 className="font-semibold text-sm leading-snug mb-1 line-clamp-2 text-sm-navy group-hover:text-sm-teal transition-colors">
             {product.title}
           </h3>
-          <div className="flex items-center justify-between mt-3">
-            <p className="font-bold text-sm-accent">${price.toFixed(2)}</p>
+
+          {/* Price + variant hint */}
+          <div className="flex items-center justify-between mt-2 mb-3">
+            <p className="font-bold text-sm-navy">
+              {hasMultipleVariants && <span className="text-xs font-normal text-sm-gray mr-1">From</span>}
+              ${price.toFixed(2)}
+            </p>
+            {hasMultipleVariants && (
+              <p className="text-xs text-sm-gray">{variants.length} options</p>
+            )}
+          </div>
+
+          {/* CTA button */}
+          {!isAvailable ? (
+            <button
+              disabled
+              className="w-full bg-gray-100 text-gray-400 text-xs font-bold py-2.5 rounded-full cursor-not-allowed"
+            >
+              Sold Out
+            </button>
+          ) : hasMultipleVariants ? (
+            // Multiple variants — go to product page to select
+            <div className="w-full bg-sm-navy text-white text-xs font-bold py-2.5 rounded-full text-center hover:bg-sm-teal transition-colors">
+              Select Options
+            </div>
+          ) : (
+            // Single variant — add to cart directly
             <button
               onClick={handleAddToCart}
-              disabled={!variant?.availableForSale || isLoading}
-              className="bg-sm-accent text-sm-navy text-xs font-bold px-3 py-2 rounded-full hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              disabled={isLoading}
+              className="w-full bg-sm-yellow text-sm-navy text-xs font-bold py-2.5 rounded-full hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {!variant?.availableForSale ? 'Sold Out' : 'Add to Cart'}
+              {isLoading ? 'Adding...' : 'Add to Cart'}
             </button>
-          </div>
+          )}
         </div>
       </div>
     </Link>
