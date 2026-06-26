@@ -4,24 +4,23 @@ import { useEffect } from 'react'
 
 export default function QunicerAgent() {
   useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_QUNICER_API_KEY
-    const agentId = process.env.NEXT_PUBLIC_QUNICER_AGENT_ID
+    // Set config before loading script
+    ;(window as any).ChatWidgetConfig = {
+      apiKey: 'cw_live_82559d7e8f5e985571c5a7fb467721207cc530dc8f7eed57',
+      apiUrl: 'https://chat.quincer.com/api',
+    }
 
-    if (!apiKey || !agentId) return
+    // Avoid duplicate script injection
+    if (document.querySelector('script[src="https://chat.quincer.com/api/embed/widget.js"]')) return
 
-    // Load Qunicer script
     const script = document.createElement('script')
-    script.src = 'https://cdn.qunicer.com/agent.js'
-    script.async = true
-    script.setAttribute('data-api-key', apiKey)
-    script.setAttribute('data-agent-id', agentId)
-    script.setAttribute('data-theme', 'dark')
-    script.setAttribute('data-primary-color', '#00b4d8')
-    script.setAttribute('data-position', 'bottom-right')
+    script.src = 'https://chat.quincer.com/api/embed/widget.js'
+    script.defer = true
     document.body.appendChild(script)
 
     return () => {
-      document.body.removeChild(script)
+      const existing = document.querySelector('script[src="https://chat.quincer.com/api/embed/widget.js"]')
+      if (existing) document.body.removeChild(existing)
     }
   }, [])
 
