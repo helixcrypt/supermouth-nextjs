@@ -8,32 +8,14 @@ import DoctorCarousel from '@/components/DoctorCarousel'
 import PressLogoTicker from '@/components/PressLogoTicker'
 
 const featuredMedia = [
-  {
-    img: '/press/mensjournal.jpg',
-    outlet: "MEN'S JOURNAL",
-    outletColor: '#8B6914',
-    headline: "Men's Journal Names SuperMouth Ultim8 Best Sonic Toothbrush of 2025",
-    href: 'https://www.mensjournal.com/grooming/best-grooming-products',
-  },
-  {
-    img: '/press/cnn.png',
-    outlet: 'CNN',
-    outletColor: '#cc0000',
-    headline: "Your dentist knows you're not flossing. Here's how to nail your oral health routine",
-    href: 'https://www.cnn.com/cnn-underscored/health-fitness/oral-hygiene-routine',
-  },
-  {
-    img: '/press/cheddar.png',
-    outlet: 'CHEDDAR',
-    outletColor: '#ff1493',
-    headline: 'Teaching Kids How to Brush Their Teeth the Right Way',
-    href: 'https://cheddar.com/media/teaching-kids-how-to-brush-their-teeth-the-right-way',
-  },
+  { img: '/press/mensjournal.jpg', outlet: "MEN'S JOURNAL", outletColor: '#8B6914', headline: "Men's Journal Names SuperMouth Ultim8 Best Sonic Toothbrush of 2025", href: 'https://www.mensjournal.com/grooming/best-grooming-products' },
+  { img: '/press/cnn.png', outlet: 'CNN', outletColor: '#cc0000', headline: "Your dentist knows you're not flossing. Here's how to nail your oral health routine", href: 'https://www.cnn.com/cnn-underscored/health-fitness/oral-hygiene-routine' },
+  { img: '/press/cheddar.png', outlet: 'CHEDDAR', outletColor: '#ff1493', headline: 'Teaching Kids How to Brush Their Teeth the Right Way', href: 'https://cheddar.com/media/teaching-kids-how-to-brush-their-teeth-the-right-way' },
 ]
 
 const additionalMedia = [
   { img: '/press/techradar.jpg', outlet: 'TechRadar', outletColor: '#0093d0', headline: 'ULTIM8 Recognized as Best Self-Cleaning Electric Toothbrush', href: 'https://www.techradar.com/best/electric-toothbrushes' },
-  { img: '/press/dailymom.jpg', outlet: 'Daily Mom', outletColor: '#4ab8c4', headline: "SuperMouth's Ultim8 SmartBrush Named Top Mother's Day Gift", href: 'https://dailymom.com/discover/creative-cozy-and-luxurious-mothers-day-gifts-for-every-mom/' },
+  { img: '/press/dailymom.jpg', outlet: 'Daily Mom', outletColor: '#4ab8c4', headline: "SuperMouth's Ultim8 SmartBrush Named Top Mother's Day Gift", href: 'https://dailymom.com' },
   { img: '/press/cnet.jpg', outlet: 'CNET', outletColor: '#cc0000', headline: "CNET Names SuperMouth Ultim8 as 2025's Best Soft-Bristled Electric Brush", href: 'https://www.cnet.com/health/personal-care/best-electric-toothbrush/' },
   { img: '/press/tamronhall.jpg', outlet: 'Tamron Hall', outletColor: '#6b21a8', headline: 'SuperMouth Ultim8 SmartBrush System Featured on the Tamron Hall Show', href: 'https://www.youtube.com/watch?v=OIPIqIG6fFw' },
   { img: '/press/askmen.jpg', outlet: 'AskMen', outletColor: '#cc3300', headline: '2025 AskMen Grooming Awards — Best Sonic Toothbrush', href: 'https://www.askmen.com/grooming/skin/grooming-awards-2025-face-care-products.html' },
@@ -68,7 +50,7 @@ export default function InTheNewsPage() {
   return (
     <div className="bg-sm-bg text-sm-navy">
 
-      {/* Hero — full width image, text floats on top, no gradient overlay */}
+      {/* Hero */}
       <section className="relative w-full">
         <Image
           src="https://cdn.supermouth.com/images/SM-website_2.0-_in_the_news_page-header_image-ni.jpg"
@@ -78,48 +60,35 @@ export default function InTheNewsPage() {
           className="w-full h-auto object-cover"
           priority
         />
-
-        {/* "in the news" label + subtitle — bottom left */}
         <div className="absolute bottom-8 left-8 md:left-16">
           <p className="font-black text-2xl text-sm-navy leading-none mb-1">
-            in the{' '}
-            <span style={{ fontFamily: 'cursive', color: '#4a2fb5' }}>news</span>
+            in the <span style={{ fontFamily: 'cursive', color: '#4a2fb5' }}>news</span>
           </p>
-          <p className="text-sm-navy text-xs leading-snug max-w-xs">
+          <p className="text-sm-navy text-xs leading-snug">
             Making Headlines Everywhere:<br />SuperMouth in the Media Spotlight
           </p>
         </div>
-
-        {/* 3 quotes floating over center-right — no background, just white text */}
         <div className="absolute inset-0 hidden md:flex items-start pt-6 pr-8 justify-end gap-6 pointer-events-none">
-          <p className="text-white text-xs font-semibold leading-snug max-w-[180px] text-center mt-4">
-            "SuperMouth revolutionises the market with ice-cream flavoured mouthwashes"
-            <br /><span className="italic font-normal">– Laura Pérez</span>
-          </p>
-          <p className="text-white text-xs font-semibold leading-snug max-w-[180px] text-center">
-            "An Oral Hygiene Brand Made a Superhero Film to Inspire Kids to Brush Their Teeth"
-            <br /><span className="italic font-normal">– Adweek</span>
-          </p>
-          <p className="text-white text-xs font-semibold leading-snug max-w-[200px] text-center mt-4">
-            "Adventure Film <em>The Rise of SuperMouth</em> That Just Might Get Your Kids To Brush"
-            <br /><span className="italic font-normal">– Accesswire</span>
-          </p>
+          <p className="text-white text-xs font-semibold leading-snug max-w-[180px] text-center mt-4">"SuperMouth revolutionises the market with ice-cream flavoured mouthwashes"<br /><span className="italic font-normal">– Laura Pérez</span></p>
+          <p className="text-white text-xs font-semibold leading-snug max-w-[180px] text-center">"An Oral Hygiene Brand Made a Superhero Film to Inspire Kids to Brush Their Teeth"<br /><span className="italic font-normal">– Adweek</span></p>
+          <p className="text-white text-xs font-semibold leading-snug max-w-[200px] text-center mt-4">"Adventure Film <em>The Rise of SuperMouth</em> That Just Might Get Your Kids To Brush"<br /><span className="italic font-normal">– Accesswire</span></p>
         </div>
       </section>
 
-      {/* Real logo ticker */}
       <PressLogoTicker />
 
-      {/* Featured + Additional Media */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <p className="text-center font-black text-lg mb-5" style={{ fontFamily: 'cursive', color: '#f97316' }}>featured media</p>
-        <div className="border border-gray-200 rounded-2xl p-5 bg-white mb-8">
-          <div className="grid md:grid-cols-3 gap-4">
+      {/* Media sections — wider container matching original */}
+      <section className="max-w-7xl mx-auto px-6 lg:px-12 py-10">
+
+        {/* Featured — 3 equal columns */}
+        <p className="text-center font-black text-lg mb-4" style={{ fontFamily: 'cursive', color: '#f97316' }}>featured media</p>
+        <div className="border border-gray-200 rounded-2xl p-6 bg-white mb-8">
+          <div className="grid grid-cols-3 gap-5">
             {featuredMedia.map(item => (
               <a key={item.outlet} href={item.href} target="_blank" rel="noopener noreferrer"
                 className="group block rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="relative h-36 overflow-hidden bg-gray-100">
-                  <Image src={item.img} alt={item.headline} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                  <Image src={item.img} alt={item.headline} fill className="object-cover group-hover:scale-105 transition-transform duration-300 absolute inset-0" />
                 </div>
                 <div className="p-3 bg-white">
                   <p className="text-xs font-black mb-1" style={{ color: item.outletColor }}>{item.outlet}</p>
@@ -130,14 +99,15 @@ export default function InTheNewsPage() {
           </div>
         </div>
 
-        <p className="text-center font-black text-lg mb-5" style={{ fontFamily: 'cursive', color: '#f97316' }}>additional media</p>
-        <div className="border border-gray-200 rounded-2xl p-5 bg-white">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* Additional — 4 columns, 3 rows = 12 items */}
+        <p className="text-center font-black text-lg mb-4" style={{ fontFamily: 'cursive', color: '#f97316' }}>additional media</p>
+        <div className="border border-gray-200 rounded-2xl p-6 bg-white">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {additionalMedia.map(item => (
-              <a key={item.outlet + item.headline} href={item.href} target="_blank" rel="noopener noreferrer"
+              <a key={item.outlet} href={item.href} target="_blank" rel="noopener noreferrer"
                 className="group block rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="relative h-24 overflow-hidden bg-gray-100">
-                  <Image src={item.img} alt={item.headline} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                <div className="relative w-full" style={{ paddingBottom: '66%' }}>
+                  <Image src={item.img} alt={item.headline} fill className="object-cover group-hover:scale-105 transition-transform duration-300 absolute inset-0" />
                 </div>
                 <div className="p-2 bg-white">
                   <p className="text-xs font-bold mb-0.5" style={{ color: item.outletColor }}>{item.outlet}</p>
@@ -146,7 +116,7 @@ export default function InTheNewsPage() {
               </a>
             ))}
           </div>
-          <div className="text-center mt-5">
+          <div className="text-center mt-6">
             <button className="bg-sm-yellow text-sm-navy font-bold px-6 py-2.5 rounded-full text-sm hover:opacity-90 transition-opacity">
               See More Press Coverage
             </button>
@@ -155,7 +125,7 @@ export default function InTheNewsPage() {
       </section>
 
       {/* Awards */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
+      <section className="max-w-7xl mx-auto px-6 lg:px-12 pb-14">
         <p className="text-center font-black text-lg mb-1" style={{ fontFamily: 'cursive', color: '#f97316' }}>awards & recognition</p>
         <p className="text-center text-xs text-sm-gray mb-5 max-w-2xl mx-auto">
           Editors and journalists at the world's leading health and lifestyle publications have recognized SuperMouth across products, ingredients, and innovation.
