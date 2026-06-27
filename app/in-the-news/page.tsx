@@ -5,58 +5,45 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Footer from '@/components/Footer'
 import DoctorCarousel from '@/components/DoctorCarousel'
-
-// All press names for the scrolling ticker — matches original exactly
-const tickerNames = [
-  'Indy Week', 'USA Today', 'CNN', 'Tamron Hall', 'US News', 'WebMD',
-  'Healthline', 'Parents Magazine', 'Good Housekeeping', 'Today', 'Prevention',
-  'Entrepreneur', 'Huffington Post', 'Forbes', 'Allure', 'Scary Mommy',
-  'Health Magazine', 'Bustle', 'Business Insider', 'Cheddar News', 'BuzzFeed',
-  'Fox News', 'CNET', 'Refinery29', 'Cosmopolitan', 'Seventeen', 'PopSugar',
-  "Woman's World", 'Doctors', 'Dentistry Today', 'Inside Edition', 'MSN',
-  "Men's Journal", 'NBC', 'New Beauty', 'CBS', 'ABC', 'Well+Good',
-]
+import PressLogoTicker from '@/components/PressLogoTicker'
 
 const featuredMedia = [
   {
-    img: 'https://imagesvc.meredithcorp.io/v3/mm/image?url=https%3A%2F%2Fstatic.onecms.io%2Fwp-content%2Fuploads%2Fsites%2F6%2F2022%2F09%2F09%2Fultim8-toothbrush.jpg',
-    fallbackBg: '#1a1a2e',
+    img: '/press/mensjournal.jpg',
     outlet: "MEN'S JOURNAL",
     outletColor: '#8B6914',
     headline: "Men's Journal Names SuperMouth Ultim8 Best Sonic Toothbrush of 2025",
     href: 'https://www.mensjournal.com/grooming/best-grooming-products',
   },
   {
-    img: 'https://media.cnn.com/api/v1/images/stellar/prod/gettyimages-1365845068.jpg?c=16x9&q=h_833,w_1480,c_fill',
-    fallbackBg: '#cc0000',
+    img: '/press/cnn.png',
     outlet: 'CNN',
     outletColor: '#cc0000',
     headline: "Your dentist knows you're not flossing. Here's how to nail your oral health routine",
     href: 'https://www.cnn.com/cnn-underscored/health-fitness/oral-hygiene-routine',
   },
   {
-    img: 'https://www.armytimes.com/resizer/v2/GE3W4RRVJM3GEWBVIF2WMNKFNN.jpg?width=1200&auth=7cfe83a1ab90755bd2ec159b7596e301e2ffb55d095690d40d72418617db9ae3',
-    fallbackBg: '#00b140',
+    img: '/press/cheddar.png',
     outlet: 'CHEDDAR',
-    outletColor: '#00b140',
+    outletColor: '#ff1493',
     headline: 'Teaching Kids How to Brush Their Teeth the Right Way',
     href: 'https://cheddar.com/media/teaching-kids-how-to-brush-their-teeth-the-right-way',
   },
 ]
 
 const additionalMedia = [
-  { img: 'https://cdn.mos.cms.futurecdn.net/fR4ab3rjFrzNSZv2spmneG-2000-80.jpg', outlet: 'TechRadar', outletColor: '#0093d0', headline: 'ULTIM8 Recognized as Best Self-Cleaning Electric Toothbrush', href: 'https://www.techradar.com/best/electric-toothbrushes' },
-  { img: '', outlet: 'Daily Mom', outletColor: '#e91e8c', headline: "SuperMouth's Ultim8 SmartBrush Named Top Mother's Day Gift", href: 'https://dailymom.com/discover/creative-cozy-and-luxurious-mothers-day-gifts-for-every-mom/' },
-  { img: '', outlet: 'CNET', outletColor: '#cc0000', headline: "CNET Names SuperMouth Ultim8 as 2025's Best Soft-Bristled Electric Brush", href: 'https://www.cnet.com/health/personal-care/best-electric-toothbrush/' },
-  { img: '', outlet: 'Tamron Hall', outletColor: '#6b21a8', headline: 'SuperMouth Ultim8 SmartBrush System Featured on the Tamron Hall Show', href: 'https://www.youtube.com/watch?v=OIPIqIG6fFw' },
-  { img: '', outlet: 'AskMen', outletColor: '#1a56db', headline: '2025 AskMen Grooming Awards — Best Sonic Toothbrush', href: 'https://www.askmen.com/grooming/skin/grooming-awards-2025-face-care-products.html' },
-  { img: '', outlet: 'Seventeen', outletColor: '#e91e8c', headline: 'The Best Teeth Whitening Kits', href: 'https://www.seventeen.com/beauty/g42640642/best-teeth-whitening-kits/' },
-  { img: '', outlet: 'PopSugar', outletColor: '#ff6b9d', headline: 'The 10 Best Electric Toothbrushes to Elevate Your Brushing Game', href: 'https://www.popsugar.com/beauty/dentist-recommended-electric-toothbrushes-48078961' },
-  { img: '', outlet: 'KTLA', outletColor: '#003087', headline: 'Dr. Kami Hoss on Why Oral Hygiene is Very Important for Kids and Adults', href: 'https://ktla.com/video/dr-kami-hoss-discuss-the-importance-of-oral-hygiene-for-kids/8879706/' },
-  { img: 'https://img.huffingtonpost.com/asset/66c4aa252200003400bf2bad.jpeg?cache=0fnhkpX45b&ops=1200_630', outlet: 'HuffPost', outletColor: '#00857a', headline: "Dentists Can Tell a Lot About Someone's Health Just by Looking in Their Mouth", href: 'https://www.huffpost.com/entry/what-dentists-know-by-looking-mouth_l_64bc53c4e4b038c60ccab400' },
-  { img: '', outlet: "Woman's World", outletColor: '#c2185b', headline: 'Top Dental Tips for Reversing Gum Disease', href: 'https://www.womansworld.com/wellness/gum-disease-self-care' },
-  { img: 'https://camillestyles.com/wp-content/uploads/2024/04/woman-journaling-gut-health-oral-hygiene-865x1298.jpg', outlet: 'Camille Styles', outletColor: '#78350f', headline: 'Top Dentist Shares the Surprising Connection Between Oral Care and Gut Health', href: 'https://camillestyles.com/wellness/gut-health-oral-hygiene/' },
-  { img: '', outlet: 'Yahoo! Health', outletColor: '#6001d2', headline: 'The First-rate Tested Toothbrushes for Healthy Gums and Teeth', href: 'https://www.yahoo.com/lifestyle/best-electric-toothbrush-221127494.html' },
+  { img: '/press/techradar.jpg', outlet: 'TechRadar', outletColor: '#0093d0', headline: 'ULTIM8 Recognized as Best Self-Cleaning Electric Toothbrush', href: 'https://www.techradar.com/best/electric-toothbrushes' },
+  { img: '/press/dailymom.jpg', outlet: 'Daily Mom', outletColor: '#4ab8c4', headline: "SuperMouth's Ultim8 SmartBrush Named Top Mother's Day Gift", href: 'https://dailymom.com/discover/creative-cozy-and-luxurious-mothers-day-gifts-for-every-mom/' },
+  { img: '/press/cnet.jpg', outlet: 'CNET', outletColor: '#cc0000', headline: "CNET Names SuperMouth Ultim8 as 2025's Best Soft-Bristled Electric Brush", href: 'https://www.cnet.com/health/personal-care/best-electric-toothbrush/' },
+  { img: '/press/tamronhall.jpg', outlet: 'Tamron Hall', outletColor: '#6b21a8', headline: 'SuperMouth Ultim8 SmartBrush System Featured on the Tamron Hall Show', href: 'https://www.youtube.com/watch?v=OIPIqIG6fFw' },
+  { img: '/press/askmen.jpg', outlet: 'AskMen', outletColor: '#cc3300', headline: '2025 AskMen Grooming Awards — Best Sonic Toothbrush', href: 'https://www.askmen.com/grooming/skin/grooming-awards-2025-face-care-products.html' },
+  { img: '/press/seventeen.png', outlet: 'Seventeen', outletColor: '#000000', headline: 'The Best Teeth Whitening Kits', href: 'https://www.seventeen.com/beauty/g42640642/best-teeth-whitening-kits/' },
+  { img: '/press/popsugar.jpg', outlet: 'PopSugar', outletColor: '#6b0f6e', headline: 'The 10 Best Electric Toothbrushes to Elevate Your Brushing Game', href: 'https://www.popsugar.com/beauty/dentist-recommended-electric-toothbrushes-48078961' },
+  { img: '/press/ktla.png', outlet: 'KTLA 5', outletColor: '#003087', headline: 'Dr. Kami Hoss on Why Oral Hygiene is Very Important for Kids and Adults', href: 'https://ktla.com/video/dr-kami-hoss-discuss-the-importance-of-oral-hygiene-for-kids/8879706/' },
+  { img: '/press/huffpost.png', outlet: 'HuffPost', outletColor: '#00857a', headline: "Dentists Can Tell a Lot About Someone's Health Just by Looking in Their Mouth", href: 'https://www.huffpost.com/entry/what-dentists-know-by-looking-mouth_l_64bc53c4e4b038c60ccab400' },
+  { img: '/press/womansworld.png', outlet: "Woman's World", outletColor: '#cc0000', headline: 'Top Dental Tips for Reversing Gum Disease', href: 'https://www.womansworld.com/wellness/gum-disease-self-care' },
+  { img: '/press/camillestyles.png', outlet: 'Camille Styles', outletColor: '#78350f', headline: 'Top Dentist Shares the Surprising Connection Between Oral Care and Gut Health', href: 'https://camillestyles.com/wellness/gut-health-oral-hygiene/' },
+  { img: '/press/yahoo.jpg', outlet: 'Yahoo! Health', outletColor: '#6001d2', headline: 'The First-rate Tested Toothbrushes for Healthy Gums and Teeth', href: 'https://www.yahoo.com/lifestyle/best-electric-toothbrush-221127494.html' },
 ]
 
 const allAwards = [
@@ -81,7 +68,7 @@ export default function InTheNewsPage() {
   return (
     <div className="bg-sm-bg text-sm-navy">
 
-      {/* Hero — full width with text overlay on left */}
+      {/* Hero */}
       <section className="relative w-full overflow-hidden">
         <Image
           src="https://cdn.supermouth.com/images/SM-website_2.0-_in_the_news_page-header_image-ni.jpg"
@@ -91,11 +78,12 @@ export default function InTheNewsPage() {
           className="w-full h-auto object-cover"
           priority
         />
-        <div className="absolute inset-0 flex items-center" style={{ background: 'linear-gradient(to right, rgba(74,184,196,0.92) 45%, transparent 75%)' }}>
+        <div className="absolute inset-0 flex items-center"
+          style={{ background: 'linear-gradient(to right, rgba(74,184,196,0.95) 42%, rgba(74,184,196,0.5) 60%, transparent 78%)' }}>
           <div className="max-w-7xl mx-auto px-8 w-full">
-            <div className="max-w-sm">
+            <div className="max-w-xs md:max-w-sm">
               <p className="text-sm-navy text-xs font-bold uppercase tracking-widest mb-2">IN THE NEWS</p>
-              <h1 className="font-display font-black text-2xl md:text-4xl text-sm-navy mb-5 leading-tight">
+              <h1 className="font-display font-black text-2xl md:text-3xl text-sm-navy mb-4 leading-tight">
                 Making Headlines Everywhere:<br />SuperMouth in the Media Spotlight
               </h1>
               <div className="space-y-2">
@@ -104,9 +92,7 @@ export default function InTheNewsPage() {
                   '"SuperMouth revolutionises the market with ice-cream flavoured mouthwashes" - Laura Pérez',
                   '"Adventure Film \'The Rise of SuperMouth\' That Just Might Get Your Kids To Brush" - Accesswire',
                 ].map((q, i) => (
-                  <p key={i} className="text-sm-navy/80 text-xs italic leading-snug bg-white/30 rounded-lg px-3 py-2">
-                    {q}
-                  </p>
+                  <p key={i} className="text-sm-navy/80 text-xs italic leading-snug bg-white/40 rounded-lg px-3 py-1.5">{q}</p>
                 ))}
               </div>
             </div>
@@ -114,36 +100,19 @@ export default function InTheNewsPage() {
         </div>
       </section>
 
-      {/* Scrolling ticker — styled text, matches original */}
-      <div className="bg-white border-y border-gray-100 py-4 overflow-hidden">
-        <div className="ticker-track flex gap-10 whitespace-nowrap" style={{ width: 'max-content' }}>
-          {[...tickerNames, ...tickerNames].map((name, i) => (
-            <span key={i} className="text-sm font-semibold text-sm-gray hover:text-sm-navy transition-colors cursor-default">
-              {name}
-            </span>
-          ))}
-        </div>
-      </div>
+      {/* Real logo ticker */}
+      <PressLogoTicker />
 
       {/* Featured + Additional Media */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-
-        {/* Featured */}
         <p className="text-center font-black text-lg mb-5" style={{ fontFamily: 'cursive', color: '#f97316' }}>featured media</p>
         <div className="border border-gray-200 rounded-2xl p-5 bg-white mb-8">
           <div className="grid md:grid-cols-3 gap-4">
             {featuredMedia.map(item => (
               <a key={item.outlet} href={item.href} target="_blank" rel="noopener noreferrer"
                 className="group block rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="relative h-36 overflow-hidden" style={{ backgroundColor: item.fallbackBg }}>
-                  {item.img && (
-                    <Image src={item.img} alt={item.headline} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
-                  )}
-                  {!item.img && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="font-black text-white text-xl opacity-80">{item.outlet}</span>
-                    </div>
-                  )}
+                <div className="relative h-36 overflow-hidden bg-gray-100">
+                  <Image src={item.img} alt={item.headline} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                 </div>
                 <div className="p-3 bg-white">
                   <p className="text-xs font-black mb-1" style={{ color: item.outletColor }}>{item.outlet}</p>
@@ -154,7 +123,6 @@ export default function InTheNewsPage() {
           </div>
         </div>
 
-        {/* Additional */}
         <p className="text-center font-black text-lg mb-5" style={{ fontFamily: 'cursive', color: '#f97316' }}>additional media</p>
         <div className="border border-gray-200 rounded-2xl p-5 bg-white">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -162,13 +130,7 @@ export default function InTheNewsPage() {
               <a key={item.outlet + item.headline} href={item.href} target="_blank" rel="noopener noreferrer"
                 className="group block rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
                 <div className="relative h-24 overflow-hidden bg-gray-100">
-                  {item.img ? (
-                    <Image src={item.img} alt={item.headline} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center px-2">
-                      <span className="font-black text-sm text-center leading-tight" style={{ color: item.outletColor }}>{item.outlet}</span>
-                    </div>
-                  )}
+                  <Image src={item.img} alt={item.headline} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                 </div>
                 <div className="p-2 bg-white">
                   <p className="text-xs font-bold mb-0.5" style={{ color: item.outletColor }}>{item.outlet}</p>
@@ -224,7 +186,7 @@ export default function InTheNewsPage() {
         </div>
       </section>
 
-      {/* Dental pros carousel */}
+      {/* Dental pros */}
       <section className="bg-sm-navy text-white py-14">
         <div className="max-w-6xl mx-auto px-8">
           <h2 className="font-display font-black text-xl text-center mb-10">why dental professionals recommend SuperMouth</h2>

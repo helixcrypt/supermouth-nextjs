@@ -6,6 +6,9 @@ const nextConfig = {
       'supermouthcdn.blob.core.windows.net',
       'cdn.shopify.com',
       'pics.io',
+      'cdn.mos.cms.futurecdn.net',
+      'img.huffingtonpost.com',
+      'camillestyles.com',
     ],
   },
 }
