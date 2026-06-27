@@ -1,14 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      'cdn.supermouth.com',
-      'supermouthcdn.blob.core.windows.net',
-      'cdn.shopify.com',
-      'pics.io',
-      'cdn.mos.cms.futurecdn.net',
-      'img.huffingtonpost.com',
-      'camillestyles.com',
+    remotePatterns: [
+      { protocol: 'https', hostname: 'cdn.supermouth.com' },
+      { protocol: 'https', hostname: 'supermouthcdn.blob.core.windows.net' },
+      { protocol: 'https', hostname: 'cdn.shopify.com' },
+      { protocol: 'https', hostname: 'pics.io' },
+      { protocol: 'https', hostname: 'cdn.mos.cms.futurecdn.net' },
+      { protocol: 'https', hostname: 'img.huffingtonpost.com' },
+      { protocol: 'https', hostname: 'camillestyles.com' },
     ],
   },
 }

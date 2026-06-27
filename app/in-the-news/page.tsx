@@ -37,7 +37,7 @@ const additionalMedia = [
   { img: '/press/cnet.jpg', outlet: 'CNET', outletColor: '#cc0000', headline: "CNET Names SuperMouth Ultim8 as 2025's Best Soft-Bristled Electric Brush", href: 'https://www.cnet.com/health/personal-care/best-electric-toothbrush/' },
   { img: '/press/tamronhall.jpg', outlet: 'Tamron Hall', outletColor: '#6b21a8', headline: 'SuperMouth Ultim8 SmartBrush System Featured on the Tamron Hall Show', href: 'https://www.youtube.com/watch?v=OIPIqIG6fFw' },
   { img: '/press/askmen.jpg', outlet: 'AskMen', outletColor: '#cc3300', headline: '2025 AskMen Grooming Awards — Best Sonic Toothbrush', href: 'https://www.askmen.com/grooming/skin/grooming-awards-2025-face-care-products.html' },
-  { img: '/press/seventeen.png', outlet: 'Seventeen', outletColor: '#000000', headline: 'The Best Teeth Whitening Kits', href: 'https://www.seventeen.com/beauty/g42640642/best-teeth-whitening-kits/' },
+  { img: '/press/seventeen.png', outlet: 'Seventeen', outletColor: '#cc0066', headline: 'The Best Teeth Whitening Kits', href: 'https://www.seventeen.com/beauty/g42640642/best-teeth-whitening-kits/' },
   { img: '/press/popsugar.jpg', outlet: 'PopSugar', outletColor: '#6b0f6e', headline: 'The 10 Best Electric Toothbrushes to Elevate Your Brushing Game', href: 'https://www.popsugar.com/beauty/dentist-recommended-electric-toothbrushes-48078961' },
   { img: '/press/ktla.png', outlet: 'KTLA 5', outletColor: '#003087', headline: 'Dr. Kami Hoss on Why Oral Hygiene is Very Important for Kids and Adults', href: 'https://ktla.com/video/dr-kami-hoss-discuss-the-importance-of-oral-hygiene-for-kids/8879706/' },
   { img: '/press/huffpost.png', outlet: 'HuffPost', outletColor: '#00857a', headline: "Dentists Can Tell a Lot About Someone's Health Just by Looking in Their Mouth", href: 'https://www.huffpost.com/entry/what-dentists-know-by-looking-mouth_l_64bc53c4e4b038c60ccab400' },
@@ -68,8 +68,8 @@ export default function InTheNewsPage() {
   return (
     <div className="bg-sm-bg text-sm-navy">
 
-      {/* Hero */}
-      <section className="relative w-full overflow-hidden">
+      {/* Hero — full width image, text floats on top, no gradient overlay */}
+      <section className="relative w-full">
         <Image
           src="https://cdn.supermouth.com/images/SM-website_2.0-_in_the_news_page-header_image-ni.jpg"
           alt="SuperMouth in the news"
@@ -78,25 +78,32 @@ export default function InTheNewsPage() {
           className="w-full h-auto object-cover"
           priority
         />
-        <div className="absolute inset-0 flex items-center"
-          style={{ background: 'linear-gradient(to right, rgba(74,184,196,0.95) 42%, rgba(74,184,196,0.5) 60%, transparent 78%)' }}>
-          <div className="max-w-7xl mx-auto px-8 w-full">
-            <div className="max-w-xs md:max-w-sm">
-              <p className="text-sm-navy text-xs font-bold uppercase tracking-widest mb-2">IN THE NEWS</p>
-              <h1 className="font-display font-black text-2xl md:text-3xl text-sm-navy mb-4 leading-tight">
-                Making Headlines Everywhere:<br />SuperMouth in the Media Spotlight
-              </h1>
-              <div className="space-y-2">
-                {[
-                  '"An Oral Hygiene Brand Made a Superhero Film to Inspire Kids to Brush Their Teeth" - Adweek',
-                  '"SuperMouth revolutionises the market with ice-cream flavoured mouthwashes" - Laura Pérez',
-                  '"Adventure Film \'The Rise of SuperMouth\' That Just Might Get Your Kids To Brush" - Accesswire',
-                ].map((q, i) => (
-                  <p key={i} className="text-sm-navy/80 text-xs italic leading-snug bg-white/40 rounded-lg px-3 py-1.5">{q}</p>
-                ))}
-              </div>
-            </div>
-          </div>
+
+        {/* "in the news" label + subtitle — bottom left */}
+        <div className="absolute bottom-8 left-8 md:left-16">
+          <p className="font-black text-2xl text-sm-navy leading-none mb-1">
+            in the{' '}
+            <span style={{ fontFamily: 'cursive', color: '#4a2fb5' }}>news</span>
+          </p>
+          <p className="text-sm-navy text-xs leading-snug max-w-xs">
+            Making Headlines Everywhere:<br />SuperMouth in the Media Spotlight
+          </p>
+        </div>
+
+        {/* 3 quotes floating over center-right — no background, just white text */}
+        <div className="absolute inset-0 hidden md:flex items-start pt-6 pr-8 justify-end gap-6 pointer-events-none">
+          <p className="text-white text-xs font-semibold leading-snug max-w-[180px] text-center mt-4">
+            "SuperMouth revolutionises the market with ice-cream flavoured mouthwashes"
+            <br /><span className="italic font-normal">– Laura Pérez</span>
+          </p>
+          <p className="text-white text-xs font-semibold leading-snug max-w-[180px] text-center">
+            "An Oral Hygiene Brand Made a Superhero Film to Inspire Kids to Brush Their Teeth"
+            <br /><span className="italic font-normal">– Adweek</span>
+          </p>
+          <p className="text-white text-xs font-semibold leading-snug max-w-[200px] text-center mt-4">
+            "Adventure Film <em>The Rise of SuperMouth</em> That Just Might Get Your Kids To Brush"
+            <br /><span className="italic font-normal">– Accesswire</span>
+          </p>
         </div>
       </section>
 
