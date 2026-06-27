@@ -50,8 +50,8 @@ export default function InTheNewsPage() {
   return (
     <div className="bg-sm-bg text-sm-navy">
 
-      {/* Hero */}
-      <section className="relative w-full">
+      {/* Hero — image fills width, text overlaid once */}
+      <section className="relative w-full overflow-hidden">
         <Image
           src="https://cdn.supermouth.com/images/SM-website_2.0-_in_the_news_page-header_image-ni.jpg"
           alt="SuperMouth in the news"
@@ -60,27 +60,43 @@ export default function InTheNewsPage() {
           className="w-full h-auto object-cover"
           priority
         />
-        <div className="absolute bottom-8 left-8 md:left-16">
-          <p className="font-black text-2xl text-sm-navy leading-none mb-1">
-            in the <span style={{ fontFamily: 'cursive', color: '#4a2fb5' }}>news</span>
+
+        {/* Bottom-left: label + subtitle */}
+        <div className="absolute bottom-6 left-8 md:left-14 pointer-events-none">
+          <p className="font-black text-xl md:text-2xl text-sm-navy leading-none mb-1">
+            in the{' '}
+            <span style={{ fontFamily: 'cursive', color: '#4a2fb5' }}>news</span>
           </p>
           <p className="text-sm-navy text-xs leading-snug">
             Making Headlines Everywhere:<br />SuperMouth in the Media Spotlight
           </p>
         </div>
-        <div className="absolute inset-0 hidden md:flex items-start pt-6 pr-8 justify-end gap-6 pointer-events-none">
-          <p className="text-white text-xs font-semibold leading-snug max-w-[180px] text-center mt-4">"SuperMouth revolutionises the market with ice-cream flavoured mouthwashes"<br /><span className="italic font-normal">– Laura Pérez</span></p>
-          <p className="text-white text-xs font-semibold leading-snug max-w-[180px] text-center">"An Oral Hygiene Brand Made a Superhero Film to Inspire Kids to Brush Their Teeth"<br /><span className="italic font-normal">– Adweek</span></p>
-          <p className="text-white text-xs font-semibold leading-snug max-w-[200px] text-center mt-4">"Adventure Film <em>The Rise of SuperMouth</em> That Just Might Get Your Kids To Brush"<br /><span className="italic font-normal">– Accesswire</span></p>
+
+        {/* Right side: 3 quotes — desktop only, staggered vertically */}
+        <div className="absolute inset-0 hidden md:block pointer-events-none">
+          <p className="absolute text-white text-xs font-semibold leading-snug text-center drop-shadow-sm"
+            style={{ top: '12%', left: '52%', maxWidth: 160 }}>
+            "SuperMouth revolutionises the market with ice-cream flavoured mouthwashes"
+            <br /><span className="italic font-normal">– Laura Pérez</span>
+          </p>
+          <p className="absolute text-white text-xs font-semibold leading-snug text-center drop-shadow-sm"
+            style={{ top: '8%', left: '68%', maxWidth: 170 }}>
+            "An Oral Hygiene Brand Made a Superhero Film to Inspire Kids to Brush Their Teeth"
+            <br /><span className="italic font-normal">– Adweek</span>
+          </p>
+          <p className="absolute text-white text-xs font-semibold leading-snug text-center drop-shadow-sm"
+            style={{ top: '15%', right: '2%', maxWidth: 180 }}>
+            "Adventure Film <em>The Rise of SuperMouth</em> That Just Might Get Your Kids To Brush"
+            <br /><span className="italic font-normal">– Accesswire</span>
+          </p>
         </div>
       </section>
 
       <PressLogoTicker />
 
-      {/* Media sections — wider container matching original */}
+      {/* Featured + Additional Media */}
       <section className="max-w-7xl mx-auto px-6 lg:px-12 py-10">
 
-        {/* Featured — 3 equal columns */}
         <p className="text-center font-black text-lg mb-4" style={{ fontFamily: 'cursive', color: '#f97316' }}>featured media</p>
         <div className="border border-gray-200 rounded-2xl p-6 bg-white mb-8">
           <div className="grid grid-cols-3 gap-5">
@@ -88,7 +104,7 @@ export default function InTheNewsPage() {
               <a key={item.outlet} href={item.href} target="_blank" rel="noopener noreferrer"
                 className="group block rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
                 <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                  <Image src={item.img} alt={item.headline} fill className="object-cover group-hover:scale-105 transition-transform duration-300 absolute inset-0" />
+                  <Image src={item.img} alt={item.headline} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                 </div>
                 <div className="p-3 bg-white">
                   <p className="text-xs font-black mb-1" style={{ color: item.outletColor }}>{item.outlet}</p>
@@ -99,7 +115,6 @@ export default function InTheNewsPage() {
           </div>
         </div>
 
-        {/* Additional — 4 columns, 3 rows = 12 items */}
         <p className="text-center font-black text-lg mb-4" style={{ fontFamily: 'cursive', color: '#f97316' }}>additional media</p>
         <div className="border border-gray-200 rounded-2xl p-6 bg-white">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -107,7 +122,7 @@ export default function InTheNewsPage() {
               <a key={item.outlet} href={item.href} target="_blank" rel="noopener noreferrer"
                 className="group block rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
                 <div className="relative w-full" style={{ paddingBottom: '66%' }}>
-                  <Image src={item.img} alt={item.headline} fill className="object-cover group-hover:scale-105 transition-transform duration-300 absolute inset-0" />
+                  <Image src={item.img} alt={item.headline} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                 </div>
                 <div className="p-2 bg-white">
                   <p className="text-xs font-bold mb-0.5" style={{ color: item.outletColor }}>{item.outlet}</p>
