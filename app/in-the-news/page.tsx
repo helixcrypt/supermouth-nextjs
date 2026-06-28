@@ -50,10 +50,10 @@ export default function InTheNewsPage() {
   return (
     <div className="bg-sm-bg text-sm-navy">
 
-      {/* Hero — image fills width, text overlaid once */}
+      {/* Hero — local image, single set of quotes */}
       <section className="relative w-full overflow-hidden">
         <Image
-          src="https://cdn.supermouth.com/images/SM-website_2.0-_in_the_news_page-header_image-ni.jpg"
+          src="/cdn/in-the-news-hero.jpg"
           alt="SuperMouth in the news"
           width={1440}
           height={500}
@@ -61,33 +61,32 @@ export default function InTheNewsPage() {
           priority
         />
 
-        {/* Bottom-left: label + subtitle */}
+        {/* Bottom-left: label */}
         <div className="absolute bottom-6 left-8 md:left-14 pointer-events-none">
           <p className="font-black text-xl md:text-2xl text-sm-navy leading-none mb-1">
-            in the{' '}
-            <span style={{ fontFamily: 'cursive', color: '#4a2fb5' }}>news</span>
+            in the <span style={{ fontFamily: 'cursive', color: '#4a2fb5' }}>news</span>
           </p>
           <p className="text-sm-navy text-xs leading-snug">
             Making Headlines Everywhere:<br />SuperMouth in the Media Spotlight
           </p>
         </div>
 
-        {/* Right side: 3 quotes — desktop only, staggered vertically */}
+        {/* Quotes — desktop only, matching original layout */}
         <div className="absolute inset-0 hidden md:block pointer-events-none">
-          <p className="absolute text-white text-xs font-semibold leading-snug text-center drop-shadow-sm"
-            style={{ top: '12%', left: '52%', maxWidth: 160 }}>
+          <p className="absolute text-white text-xs font-semibold leading-snug text-center"
+            style={{ top: '10%', left: '43%', maxWidth: 165 }}>
             "SuperMouth revolutionises the market with ice-cream flavoured mouthwashes"
-            <br /><span className="italic font-normal">– Laura Pérez</span>
+            <br /><em className="font-normal text-white/80">– Laura Pérez</em>
           </p>
-          <p className="absolute text-white text-xs font-semibold leading-snug text-center drop-shadow-sm"
-            style={{ top: '8%', left: '68%', maxWidth: 170 }}>
+          <p className="absolute text-white text-xs font-semibold leading-snug text-center"
+            style={{ top: '5%', left: '60%', maxWidth: 155 }}>
             "An Oral Hygiene Brand Made a Superhero Film to Inspire Kids to Brush Their Teeth"
-            <br /><span className="italic font-normal">– Adweek</span>
+            <br /><em className="font-normal text-white/80">– Adweek</em>
           </p>
-          <p className="absolute text-white text-xs font-semibold leading-snug text-center drop-shadow-sm"
-            style={{ top: '15%', right: '2%', maxWidth: 180 }}>
+          <p className="absolute text-white text-xs font-semibold leading-snug text-center"
+            style={{ top: '10%', right: '2%', maxWidth: 175 }}>
             "Adventure Film <em>The Rise of SuperMouth</em> That Just Might Get Your Kids To Brush"
-            <br /><span className="italic font-normal">– Accesswire</span>
+            <br /><em className="font-normal text-white/80">– Accesswire</em>
           </p>
         </div>
       </section>
@@ -96,7 +95,6 @@ export default function InTheNewsPage() {
 
       {/* Featured + Additional Media */}
       <section className="max-w-7xl mx-auto px-6 lg:px-12 py-10">
-
         <p className="text-center font-black text-lg mb-4" style={{ fontFamily: 'cursive', color: '#f97316' }}>featured media</p>
         <div className="border border-gray-200 rounded-2xl p-6 bg-white mb-8">
           <div className="grid grid-cols-3 gap-5">
@@ -132,9 +130,7 @@ export default function InTheNewsPage() {
             ))}
           </div>
           <div className="text-center mt-6">
-            <button className="bg-sm-yellow text-sm-navy font-bold px-6 py-2.5 rounded-full text-sm hover:opacity-90 transition-opacity">
-              See More Press Coverage
-            </button>
+            <button className="bg-sm-yellow text-sm-navy font-bold px-6 py-2.5 rounded-full text-sm hover:opacity-90 transition-opacity">See More Press Coverage</button>
           </div>
         </div>
       </section>
