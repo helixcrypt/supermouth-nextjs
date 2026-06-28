@@ -1,0 +1,81 @@
+[
+  {
+    "node": {
+      "id": "gid://shopify/Product/9531838890209",
+      "title": "Test Product",
+      "handle": "test-product",
+      "description": "Test Product Desc",
+      "availableForSale": true,
+      "priceRange": {
+        "minVariantPrice": {
+          "amount": "100.0",
+          "currencyCode": "USD"
+        },
+        "maxVariantPrice": {
+          "amount": "100.0",
+          "currencyCode": "USD"
+        }
+      },
+      "images": {
+        "edges": [
+          {
+            "node": {
+              "url": "https://cdn.shopify.com/s/files/1/0836/4549/7569/files/test.jpg?v=1782502107",
+              "altText": null
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/48596441759969",
+              "title": "Chocolate",
+              "availableForSale": true,
+              "quantityAvailable": 6,
+              "price": {
+                "amount": "100.0",
+                "currencyCode": "USD"
+              },
+              "selectedOptions": [
+                {
+                  "name": "Flavor",
+                  "value": "Chocolate"
+                }
+              ]
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/48596441792737",
+              "title": "Mint",
+              "availableForSale": true,
+              "quantityAvailable": 15,
+              "price": {
+                "amount": "100.0",
+                "currencyCode": "USD"
+              },
+              "selectedOptions": [
+                {
+                  "name": "Flavor",
+                  "value": "Mint"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "collections": {
+        "edges": [
+          {
+            "node": {
+              "title": "Home page",
+              "handle": "frontpage"
+            }
+          }
+        ]
+      }
+    }
+  }
+]
