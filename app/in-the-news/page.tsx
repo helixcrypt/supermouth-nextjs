@@ -18,7 +18,7 @@ const additionalMedia = [
   { img: '/press/dailymom.jpg', outlet: 'Daily Mom', outletColor: '#4ab8c4', headline: "SuperMouth's Ultim8 SmartBrush Named Top Mother's Day Gift", href: 'https://dailymom.com' },
   { img: '/press/cnet.jpg', outlet: 'CNET', outletColor: '#cc0000', headline: "CNET Names SuperMouth Ultim8 as 2025's Best Soft-Bristled Electric Brush", href: 'https://www.cnet.com/health/personal-care/best-electric-toothbrush/' },
   { img: '/press/tamronhall.jpg', outlet: 'Tamron Hall', outletColor: '#6b21a8', headline: 'SuperMouth Ultim8 SmartBrush System Featured on the Tamron Hall Show', href: 'https://www.youtube.com/watch?v=OIPIqIG6fFw' },
-  { img: '/press/askmen.jpg', outlet: 'AskMen', outletColor: '#cc3300', headline: '2025 AskMen Grooming Awards â Best Sonic Toothbrush', href: 'https://www.askmen.com/grooming/skin/grooming-awards-2025-face-care-products.html' },
+  { img: '/press/askmen.jpg', outlet: 'AskMen', outletColor: '#cc3300', headline: '2025 AskMen Grooming Awards - Best Sonic Toothbrush', href: 'https://www.askmen.com/grooming/skin/grooming-awards-2025-face-care-products.html' },
   { img: '/press/seventeen.png', outlet: 'Seventeen', outletColor: '#cc0066', headline: 'The Best Teeth Whitening Kits', href: 'https://www.seventeen.com/beauty/g42640642/best-teeth-whitening-kits/' },
   { img: '/press/popsugar.jpg', outlet: 'PopSugar', outletColor: '#6b0f6e', headline: 'The 10 Best Electric Toothbrushes to Elevate Your Brushing Game', href: 'https://www.popsugar.com/beauty/dentist-recommended-electric-toothbrushes-48078961' },
   { img: '/press/ktla.png', outlet: 'KTLA 5', outletColor: '#003087', headline: 'Dr. Kami Hoss on Why Oral Hygiene is Very Important for Kids and Adults', href: 'https://ktla.com/video/dr-kami-hoss-discuss-the-importance-of-oral-hygiene-for-kids/8879706/' },
@@ -38,11 +38,10 @@ const allAwards = [
   { year: 2026, pub: 'CNET', title: 'Best Soft-Bristled Toothbrush', product: 'Ultim8 Signature', href: 'https://supermouth.com/products/ultim8-electric-toothbrush' },
   { year: 2026, pub: 'NEW BEAUTY', title: 'Best Floss', product: 'Hydroxamin with Fluoride Mouth Floss', href: 'https://supermouth.com/products/supermouth-hydroxamin-with-fluoride-mouthfloss' },
   { year: 2026, pub: 'CNN UNDERSCORED', title: 'Editor Favorite', product: 'Flouride Nano-Hydroxyapatite Toothpaste', href: 'https://supermouth.com/products/supermouth-hydroxamin-w-fluoride-toothpaste-3-4-oz' },
-  { year: 2025, pub: 'POP SU@ÇARQ, title: 'Best Electric Toothbrush System', product: 'Ultim8 Signature', href: 'https://supermouth.com/products/ultim8-electric-toothbrush' },
+  { year: 2025, pub: 'POP SUGAR', title: 'Best Electric Toothbrush System', product: 'Ultim8 Signature', href: 'https://supermouth.com/products/ultim8-electric-toothbrush' },
   { year: 2025, pub: 'ASK MEN', title: 'Best Sonic Toothbrush', product: 'Ultim8 Signature', href: 'https://supermouth.com/products/ultim8-electric-toothbrush' },
   { year: 2025, pub: "MEN'S JOURNAL", title: 'Best Sonic Toothbrush', product: 'Ultim8 Signature', href: 'https://supermouth.com/products/ultim8-electric-toothbrush' },
 ]
-
 export default function InTheNewsPage() {
   const [awardFilter, setAwardFilter] = useState<'all' | 2026 | 2025>('all')
   const filteredAwards = awardFilter === 'all' ? allAwards : allAwards.filter(a => a.year === awardFilter)
