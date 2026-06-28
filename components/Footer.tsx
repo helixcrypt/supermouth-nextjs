@@ -67,7 +67,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <Image
-            src="https://cdn.supermouth.com/website/Supermouth-full-logo_reversed.png"
+            src="/cdn/logo-reversed.png"
             alt="SuperMouth"
             width={140}
             height={35}

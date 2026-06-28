@@ -6,11 +6,11 @@ import { useState } from 'react'
 
 // Video carousel from the original bundles page
 const VIDEOS = [
-  { title: 'Toothpaste For Every Stage', thumb: 'https://cdn.supermouth.com/videos/SupermouthAnchor_Final_4kWEB.00_02_35_12.Still006.jpg', url: 'https://supermouth.com/supermouth-bundles' },
-  { title: 'Power Clean for Braces', thumb: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_toothbrush.png', url: 'https://supermouth.com/supermouth-bundles' },
-  { title: 'SuperMouth Flavor Splash', thumb: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_toothpaste.png', url: 'https://supermouth.com/supermouth-bundles' },
-  { title: 'SuperMouth Rinse Revolution', thumb: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_mouthwash.png', url: 'https://supermouth.com/supermouth-bundles' },
-  { title: 'What if Toothpaste Tastes Like Ice Cream', thumb: 'https://supermouthcdn.blob.core.windows.net/website/230427_Supermouth_Landing_Page_Banners0968.png', url: 'https://supermouth.com/supermouth-bundles' },
+  { title: 'Toothpaste For Every Stage', thumb: '/cdn/video-still.jpg', url: 'https://supermouth.com/supermouth-bundles' },
+  { title: 'Power Clean for Braces', thumb: '/cdn/category-toothbrush.png', url: 'https://supermouth.com/supermouth-bundles' },
+  { title: 'SuperMouth Flavor Splash', thumb: '/cdn/category-toothpaste.png', url: 'https://supermouth.com/supermouth-bundles' },
+  { title: 'SuperMouth Rinse Revolution', thumb: '/cdn/category-mouthwash.png', url: 'https://supermouth.com/supermouth-bundles' },
+  { title: 'What if Toothpaste Tastes Like Ice Cream', thumb: '/cdn/banner-0968.png', url: 'https://supermouth.com/supermouth-bundles' },
 ]
 
 export default function BundleVideoCarousel() {

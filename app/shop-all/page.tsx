@@ -53,7 +53,7 @@ export default async function ShopAllPage({
       <section className="relative w-full">
         <div className="hidden md:block w-full">
           <Image
-            src="https://cdn.supermouth.com/images/SM-website_2.0-_shop_products_page-header_image-ni.jpg"
+            src="/cdn/header-shop.jpg"
             alt="Shop All Products"
             width={1440}
             height={500}

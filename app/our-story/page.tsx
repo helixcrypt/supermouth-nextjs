@@ -28,7 +28,7 @@ export default function OurStoryPage() {
         {/* Desktop hero */}
         <div className="hidden md:block w-full">
           <Image
-            src="https://cdn.supermouth.com/website/SuperMouth_Hero_image_our_story.png"
+            src="/cdn/hero-our-story.png"
             alt="Our Story"
             width={1440}
             height={500}
@@ -73,7 +73,7 @@ export default function OurStoryPage() {
           {/* Image: 400x500 — portrait */}
           <div className="w-full max-w-sm mx-auto">
             <Image
-              src="https://cdn.supermouth.com/website/SuperMouth_our_story_page_image_1_400x500.png"
+              src="/cdn/our-story-1.png"
               alt="Dr. Hoss, SuperMouth Founder"
               width={400}
               height={500}
@@ -90,7 +90,7 @@ export default function OurStoryPage() {
             {/* Image: 500x300 — landscape */}
             <div className="w-full">
               <Image
-                src="https://cdn.supermouth.com/website/SuperMouth_our_story_page_image_2_500x300.png"
+                src="/cdn/our-story-2.png"
                 alt="A Collective Realization"
                 width={500}
                 height={300}
@@ -125,7 +125,7 @@ export default function OurStoryPage() {
           {/* Image: 400x400 — square */}
           <div className="w-full max-w-sm mx-auto">
             <Image
-              src="https://cdn.supermouth.com/website/SuperMouth_our_story_page_image_3_400x400.png"
+              src="/cdn/our-story-3.png"
               alt="Discovering the Truth"
               width={400}
               height={400}
@@ -142,7 +142,7 @@ export default function OurStoryPage() {
             {/* Image: 400x400 — square */}
             <div className="w-full max-w-sm mx-auto">
               <Image
-                src="https://cdn.supermouth.com/website/SuperMouth_our_story_page_image_4_400x400.png"
+                src="/cdn/our-story-4.png"
                 alt="Creating SuperMouth"
                 width={400}
                 height={400}

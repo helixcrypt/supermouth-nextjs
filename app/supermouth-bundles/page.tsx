@@ -135,7 +135,7 @@ export default async function BundlesPage() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="w-full rounded-2xl overflow-hidden">
             <Image
-              src="https://cdn.supermouth.com/videos/SupermouthAnchor_Final_4kWEB.00_02_35_12.Still006.jpg"
+              src="/cdn/video-still.jpg"
               alt="Bundle for the whole family"
               width={800}
               height={450}

@@ -9,32 +9,32 @@ export const metadata = {
 
 const benefits = [
   {
-    img: 'https://cdn.supermouth.com/images/best_value.jpg',
+    img: '/cdn/sub-best-value.jpg',
     title: 'Best Value and Convenience',
     desc: 'Unlock guaranteed lowest prices on essential oral care products and ensure you never run out with timely deliveries. Enjoy consistent savings on your favorite oral care products delivered right to your doorstep, ensuring you always have what you need when you need it.',
   },
   {
-    img: 'https://cdn.supermouth.com/images/auto-adjust.jpg',
+    img: '/cdn/sub-auto-adjust.jpg',
     title: 'Auto-Adjust',
     desc: 'Seamlessly transition through various ages and stages with our adaptive system recommendations. Our subscription service takes into account the changing needs of your family members, automatically recommending and adjusting to the next suitable system as they progress through different ages and stages of life.',
   },
   {
-    img: 'https://cdn.supermouth.com/images/peace_of_mind.jpg',
+    img: '/cdn/sub-peace.jpg',
     title: 'Peace of Mind',
     desc: 'Trust in safe, effective, and enjoyable products for every family member. Rest assured knowing that our subscription service provides high-quality oral care products curated by leading dentists and medical experts, ensuring they are safe, effective, and enjoyable for the entire family.',
   },
   {
-    img: 'https://cdn.supermouth.com/images/personal_oral_care_advisor.jpg',
+    img: '/cdn/sub-advisor.jpg',
     title: 'Personal Oral Care Advisor',
     desc: 'Immerse yourself in educational and entertaining content to enhance your oral care routine, and receive personalized support from dedicated dental professionals. Each family is assigned a dental professional who can provide oral care advice within 24 hours. (Note: We do not provide medical advice.)',
   },
   {
-    img: 'https://cdn.supermouth.com/images/hasstle_free_cancellation.jpg',
+    img: '/cdn/sub-cancel.jpg',
     title: 'Hassle-Free Cancellation and Adjustment',
     desc: 'Embrace the freedom to modify or cancel your subscription at any time post-payment. Whether adjusting the frequency of deliveries or switching between system levels, our service is designed to flex with you. Cancel or modify your plan anytime after payment.',
   },
   {
-    img: 'https://cdn.supermouth.com/images/discount_on_accessories.jpg',
+    img: '/cdn/sub-discount.jpg',
     title: 'Discount on Accessories and Free Shipping',
     desc: 'Access exclusive discounts on essential accessories based on your subscription tier, and enjoy complimentary shipping on complete system subscriptions and/or purchases over $50.',
   },
@@ -55,7 +55,7 @@ export default function SubscriptionBenefitsPage() {
       <section className="relative w-full">
         <div className="hidden md:block w-full">
           <Image
-            src="https://cdn.supermouth.com/images/SM-website_2.0-_subscription_page-header_image-ni.jpg"
+            src="/cdn/header-subscription.jpg"
             alt="Subscription Benefits"
             width={1440}
             height={500}

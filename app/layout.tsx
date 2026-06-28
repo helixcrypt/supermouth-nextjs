@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'SuperMouth — Complete Oral Care System',
     description: 'Founded by dentists. 125,000+ families. The only brand that engineers oral care for each life stage.',
-    images: [{ url: 'https://cdn.supermouth.com/website/Supermouth-full-logo_reversed.png' }],
+    images: [{ url: '/cdn/logo-reversed.png' }],
   },
 }
 

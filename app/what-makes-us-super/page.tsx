@@ -11,7 +11,7 @@ const SUPER = [
   {
     letter: 'S',
     word: 'SAFE',
-    img: 'https://cdn.supermouth.com/website/S.U.P.E.R_graphic_SAFE.png',
+    img: '/cdn/super-safe.png',
     href: '/learn/a-guide-to-understanding-oral-care-ingredient-safety',
     color: 'from-blue-500/20 to-blue-600/5',
     accent: 'text-blue-400',
@@ -22,7 +22,7 @@ const SUPER = [
   {
     letter: 'U',
     word: 'UNIFIED',
-    img: 'https://cdn.supermouth.com/website/S.U.P.E.R_graphic_UNIFIED.png',
+    img: '/cdn/super-unified.png',
     href: '/learn/beyond-brushing-flossing-a-comprehensive-guide-to-supercharging-your-oral-care-routine',
     color: 'from-purple-500/20 to-purple-600/5',
     accent: 'text-purple-400',
@@ -33,7 +33,7 @@ const SUPER = [
   {
     letter: 'P',
     word: 'PLAYFUL',
-    img: 'https://cdn.supermouth.com/website/S.U.P.E.R_graphic_PLAYFUL.png',
+    img: '/cdn/super-playful.png',
     href: '/learn/taking-the-bore-and-chore-of-brush-time',
     color: 'from-yellow-500/20 to-yellow-600/5',
     accent: 'text-yellow-400',
@@ -44,7 +44,7 @@ const SUPER = [
   {
     letter: 'E',
     word: 'EFFECTIVE',
-    img: 'https://cdn.supermouth.com/website/S.U.P.E.R_graphic_EFFECTIVE.png',
+    img: '/cdn/super-effective.png',
     href: '/learn/are-your-oral-care-products-actually-working',
     color: 'from-green-500/20 to-green-600/5',
     accent: 'text-green-400',
@@ -55,7 +55,7 @@ const SUPER = [
   {
     letter: 'R',
     word: 'REPUTABLE',
-    img: 'https://cdn.supermouth.com/website/S.U.P.E.R_graphic_REPUTABLE.png',
+    img: '/cdn/super-reputable.png',
     href: '/learn/who-s-claiming-your-oral-care-products-work-because-it-matters-1',
     color: 'from-red-500/20 to-red-600/5',
     accent: 'text-red-400',

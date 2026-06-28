@@ -9,7 +9,7 @@ const SYSTEMS: Record<string, any> = {
   'teething-to-24-months': {
     label: 'Teething to 24 Months',
     tag: 'Ages 0–2',
-    img: 'https://cdn.supermouth.com/website/0-24_Complete_NFL.png',
+    img: '/cdn/system-0-24.png',
     collectionHandle: 'teething-to-24-months',
     desc: 'Designed for new smiles, our Teething System includes safe teethers and soft-bristled brushes, along with toothpaste enriched with Hydroxamin® and prebiotics, curated by leading dentists for optimal early oral care.',
     longDesc: `Starting oral care early is one of the most important gifts you can give your child. Even before teeth appear, cleaning your baby's gums with a soft cloth sets the foundation for a lifetime of healthy habits.\n\nOur Teething System was designed by pediatric dentists who understand that the first 24 months are critical for establishing oral health patterns. Every product in this system has been carefully formulated to be safe for the youngest members of your family — with no harsh chemicals, no artificial ingredients, and no compromises.`,
@@ -17,7 +17,7 @@ const SYSTEMS: Record<string, any> = {
   '2-to-5': {
     label: 'Ages 2–5',
     tag: 'Little Kids',
-    img: 'https://cdn.supermouth.com/website/2-5_Complete_NFL.png',
+    img: '/cdn/system-2-5.png',
     collectionHandle: 'ages-2-to-5',
     desc: 'Featuring flavorful pastes, flossers, and mouth sprays — each pH-balanced and packed with vital nutrients, alongside fun brushes and adorable tongue cleaners.',
     longDesc: `The ages 2–5 system is all about building habits that last a lifetime, while making oral care genuinely fun. Kids at this stage are developing their brushing technique and learning to enjoy the routine.\n\nOur flavors are specially formulated to appeal to young palates — not too minty, not too sweet — while delivering the nutrients growing teeth need most. Every product is free from artificial colors, sweeteners, and preservatives.`,
@@ -25,7 +25,7 @@ const SYSTEMS: Record<string, any> = {
   '6-to-12': {
     label: 'Ages 6–12',
     tag: 'Big Kids',
-    img: 'https://cdn.supermouth.com/website/6-12_Complete_NFL.png',
+    img: '/cdn/system-6-12.png',
     collectionHandle: 'ages-6-to-12',
     desc: 'Designed for growing kids, this Transition System supports the shift from baby to permanent teeth with music, augmented reality, and dentist-curated formulas.',
     longDesc: `The transition from baby teeth to permanent teeth is one of the most important periods in oral development. Kids ages 6–12 are losing teeth, gaining new ones, and developing the oral care habits they'll carry into adulthood.\n\nOur system for this age group includes tools that make brushing exciting — from musical toothbrushes to augmented reality experiences — while providing the nutritional support that developing permanent teeth need.`,
@@ -33,7 +33,7 @@ const SYSTEMS: Record<string, any> = {
   'teens-and-adults': {
     label: 'Teens & Adults',
     tag: 'Ages 13+',
-    img: 'https://cdn.supermouth.com/website/teen_adult_complete_nfl.png',
+    img: '/cdn/system-teens-adults.png',
     collectionHandle: 'ages-13-and-up',
     desc: 'The Teen & Adult System blends style with function — groundbreaking bristle design, complete nutrient-rich care from toothpaste to mouthwash.',
     longDesc: `Teens and adults need oral care that delivers real results without compromise. Our system is built around our patented SuperBristles technology, which removes 30–60X more plaque than conventional brushes — while remaining gentle on enamel and gums.\n\nFrom whitening support to gum health, from fresh breath to enamel fortification, the Teens & Adults system covers every aspect of a complete oral care routine.`,
@@ -41,7 +41,7 @@ const SYSTEMS: Record<string, any> = {
   'pregnancy': {
     label: 'Pregnancy',
     tag: 'Pregnancy & Nursing',
-    img: 'https://cdn.supermouth.com/website/pregnancy_complete_nfl.png',
+    img: '/cdn/system-pregnancy.png',
     collectionHandle: 'pregnancy',
     desc: 'The Pregnancy System offers pH-balanced, Hydroxamin® and prebiotic-infused oral care — safe and effective for mothers-to-be through every trimester.',
     longDesc: `Pregnancy brings unique oral health challenges. Hormonal changes increase the risk of gum disease, morning sickness can erode enamel, and many conventional products contain ingredients you'd rather avoid during pregnancy.\n\nOur Pregnancy System was formulated specifically for these challenges — with gentle, pH-balanced products that protect both mother and baby, ingredients that are safe through all trimesters, and flavors that work even when nausea is present.`,
@@ -49,7 +49,7 @@ const SYSTEMS: Record<string, any> = {
   'orthodontics': {
     label: 'Orthodontics',
     tag: 'Braces & Aligners',
-    img: 'https://cdn.supermouth.com/website/Ortho_Basic_Mint_Hydroxamin.jpg',
+    img: '/cdn/system-ortho.jpg',
     collectionHandle: 'ortho',
     desc: 'Our Ortho System features uniquely formulated products for braces, aligners, and retainers — with patented bristles designed for cleaning around appliances.',
     longDesc: `Orthodontic treatment is a significant investment in your smile. Protecting that investment requires oral care specifically designed for the unique challenges that braces, aligners, and retainers create.\n\nOur Ortho System was developed with orthodontists to prevent the white spot lesions, cavities, and gum issues that often occur during treatment. Every product in this system is engineered to work around — and with — your orthodontic appliances.`,

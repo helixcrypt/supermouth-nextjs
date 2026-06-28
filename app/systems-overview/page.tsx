@@ -71,7 +71,7 @@ export default function SystemsOverviewPage() {
       <section className="relative w-full">
         <div className="hidden md:block w-full">
           <Image
-            src="https://cdn.supermouth.com/images/SM-website_2.0-_systems_page-header_image-ni.jpg"
+            src="/cdn/header-systems.jpg"
             alt="SuperMouth Systems"
             width={1440}
             height={500}

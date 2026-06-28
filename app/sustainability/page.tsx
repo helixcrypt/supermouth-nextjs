@@ -14,7 +14,7 @@ const sections = [
     titleColor: '#f5d800',
     borderColor: '#f5d800',
     imgSide: 'right',
-    img: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_toothpaste.png',
+    img: '/cdn/category-toothpaste.png',
     imgWidth: 280,
     imgHeight: 300,
     bullets: [
@@ -40,7 +40,7 @@ const sections = [
     titleColor: '#4ab8c4',
     borderColor: '#4ab8c4',
     imgSide: 'left',
-    img: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_toothpaste.png',
+    img: '/cdn/category-toothpaste.png',
     imgWidth: 200,
     imgHeight: 350,
     bullets: [
@@ -57,7 +57,7 @@ const sections = [
     titleColor: '#f97316',
     borderColor: '#f97316',
     imgSide: 'right',
-    img: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_mouthwash.png',
+    img: '/cdn/category-mouthwash.png',
     imgWidth: 240,
     imgHeight: 300,
     bullets: [
@@ -70,7 +70,7 @@ const sections = [
     titleColor: '#f97316',
     borderColor: '#f97316',
     imgSide: 'left',
-    img: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_toothpaste.png',
+    img: '/cdn/category-toothpaste.png',
     imgWidth: 220,
     imgHeight: 280,
     bullets: [
@@ -84,7 +84,7 @@ const sections = [
     titleColor: '#f5d800',
     borderColor: '#f5d800',
     imgSide: 'right',
-    img: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_toothbrush.png',
+    img: '/cdn/category-toothbrush.png',
     imgWidth: 200,
     imgHeight: 280,
     bullets: [
@@ -97,7 +97,7 @@ const sections = [
     titleColor: '#4ab8c4',
     borderColor: '#4ab8c4',
     imgSide: 'left',
-    img: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_toothbrush.png',
+    img: '/cdn/category-toothbrush.png',
     imgWidth: 220,
     imgHeight: 300,
     bullets: [
@@ -127,7 +127,7 @@ export default function SustainabilityPage() {
             </div>
             <div className="flex justify-center">
               <Image
-                src="https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_toothbrush.png"
+                src="/cdn/category-toothbrush.png"
                 alt="SuperMouth Products"
                 width={400}
                 height={300}

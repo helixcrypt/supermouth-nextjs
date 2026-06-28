@@ -40,32 +40,32 @@ const COLLECTION_META: Record<string, {
   'mouthbrushes': {
     title: 'Toothbrushes',
     desc: 'Introducing SuperMouth\'s groundbreaking line of toothbrushes, designed to meet all needs and preferences with manual, electric, sonic, and musical options. Our Ultim8 SmartBrush System features advanced SuperBristles Pro and SuperBristles Ortho, which clean teeth up to 60 times better.',
-    desktopHero: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_toothbrush.png',
+    desktopHero: '/cdn/category-toothbrush.png',
   },
   'mouthpaste': {
     title: 'Toothpaste',
     desc: 'Every mouth needs a hero! Introducing the only kids and adults\' toothpaste made with Hydroxamin™ — your new superpower. Our patent-pending formula cleans the mouth to support a healthy oral ecosystem.',
-    desktopHero: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_toothpaste.png',
+    desktopHero: '/cdn/category-toothpaste.png',
   },
   'mouthwash': {
     title: 'Mouthwash',
     desc: 'Every hero needs a sidekick. Our mouthwash squad is here to save the day from bad breath. Our pH-alkalizing mouthwash helps to feed the good guys (healthy bacteria) for an overall healthier oral microbiome.',
-    desktopHero: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_mouthwash.png',
+    desktopHero: '/cdn/category-mouthwash.png',
   },
   'mouthfloss': {
     title: 'Floss',
     desc: 'Don\'t let mouth villains slip through the cracks! Our mouthfloss contains minerals and vitamins and expands, removing 40% more plaque than standard floss.',
-    desktopHero: 'https://supermouthcdn.blob.core.windows.net/website/230427_Supermouth_Landing_Page_Banners1066.png',
+    desktopHero: '/cdn/banner-1066.png',
   },
   'mouthspray-1': {
     title: 'Mouth Spray',
     desc: 'Every time you eat or drink, the pH levels in your mouth drop and become the perfect habitat for harmful bacteria to flourish. Our mouthspray balances the pH, and prebiotics help feed the good bacteria.',
-    desktopHero: 'https://supermouthcdn.blob.core.windows.net/website/230427_Supermouth_Landing_Page_Banners0900.png',
+    desktopHero: '/cdn/banner-0900.png',
   },
   'tongue-scrapers': {
     title: 'Tongue Scrapers',
     desc: 'Patented tongue scraper designs for all ages — including ice cream-shaped scrapers for kids that make oral care fun while supporting a healthy oral microbiome.',
-    desktopHero: 'https://supermouthcdn.blob.core.windows.net/website/230427_Supermouth_Landing_Page_Banners0968.png',
+    desktopHero: '/cdn/banner-0968.png',
   },
   'essential-accessories-1': {
     title: 'Essential Accessories',
@@ -74,22 +74,22 @@ const COLLECTION_META: Record<string, {
   'toothpaste': {
     title: 'Toothpaste',
     desc: 'Every mouth needs a hero! The only toothpaste made with Hydroxamin™ — nano-hydroxyapatite, Vitamin K2, and Vitamin D3 — safe for the whole family.',
-    desktopHero: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_toothpaste.png',
+    desktopHero: '/cdn/category-toothpaste.png',
   },
   'mouthwash-category': {
     title: 'Mouthwash',
     desc: 'pH-alkalizing mouthwash that feeds the good bacteria for a healthier oral microbiome. Fluoride and non-fluoride options available.',
-    desktopHero: 'https://cdn.supermouth.com/website/SM-website_2.0_HomePage_Category_mouthwash.png',
+    desktopHero: '/cdn/category-mouthwash.png',
   },
   'floss': {
     title: 'Floss',
     desc: 'Infused with Hydroxamin® — expands to remove 40% more plaque than standard floss. OrthoFloss available with built-in threaders.',
-    desktopHero: 'https://supermouthcdn.blob.core.windows.net/website/230427_Supermouth_Landing_Page_Banners1066.png',
+    desktopHero: '/cdn/banner-1066.png',
   },
   'mouth-spray': {
     title: 'Mouth Spray',
     desc: 'Alkaline pH of 8.5 with prebiotics and xylitol. Perfect on-the-go for post-meals. Ages 2+.',
-    desktopHero: 'https://supermouthcdn.blob.core.windows.net/website/230427_Supermouth_Landing_Page_Banners0900.png',
+    desktopHero: '/cdn/banner-0900.png',
   },
 }
 
