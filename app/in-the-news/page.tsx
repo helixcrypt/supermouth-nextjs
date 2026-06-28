@@ -18,7 +18,7 @@ const additionalMedia = [
   { img: '/press/dailymom.jpg', outlet: 'Daily Mom', outletColor: '#4ab8c4', headline: "SuperMouth's Ultim8 SmartBrush Named Top Mother's Day Gift", href: 'https://dailymom.com' },
   { img: '/press/cnet.jpg', outlet: 'CNET', outletColor: '#cc0000', headline: "CNET Names SuperMouth Ultim8 as 2025's Best Soft-Bristled Electric Brush", href: 'https://www.cnet.com/health/personal-care/best-electric-toothbrush/' },
   { img: '/press/tamronhall.jpg', outlet: 'Tamron Hall', outletColor: '#6b21a8', headline: 'SuperMouth Ultim8 SmartBrush System Featured on the Tamron Hall Show', href: 'https://www.youtube.com/watch?v=OIPIqIG6fFw' },
-  { img: '/press/askmen.jpg', outlet: 'AskMen', outletColor: '#cc3300', headline: '2025 AskMen Grooming Awards — Best Sonic Toothbrush', href: 'https://www.askmen.com/grooming/skin/grooming-awards-2025-face-care-products.html' },
+  { img: '/press/askmen.jpg', outlet: 'AskMen', outletColor: '#cc3300', headline: '2025 AskMen Grooming Awards � Best Sonic Toothbrush', href: 'https://www.askmen.com/grooming/skin/grooming-awards-2025-face-care-products.html' },
   { img: '/press/seventeen.png', outlet: 'Seventeen', outletColor: '#cc0066', headline: 'The Best Teeth Whitening Kits', href: 'https://www.seventeen.com/beauty/g42640642/best-teeth-whitening-kits/' },
   { img: '/press/popsugar.jpg', outlet: 'PopSugar', outletColor: '#6b0f6e', headline: 'The 10 Best Electric Toothbrushes to Elevate Your Brushing Game', href: 'https://www.popsugar.com/beauty/dentist-recommended-electric-toothbrushes-48078961' },
   { img: '/press/ktla.png', outlet: 'KTLA 5', outletColor: '#003087', headline: 'Dr. Kami Hoss on Why Oral Hygiene is Very Important for Kids and Adults', href: 'https://ktla.com/video/dr-kami-hoss-discuss-the-importance-of-oral-hygiene-for-kids/8879706/' },
@@ -50,7 +50,7 @@ export default function InTheNewsPage() {
   return (
     <div className="bg-sm-bg text-sm-navy">
 
-      {/* Hero — local image, single set of quotes */}
+      {/* Hero � quotes are baked into the image, no overlays needed */}
       <section className="relative w-full overflow-hidden">
         <Image
           src="/cdn/in-the-news-hero.jpg"
@@ -68,25 +68,6 @@ export default function InTheNewsPage() {
           </p>
           <p className="text-sm-navy text-xs leading-snug">
             Making Headlines Everywhere:<br />SuperMouth in the Media Spotlight
-          </p>
-        </div>
-
-        {/* Quotes — desktop only, matching original layout */}
-        <div className="absolute inset-0 hidden md:block pointer-events-none">
-          <p className="absolute text-white text-xs font-semibold leading-snug text-center"
-            style={{ top: '10%', left: '43%', maxWidth: 165 }}>
-            "SuperMouth revolutionises the market with ice-cream flavoured mouthwashes"
-            <br /><em className="font-normal text-white/80">– Laura Pérez</em>
-          </p>
-          <p className="absolute text-white text-xs font-semibold leading-snug text-center"
-            style={{ top: '5%', left: '60%', maxWidth: 155 }}>
-            "An Oral Hygiene Brand Made a Superhero Film to Inspire Kids to Brush Their Teeth"
-            <br /><em className="font-normal text-white/80">– Adweek</em>
-          </p>
-          <p className="absolute text-white text-xs font-semibold leading-snug text-center"
-            style={{ top: '10%', right: '2%', maxWidth: 175 }}>
-            "Adventure Film <em>The Rise of SuperMouth</em> That Just Might Get Your Kids To Brush"
-            <br /><em className="font-normal text-white/80">– Accesswire</em>
           </p>
         </div>
       </section>
@@ -154,7 +135,7 @@ export default function InTheNewsPage() {
             <Link key={i} href={award.href}
               className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow group flex items-start gap-3">
               <div className="flex-shrink-0 text-center w-12">
-                <span className="text-xl">🏆</span>
+                <span className="text-xl">?</span>
                 <p className="text-xs font-bold text-sm-teal mt-0.5">{award.year}</p>
               </div>
               <div>
@@ -194,15 +175,15 @@ export default function InTheNewsPage() {
           <h2 className="text-white font-display font-black text-xl text-center mb-8 uppercase tracking-widest">Explore SuperMouth</h2>
           <div className="grid md:grid-cols-3 gap-5">
             {[
-              { icon: '📬', title: 'Media Inquiries', desc: "For interview requests, expert commentary, or additional information, reach out to our PR team here. We're ready to collaborate on your next story.", cta: 'Contact PR Team', href: '/contact' },
-              { icon: '🦷', title: 'SuperMouth Pro', desc: 'Dental and medical professionals — explore how you can partner with us to bring revolutionary oral care solutions to your patients. Discover more here.', cta: 'Join SuperMouth Pro', href: 'https://supermouthpro.com' },
-              { icon: '🔬', title: 'Explore & Learn', desc: 'Dive into the latest articles, research, and educational content to stay informed about oral health and innovations. Start exploring now.', cta: 'Read Articles', href: '/learn' },
+              { icon: '?', title: 'Media Inquiries', desc: "For interview requests, expert commentary, or additional information, reach out to our PR team here. We're ready to collaborate on your next story.", cta: 'Contact PR Team', href: '/contact' },
+              { icon: '?', title: 'SuperMouth Pro', desc: 'Dental and medical professionals � explore how you can partner with us to bring revolutionary oral care solutions to your patients. Discover more here.', cta: 'Join SuperMouth Pro', href: 'https://supermouthpro.com' },
+              { icon: '?', title: 'Explore & Learn', desc: 'Dive into the latest articles, research, and educational content to stay informed about oral health and innovations. Start exploring now.', cta: 'Read Articles', href: '/learn' },
             ].map(box => (
               <div key={box.title} className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
                 <div className="text-4xl mb-3">{box.icon}</div>
                 <h3 className="font-display font-bold text-white text-sm mb-3">{box.title}</h3>
                 <p className="text-white/60 text-xs leading-relaxed mb-5">{box.desc}</p>
-                <Link href={box.href} className="text-sm-yellow text-xs font-bold hover:underline">{box.cta} →</Link>
+                <Link href={box.href} className="text-sm-yellow text-xs font-bold hover:underline">{box.cta} ?</Link>
               </div>
             ))}
           </div>
