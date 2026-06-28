@@ -37,11 +37,12 @@ const allAwards = [
   { year: 2026, pub: 'YAHOO! HEALTH', title: 'Honorable Mention', product: 'Ultim8 Signature', href: 'https://supermouth.com/products/ultim8-electric-toothbrush' },
   { year: 2026, pub: 'CNET', title: 'Best Soft-Bristled Toothbrush', product: 'Ultim8 Signature', href: 'https://supermouth.com/products/ultim8-electric-toothbrush' },
   { year: 2026, pub: 'NEW BEAUTY', title: 'Best Floss', product: 'Hydroxamin with Fluoride Mouth Floss', href: 'https://supermouth.com/products/supermouth-hydroxamin-with-fluoride-mouthfloss' },
-  { year: 2026, pub: 'CNN UNDERSCORED', title: 'Editor Favorite', product: 'Flouride Nano-Hydroxyapatite Toothpaste', href: 'https://supermouth.com/products/supermouth-hydroxamin-w-fluoride-toothpaste-3-4-oz' },
+  { year: 2026, pub: 'CNN UNDERSCORED', title: 'Editor Favorite', product: 'Fluoride Nano-Hydroxyapatite Toothpaste', href: 'https://supermouth.com/products/supermouth-hydroxamin-w-fluoride-toothpaste-3-4-oz' },
   { year: 2025, pub: 'POP SUGAR', title: 'Best Electric Toothbrush System', product: 'Ultim8 Signature', href: 'https://supermouth.com/products/ultim8-electric-toothbrush' },
   { year: 2025, pub: 'ASK MEN', title: 'Best Sonic Toothbrush', product: 'Ultim8 Signature', href: 'https://supermouth.com/products/ultim8-electric-toothbrush' },
   { year: 2025, pub: "MEN'S JOURNAL", title: 'Best Sonic Toothbrush', product: 'Ultim8 Signature', href: 'https://supermouth.com/products/ultim8-electric-toothbrush' },
 ]
+
 export default function InTheNewsPage() {
   const [awardFilter, setAwardFilter] = useState<'all' | 2026 | 2025>('all')
   const filteredAwards = awardFilter === 'all' ? allAwards : allAwards.filter(a => a.year === awardFilter)
@@ -49,7 +50,7 @@ export default function InTheNewsPage() {
   return (
     <div className="bg-sm-bg text-sm-navy">
 
-      {/* Hero â quotes are baked into the image, no overlays needed */}
+      {/* Hero - quotes are baked into the image, no overlays needed */}
       <section className="relative w-full overflow-hidden">
         <Image
           src="/cdn/in-the-news-hero.jpg"
@@ -59,8 +60,6 @@ export default function InTheNewsPage() {
           className="w-full h-auto object-cover"
           priority
         />
-
-        {/* Bottom-left: label */}
         <div className="absolute bottom-6 left-8 md:left-14 pointer-events-none">
           <p className="font-black text-xl md:text-2xl text-sm-navy leading-none mb-1">
             in the <span style={{ fontFamily: 'cursive', color: '#4a2fb5' }}>news</span>
@@ -117,7 +116,7 @@ export default function InTheNewsPage() {
 
       {/* Awards */}
       <section className="max-w-7xl mx-auto px-6 lg:px-12 pb-14">
-        <p className="text-center font-black text-lg mb-1" style={{ fontFamily: 'cursive', color: '#f97316' }}>awards & recognition</p>
+        <p className="text-center font-black text-lg mb-1" style={{ fontFamily: 'cursive', color: '#f97316' }}>awards &amp; recognition</p>
         <p className="text-center text-xs text-sm-gray mb-5 max-w-2xl mx-auto">
           Editors and journalists at the world&apos;s leading health and lifestyle publications have recognized SuperMouth across products, ingredients, and innovation.
         </p>
@@ -131,10 +130,10 @@ export default function InTheNewsPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredAwards.map((award, i) => (
-            <Link hey={i} href={award.href}
+            <Link key={i} href={award.href}
               className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow group flex items-start gap-3">
               <div className="flex-shrink-0 text-center w-12">
-                <span className="text-xl">ð</span>
+                <span className="text-lg font-bold text-sm-yellow">★</span>
                 <p className="text-xs font-bold text-sm-teal mt-0.5">{award.year}</p>
               </div>
               <div>
@@ -174,15 +173,14 @@ export default function InTheNewsPage() {
           <h2 className="text-white font-display font-black text-xl text-center mb-8 uppercase tracking-widest">Explore SuperMouth</h2>
           <div className="grid md:grid-cols-3 gap-5">
             {[
-              { icon: 'ð¬', title: 'Media Inquiries', desc: "For interview requests, expert commentary, or additional information, reach out to our PR team here. We're ready to collaborate on your next story.", cta: 'Contact PR Team', href: '/contact' },
-              { icon: 'ð¦ºº', title: 'SuperMouth Pro', desc: 'Dental and medical professionals â explore how you can partner with us to bring revolutionary oral care solutions to your patients. Discover more here.', cta: 'Join SuperMouth Pro', href: 'https://supermouthpro.com' },
-              { icon: 'ð¬', title: 'Explore & Learn', desc: 'Dive into the latest articles, research, and educational content to stay informed about oral health and innovations. Start exploring now.', cta: 'Read Articles', href: '/learn' },
+              { title: 'Media Inquiries', desc: "For interview requests, expert commentary, or additional information, reach out to our PR team. We're ready to collaborate on your next story.", cta: 'Contact PR Team', href: '/contact' },
+              { title: 'SuperMouth Pro', desc: 'Dental and medical professionals - explore how you can partner with us to bring revolutionary oral care solutions to your patients.', cta: 'Join SuperMouth Pro', href: 'https://supermouthpro.com' },
+              { title: 'Explore & Learn', desc: 'Dive into the latest articles, research, and educational content to stay informed about oral health and innovations.', cta: 'Read Articles', href: '/learn' },
             ].map(box => (
               <div key={box.title} className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
-                <div className="text-4xl mb-3">{box.icon}</div>
                 <h3 className="font-display font-bold text-white text-sm mb-3">{box.title}</h3>
                 <p className="text-white/60 text-xs leading-relaxed mb-5">{box.desc}</p>
-                <Link href={box.href} className="text-sm-yellow text-xs font-bold hover:underline">{box.cta} â</Link>
+                <Link href={box.href} className="text-sm-yellow text-xs font-bold hover:underline">{box.cta}</Link>
               </div>
             ))}
           </div>
