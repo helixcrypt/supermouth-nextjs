@@ -1,49 +1,27 @@
 import Image from 'next/image'
-import Link from 'next/link'
 import Footer from '@/components/Footer'
+import { Page, Hero, Script, CORAL } from '@/components/about/ui'
 
 export const metadata = {
   title: 'Protecting the Planet — SuperMouth',
-  description: 'SuperMouth\'s commitment to sustainability — environmentally safe ingredients, eco-friendly packaging, and innovative reusable designs.',
+  description: 'SuperMouth\'s commitment to sustainability: environmentally safe ingredients, eco-friendly packaging, and innovative reusable designs.',
 }
 
-const sections = [
+type Block = { title: string; color: string; border: string; img: string; alt: string; imgSide: 'left' | 'right'; items: string[]; tall?: boolean }
+
+const blocks: Block[] = [
   {
-    id: 'ingredients',
-    title: 'Environmentally Safe Ingredients',
-    titleColor: '#f5d800',
-    borderColor: '#f5d800',
-    imgSide: 'right',
-    img: '/cdn/category-toothpaste.png',
-    imgWidth: 280,
-    imgHeight: 300,
-    bullets: [
-      'Our consumable products only contain ingredients rated as a 1 (Low Hazard) by the Environmental Working Group (EWG). The EWG scale ranges from 1 (low hazard) to 10 (high hazard), ensuring our products are safe for you and the planet. This is notable since many toothpastes and mouthwashes currently on the market, both \'conventional\' and \'natural,\' contain ingredients ranging from 2 to 10 on the EWG scale.',
-      'We do not use any \'forever chemicals,\' such as PTFE (Polytetrafluoroethylene) or Teflon, which are commonly found in over-the-counter flosses and other products. These chemicals do not break down, can accumulate in the environment and living organisms, and pose significant health and environmental risks.',
-    ],
-    table: [
-      { ingredient: 'xylitol', rating: 1 },
-      { ingredient: 'hydroxyapatite', rating: 1 },
-      { ingredient: 'vitamin K2', rating: 1 },
-      { ingredient: 'vitamin D3', rating: 1 },
-      { ingredient: 'quillaja extract', rating: 1 },
-      { ingredient: 'vitamin C (as sodium ascorbate)', rating: 1 },
-      { ingredient: 'stevia leaf extract', rating: 1 },
-      { ingredient: 'cranberry seed oil', rating: 1 },
-      { ingredient: 'xanthan gum', rating: 1 },
-      { ingredient: 'inulin', rating: 1 },
+    title: 'Environmentally Safe Ingredients', color: '#FFE91F', border: '#FFE91F', imgSide: 'right', tall: true,
+    img: '/about/sust-SM-website-2.0--sustainability-page-ewg-graph.png', alt: 'SuperMouth ingredients and their EWG ratings',
+    items: [
+      'Our consumable products only contain ingredients rated as a 1 (Low Hazard) by the Environmental Working Group (EWG). The EWG scale ranges from 1 (low hazard) to 10 (high hazard), ensuring our products are safe for you and the planet. This is notable since many toothpastes and mouthwashes currently on the market, both ‘conventional’ and ‘natural,’ contain ingredients ranging from 2 to 10 on the EWG scale.',
+      'We do not use any ‘forever chemicals,’ such as PTFE (Polytetrafluoroethylene) or Teflon, which are commonly found in over-the-counter flosses and other products. These chemicals do not break down, can accumulate in the environment and living organisms, and pose significant health and environmental risks.',
     ],
   },
   {
-    id: 'eco-packaging',
-    title: 'Eco-Friendly Packaging',
-    titleColor: '#4ab8c4',
-    borderColor: '#4ab8c4',
-    imgSide: 'left',
-    img: '/cdn/category-toothpaste.png',
-    imgWidth: 200,
-    imgHeight: 350,
-    bullets: [
+    title: 'Eco-Friendly Packaging', color: '#45A9C5', border: '#45A9C5', imgSide: 'left',
+    img: '/about/sust-SM-website-2.0--sustainability-page-ecofriendly.png', alt: 'Eco friendly packaging',
+    items: [
       'Toothpaste Tubes: Up to 50% of our toothpaste tubes are made from Post-Consumer Recycled (PCR) materials.',
       'Toothpaste Caps: These use up to 30% PCR materials.',
       'Mono-material Construction: Both our toothpaste tubes and caps are made from the same material, facilitating easier sorting and recycling.',
@@ -52,195 +30,69 @@ const sections = [
     ],
   },
   {
-    id: 'recyclable-bottles',
-    title: 'Recyclable Bottles',
-    titleColor: '#f97316',
-    borderColor: '#f97316',
-    imgSide: 'right',
-    img: '/cdn/category-mouthwash.png',
-    imgWidth: 240,
-    imgHeight: 300,
-    bullets: [
-      'Mouthwash and MouthSpray: Both bottles and caps are recyclable, reducing waste and promoting sustainability.',
-    ],
+    title: 'Recyclable Bottles', color: '#E95A4C', border: '#E95A4C', imgSide: 'right',
+    img: '/about/sust-SM-website-2.0--sustainability-page-recycllable-bottles.png', alt: 'Recyclable bottles',
+    items: ['Mouthwash and MouthSpray: Both bottles and caps are recyclable, reducing waste and promoting sustainability.'],
   },
   {
-    id: 'recycled-packaging',
-    title: 'Recycled and Recyclable Packaging',
-    titleColor: '#f97316',
-    borderColor: '#f97316',
-    imgSide: 'left',
-    img: '/cdn/category-toothpaste.png',
-    imgWidth: 220,
-    imgHeight: 280,
-    bullets: [
+    title: 'Recycled and Recyclable Packaging', color: '#E0C2C5', border: '#E0C2C5', imgSide: 'left',
+    img: '/about/sust-SM-website-2.0--sustainability-page-recycled.png', alt: 'Recycled packaging',
+    items: [
       'Cardboard and Paper Packaging: All cardboard and paper packaging for our consumable products are made from 100% recycled material and are fully recyclable.*',
       'Printed Materials: All of our manuals and many printed marketing materials are produced with biodegradable vegetable ink and recycled materials, and are recyclable.',
     ],
   },
   {
-    id: 'reusable-designs',
-    title: 'Innovative and Reusable Designs',
-    titleColor: '#f5d800',
-    borderColor: '#f5d800',
-    imgSide: 'right',
-    img: '/cdn/category-toothbrush.png',
-    imgWidth: 200,
-    imgHeight: 280,
-    bullets: [
-      "Children's Products: Most of our children's product packaging is designed to turn into toys, backgrounds, piggy banks, and more. This creative approach ensures the packaging is not just thrown away, but instead, serves a purpose, significantly reducing waste.",
-    ],
+    title: 'Innovative and Reusable Designs', color: '#FFE91F', border: '#FFE91F', imgSide: 'right',
+    img: '/about/sust-SM-website-2.0--sustainability-page-reusable-designs.png', alt: 'Innovative designs',
+    items: ['Children’s Products: Most of our children’s product packaging is designed to turn into toys, backgrounds, piggy banks, and more. This creative approach ensures the packaging is not just thrown away, but instead, serves a purpose, significantly reducing waste.'],
   },
   {
-    id: 'energy-efficient',
-    title: 'Energy-Efficient Products',
-    titleColor: '#4ab8c4',
-    borderColor: '#4ab8c4',
-    imgSide: 'left',
-    img: '/cdn/category-toothbrush.png',
-    imgWidth: 220,
-    imgHeight: 300,
-    bullets: [
-      'Rechargeable Batteries: Whenever feasible, we use rechargeable batteries in our powered products, such as electric toothbrushes, to minimize waste and promote sustainability.',
-    ],
+    title: 'Energy-Efficient Products', color: '#45A9C5', border: '#45A9C5', imgSide: 'left',
+    img: '/about/sust-sustainability_page-energy_efficient_v2.png', alt: 'Energy efficient products',
+    items: ['Rechargeable Batteries: Whenever feasible, we use rechargeable batteries in our powered products, such as electric toothbrushes, to minimize waste and promote sustainability.'],
   },
 ]
 
 export default function SustainabilityPage() {
-  const navyBg = '#2d3a8c'
-
   return (
-    <div style={{ backgroundColor: navyBg }} className="text-white min-h-screen">
+    <Page>
+      <Hero img="/about/sust-SM-website-2.0--sustainability-page-header-image.png" alt="SuperMouth toothbrushes in an enchanted forest" bg="#FFD27A">
+        <h1 className="text-[32px] md:text-[36px] leading-10" style={{ color: '#394C97' }}>
+          <Script>SuperMouth</Script><br /><Script>Sustainability Initiative</Script>
+        </h1>
+        <p className="mt-6 text-[18px] leading-7">At SuperMouth, our commitment to sustainability drives everything we do. We strive to be as environmentally friendly as possible.</p>
+      </Hero>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #f5a623 0%, #f0921c 40%, #2d9cdb 70%, #1a5fa8 100%)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-8 items-center py-16">
-            <div>
-              <h1 className="font-black text-4xl md:text-5xl mb-4 leading-tight"
-                style={{ color: '#1a2e6e', fontStyle: 'italic', fontFamily: 'Georgia, serif' }}>
-                SuperMouth<br />Sustainability Initiative
-              </h1>
-              <p className="text-sm leading-relaxed" style={{ color: '#1a2e6e' }}>
-                At SuperMouth, our commitment to sustainability drives everything we do. We strive to be as environmentally friendly as possible.
-              </p>
-            </div>
-            <div className="flex justify-center">
-              <Image
-                src="/cdn/category-toothbrush.png"
-                alt="SuperMouth Products"
-                width={400}
-                height={300}
-                className="w-full max-w-sm h-auto object-contain"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Here's How We Make A Difference */}
-      <div style={{ backgroundColor: navyBg }} className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-center font-black text-3xl md:text-4xl mb-12 text-white"
-            style={{ fontStyle: 'italic', fontFamily: 'Georgia, serif' }}>
-            Here's How We Make A Difference
-          </h2>
-
-          <div className="space-y-6">
-            {sections.map(section => (
-              <div
-                key={section.id}
-                className="rounded-2xl p-8"
-                style={{ border: `1px solid ${section.borderColor}`, backgroundColor: 'rgba(255,255,255,0.03)' }}
-              >
-                <div className={`grid md:grid-cols-2 gap-8 items-start ${section.imgSide === 'left' ? '' : 'md:[&>*:first-child]:order-2'}`}>
-                  {/* Content */}
-                  <div>
-                    <h3 className="font-black text-xl md:text-2xl mb-5"
-                      style={{ color: section.titleColor, fontStyle: 'italic', fontFamily: 'Georgia, serif' }}>
-                      {section.title}
-                    </h3>
-                    <ul className="space-y-4">
-                      {section.bullets.map((bullet, i) => (
-                        <li key={i} className="flex gap-3 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                          <span className="mt-1 flex-shrink-0">•</span>
-                          <span>{bullet}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* EWG Table for ingredients section */}
-                    {section.table && (
-                      <div className="mt-6 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.2)' }}>
-                        <div className="grid grid-cols-2 px-4 py-2" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-                          <span className="text-xs font-bold" style={{ color: '#f5666a' }}>SuperMouth ingredients</span>
-                          <span className="text-xs font-bold text-right" style={{ color: '#f5666a' }}>ewg rating</span>
-                        </div>
-                        {section.table.map((row, i) => (
-                          <div key={i} className="grid grid-cols-2 px-4 py-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                            <span className="text-xs text-white/70">{row.ingredient}</span>
-                            <span className="text-xs text-right font-bold" style={{ color: '#4ade80' }}>{row.rating}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Image */}
-                  <div className="flex items-center justify-center">
-                    <Image
-                      src={section.img}
-                      alt={section.title}
-                      width={section.imgWidth}
-                      height={section.imgHeight}
-                      className="w-auto h-auto max-h-72 object-contain"
-                    />
-                  </div>
+      <section className="bg-[#394C97] text-white pt-14 pb-4">
+        <h2 className="text-center text-[38px] md:text-[44px] leading-[48px] px-4"><Script>Here’s How We Make A Difference</Script></h2>
+        <div className="max-w-[1312px] mx-auto px-4 mt-12 space-y-8">
+          {blocks.map(b => (
+            <div key={b.title} className="border-2 px-6 md:px-8 py-8" style={{ borderColor: b.border }}>
+              <div className={`grid gap-8 items-center ${b.imgSide === 'right' ? 'lg:grid-cols-[1fr_300px]' : 'lg:grid-cols-[300px_1fr]'}`}>
+                <div className={b.imgSide === 'left' ? 'lg:order-2' : ''}>
+                  <h3 className="text-[30px] md:text-[34px] leading-10"><Script color={b.color}>{b.title}</Script></h3>
+                  <ul className="mt-4 list-disc pl-6 space-y-4 text-[17px] md:text-[18px] leading-7 max-w-[780px]">
+                    {b.items.map(t => <li key={t}>{t}</li>)}
+                  </ul>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Closing section — white bg */}
-      <section className="bg-white py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="flex justify-center text-center">
-              <div>
-                <div className="text-8xl mb-4">🌍</div>
-                <div className="text-6xl font-black text-sm-teal">m</div>
+                <Image src={b.img} alt={b.alt} width={350} height={500} className={`mx-auto w-[220px] lg:w-[280px] h-auto ${b.imgSide === 'left' ? 'lg:order-1' : ''}`} />
               </div>
             </div>
-            <div>
-              <p className="font-black text-2xl md:text-3xl leading-snug mb-4"
-                style={{ color: '#f97316', fontStyle: 'italic', fontFamily: 'Georgia, serif' }}>
-                At SuperMouth, sustainability isn't just a goal — it's a core value.
-              </p>
-              <p className="text-sm-gray text-sm leading-relaxed">
-                We are continuously looking for ways to reduce our environmental impact and contribute to a healthier planet. Join us in our commitment to a sustainable future.
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
+      <div className="bg-[#394C97] h-6" />
 
-      {/* CTA */}
-      <section style={{ backgroundColor: navyBg }} className="py-12 text-center">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/shop-all" className="bg-sm-yellow text-sm-navy font-bold px-8 py-4 rounded-full text-sm hover:opacity-90 transition-opacity">
-              Shop Sustainably →
-            </Link>
-            <Link href="/our-story" className="border border-white/30 text-white font-semibold px-8 py-4 rounded-full text-sm hover:bg-white/10 transition-colors">
-              Our Story
-            </Link>
-          </div>
+      <section className="max-w-[1312px] mx-auto px-4 py-8 grid md:grid-cols-[350px_1fr] gap-6 items-center">
+        <Image src="/about/sust-SM-website-2.0--sustainability-page-at-supermouth.png" alt="SuperMouth" width={350} height={350} className="mx-auto w-[200px] md:w-[300px] h-auto" />
+        <div>
+          <p className="text-[30px] md:text-[34px] leading-9"><Script color={CORAL}>At SuperMouth, sustainability isn’t just a goal<br />— it’s a core value.</Script></p>
+          <p className="mt-2 text-[18px] md:text-[20px] leading-7">We are continuously looking for ways to reduce our environmental impact and contribute to a healthier planet. Join us in our commitment to a sustainable future.</p>
         </div>
       </section>
 
       <Footer />
-    </div>
+    </Page>
   )
 }
