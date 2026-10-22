@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, Montserrat } from 'next/font/google'
+import { Inter, Montserrat, Caveat_Brush } from 'next/font/google'
 import './globals.css'
 import { CartProvider } from '@/lib/cart-context'
 import Navbar from '@/components/Navbar'
@@ -8,6 +8,7 @@ import QunicerAgent from '@/components/QunicerAgent'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' })
+const script = Caveat_Brush({ subsets: ['latin'], weight: '400', variable: '--font-script' })
 
 export const metadata: Metadata = {
   title: 'SuperMouth — Complete Oral Care System for Every Life Stage',
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${montserrat.variable}`}>
+    <html lang="en" className={`${inter.variable} ${montserrat.variable} ${script.variable}`}>
       <body className="bg-sm-navy text-sm-white font-sans antialiased">
         <CartProvider>
           <Navbar />
