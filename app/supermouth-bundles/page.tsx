@@ -1,160 +1,65 @@
 import Image from 'next/image'
-import Link from 'next/link'
 import Footer from '@/components/Footer'
-import { getCollectionByHandle } from '@/lib/shopify'
-import ProductCard from '@/components/ProductCard'
+import VideoStrip from '@/components/shop/VideoStrip'
+import FilterGrid from '@/components/shop/FilterGrid'
+import { shop } from '@/components/shop/data'
+import { SCRIPT, sortLikeOriginal } from '@/components/shop/ui'
+import { getShopCollection, type ShopProduct } from '@/lib/shop-queries'
+
+export const revalidate = 60
 
 export const metadata = {
   title: 'Bundle & Save — SuperMouth',
-  description: 'Upgrade your oral care and save up to 15%! Curated bundles with dentist-backed formulations, delicious flavors, and clean safe ingredients.',
+  description: 'Save up to 15% with curated SuperMouth bundles: dentist-backed formulas, delicious flavors, and clean, safe ingredients.',
+}
+
+// Bold phrases in the hero copy, as on supermouth.com
+const BOLD = ['dentist-backed formulations', 'delicious flavors', 'clean, safe ingredients', 'first-timers', 'gifts', 'smile-friendly solution', 'fluoride protection', 'nano-hydroxyapatite support', 'orthodontic care']
+function emphasize(text: string) {
+  const re = new RegExp(`(${BOLD.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g')
+  return text.split(re).map((part, i) => (BOLD.includes(part) ? <b key={i}>{part}</b> : part))
 }
 
 export default async function BundlesPage() {
-  let products: any[] = []
+  let products: ShopProduct[] = []
   try {
-    const collection = await getCollectionByHandle('bundles', 50)
-    if (collection?.products?.edges) {
-      products = collection.products.edges.map((e: any) => e.node)
-    }
-  } catch (e) {}
+    products = (await getShopCollection('bundles'))?.products ?? []
+  } catch (e) {
+    console.error('Bundles fetch error:', e)
+  }
+  const b = shop.bundles
+  const strip = shop.strips.bundles
 
   return (
-    <div className="bg-sm-bg text-sm-navy">
-
-      {/* Hero — two-column layout matching original: text left, image right */}
-      <section className="bg-sm-teal">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-0 items-center min-h-[200px]">
-            {/* Left — text */}
-            <div className="py-10 pr-6">
-              <h1 className="font-display font-black text-3xl md:text-4xl text-white mb-4">Bundle & Save</h1>
-              <p className="text-white/90 text-sm leading-relaxed">
-                Upgrade your oral care and save up to 15%! Our curated bundles blend{' '}
-                <strong>dentist-backed formulations</strong>,{' '}
-                <strong>delicious flavors</strong>, and{' '}
-                <strong>clean, safe ingredients</strong> — perfect for{' '}
-                <strong>first-timers</strong>,{' '}
-                <strong>gifts</strong>, or anyone craving a fresh routine.
-              </p>
-            </div>
-            {/* Right — product image */}
-            <div className="hidden md:flex justify-end items-end h-full">
-              <Image
-                src="https://cdn.supermouth.com/website/SM-website%202.0-%20bundles%20page-header%20image%20mobile%20400x400-v2.jpg"
-                alt="Bundle & Save"
-                width={400}
-                height={400}
-                className="h-full w-auto object-contain max-h-56"
-              />
-            </div>
+    <div className="bg-white font-[family-name:var(--font-montserrat)] tracking-[-0.01em] text-[#394C97]">
+      {/* Hero */}
+      <section className="bg-[#0AA9C2] text-white">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-10 md:py-10 grid md:grid-cols-2 gap-8 items-center min-h-[368px]">
+          <div className="max-w-[560px]">
+            <h1 className="text-[18px] leading-7 font-bold">{b.title}</h1>
+            <p className="mt-5 text-[16px] leading-6">{emphasize(b.text)}</p>
           </div>
-        </div>
-        {/* Mobile — show image below text */}
-        <div className="md:hidden w-full">
-          <Image
-            src="https://cdn.supermouth.com/website/SM-website%202.0-%20bundles%20page-header%20image%20mobile%20400x400-v2.jpg"
-            alt="Bundle & Save"
-            width={400}
-            height={400}
-            className="w-full h-auto object-contain"
-          />
+          <div className="relative w-full aspect-[432/288] max-w-[432px] mx-auto">
+            <Image src={b.img} alt="SuperMouth bundles" fill priority sizes="432px" className="object-contain" />
+          </div>
         </div>
       </section>
 
-      {/* Bundled Products */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="font-display font-black text-2xl text-center mb-2 text-sm-navy">Bundled Products</h2>
-        <p className="text-sm-teal text-sm font-semibold text-center mb-8">Keep Every MouthCare Essential Neat, Clean, and Ready to Use</p>
+      <div className="pt-4">
+        <VideoStrip title={strip.title} sub={strip.sub} items={strip.items} />
+      </div>
 
-        {products.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-2xl">
-            <div className="text-5xl mb-4">📦</div>
-            <h3 className="font-display font-bold text-xl mb-2 text-sm-navy">Bundles coming soon!</h3>
-            <p className="text-sm-gray text-sm mb-6">We're putting together incredible bundles. Browse all products in the meantime.</p>
-            <Link href="/shop-all" className="bg-sm-yellow text-sm-navy font-bold px-6 py-3 rounded-full text-sm hover:opacity-90 transition-opacity">
-              Shop All Products →
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {products.map((product: any) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
-      </section>
+      <FilterGrid products={sortLikeOriginal('bundles', products)} mode="none" />
 
-      {/* Social proof video section — placeholder for social embed */}
-      <section className="bg-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-display font-bold text-xl mb-2 text-sm-navy">See SuperMouth in Action</h2>
-          <p className="text-sm-gray text-sm mb-8">Real people, real results — from our community on TikTok & Instagram</p>
-
-          {/* Video cards — links to social content */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-            {[
-              { title: 'Toothpaste For Every Stage', handle: '@mysupermouth', platform: 'TikTok', bg: 'bg-sm-teal-bg' },
-              { title: 'Power Clean for Braces', handle: '@mysupermouth', platform: 'TikTok', bg: 'bg-sm-peach' },
-              { title: 'SuperMouth Flavor Splash', handle: '@mysupermouth', platform: 'TikTok', bg: 'bg-yellow-100' },
-              { title: 'SuperMouth Rinse Revolution', handle: '@mysupermouth', platform: 'TikTok', bg: 'bg-purple-100' },
-              { title: 'What if Toothpaste Tastes Like Ice Cream', handle: '@mysupermouth', platform: 'TikTok', bg: 'bg-blue-100' },
-            ].map(video => (
-              <a
-                key={video.title}
-                href="https://www.tiktok.com/@mysupermouth"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${video.bg} rounded-2xl overflow-hidden group cursor-pointer hover:shadow-md transition-shadow`}
-              >
-                <div className="relative h-40 flex items-center justify-center">
-                  {/* Play button */}
-                  <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-sm-navy ml-0.5">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                  <span className="absolute top-2 right-2 text-xs font-bold text-sm-navy bg-white/80 px-2 py-0.5 rounded-full">{video.platform}</span>
-                </div>
-                <div className="p-3 bg-sm-navy">
-                  <p className="text-white text-xs font-bold leading-snug">{video.title}</p>
-                  <p className="text-white/50 text-xs mt-1">{video.handle}</p>
-                </div>
-              </a>
-            ))}
+      {/* Bundle for the whole family */}
+      <section className="mt-4 bg-[#131247] text-white">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-10 grid md:grid-cols-2 gap-8 items-center">
+          <div className="relative w-full aspect-[560/315]">
+            <Image src={b.familyImg} alt="Family brushing together" fill sizes="(min-width:768px) 560px, 100vw" className="object-cover" />
           </div>
-          <p className="text-xs text-sm-gray mt-4 text-center">
-            Follow us{' '}
-            <a href="https://www.tiktok.com/@mysupermouth" target="_blank" rel="noopener noreferrer" className="text-sm-teal hover:underline font-semibold">@mysupermouth</a>
-            {' '}for more
-          </p>
-        </div>
-      </section>
-
-      {/* Bundle for the whole family — image + text side by side */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="w-full rounded-2xl overflow-hidden">
-            <Image
-              src="/cdn/video-still.jpg"
-              alt="Bundle for the whole family"
-              width={800}
-              height={450}
-              className="w-full h-auto object-contain rounded-2xl"
-            />
-          </div>
-          <div>
-            <h2 className="font-display font-black text-3xl mb-4 text-sm-navy">Bundle for the Whole Family</h2>
-            <p className="text-sm-gray text-sm leading-relaxed mb-6">
-              From toddlers to teens to adults, SuperMouth has a <strong className="text-sm-navy">smile-friendly solution</strong> for everyone. Each bundle targets specific oral care needs — whether you want <strong className="text-sm-navy">fluoride protection</strong>, <strong className="text-sm-navy">nano-hydroxyapatite support</strong>, or a complete routine for <strong className="text-sm-navy">orthodontic care</strong>. It's all about making healthy habits easier and more enjoyable, so you can keep the whole family grinning from ear to ear.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/shop-all" className="bg-sm-yellow text-sm-navy font-bold px-6 py-3 rounded-full text-sm hover:opacity-90 transition-opacity">
-                Shop All Products →
-              </Link>
-              <Link href="/systems-overview" className="bg-sm-purple text-white font-bold px-6 py-3 rounded-full text-sm hover:opacity-90 transition-opacity">
-                Shop Systems
-              </Link>
-            </div>
+          <div className="text-center">
+            <h2 className="text-[40px] md:text-[48px] leading-[52px] text-[#FFE920]" style={SCRIPT}>{b.familyTitle}</h2>
+            <p className="mt-3 text-[15px] md:text-[16px] leading-6">{emphasize(b.familyText)}</p>
           </div>
         </div>
       </section>

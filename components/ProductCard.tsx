@@ -3,99 +3,82 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/lib/cart-context'
+import { ratingFor, Stars, Trophy, BLUE, NAVY } from '@/components/shop/ui'
 
+type Money = { amount: string; currencyCode?: string }
 interface Product {
   id: string
   title: string
   handle: string
-  priceRange: {
-    minVariantPrice: { amount: string; currencyCode: string }
-  }
+  priceRange: { minVariantPrice: Money; maxVariantPrice?: Money }
+  compareAtPriceRange?: { maxVariantPrice: Money }
   images: { edges: { node: { url: string; altText: string | null } }[] }
   variants: { edges: { node: { id: string; availableForSale: boolean; price: { amount: string } } }[] }
   tags: string[]
 }
 
+const fmt = (n: number) => `$${n.toFixed(2)}`
+
+/** Product card matching supermouth.com: optional award header, image, title, stars, price range. */
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem, isLoading } = useCart()
 
   const image = product.images.edges[0]?.node
   const variants = product.variants.edges.map(e => e.node)
   const firstVariant = variants[0]
-  const hasMultipleVariants = variants.length > 1
-  const price = parseFloat(product.priceRange.minVariantPrice.amount)
+  const multi = variants.length > 1
+  const min = parseFloat(product.priceRange.minVariantPrice.amount)
+  const max = product.priceRange.maxVariantPrice ? parseFloat(product.priceRange.maxVariantPrice.amount) : min
+  const compare = product.compareAtPriceRange ? parseFloat(product.compareAtPriceRange.maxVariantPrice.amount) : 0
+  const onSale = compare > max && min === max
   const isAvailable = variants.some(v => v.availableForSale)
+  const r = ratingFor(product.title)
 
-  const handleAddToCart = async (e: React.MouseEvent) => {
+  const add = async (e: React.MouseEvent) => {
     e.preventDefault()
-    if (!firstVariant?.availableForSale || hasMultipleVariants) return
+    if (!firstVariant?.availableForSale || multi) return
     await addItem(firstVariant.id)
   }
 
   return (
-    <Link href={`/products/${product.handle}`} className="group block">
-      <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-        {/* Image */}
-        <div className="relative aspect-square bg-sm-bg overflow-hidden">
-          {image ? (
-            <Image
-              src={image.url}
-              alt={image.altText ?? product.title}
-              fill
-              className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-sm-gray">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-12 h-12">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-              </svg>
-            </div>
-          )}
-          {product.tags.includes('new') && (
-            <span className="absolute top-3 left-3 bg-sm-green text-white text-xs font-bold px-2 py-1 rounded-full">
-              NEW
-            </span>
-          )}
+    <Link href={`/products/${product.handle}`} className="group flex flex-col h-full bg-white rounded-lg border border-[#E2E5EF] shadow-[0_2px_8px_rgba(57,76,151,0.08)] overflow-hidden hover:shadow-[0_6px_18px_rgba(57,76,151,0.16)] transition-shadow" style={{ color: BLUE }}>
+      {r?.award ? (
+        <div className="flex h-11 shrink-0">
+          <span className="grid place-items-center w-11 bg-[#FBD116]"><Trophy /></span>
+          <span className="flex-1 min-w-0 px-3 py-1 shadow-[0_2px_4px_rgba(0,0,0,0.06)]">
+            <span className="block text-[11px] leading-4 font-semibold text-[#5AC3B2]">AWARD WINNER</span>
+            <span className="block text-[12px] leading-4 font-semibold truncate" style={{ color: NAVY }}>{r.award}</span>
+          </span>
         </div>
+      ) : (
+        <div className="h-11 shrink-0" />
+      )}
 
-        {/* Info */}
-        <div className="p-4">
-          <h3 className="font-semibold text-sm leading-snug mb-1 line-clamp-2 text-sm-navy group-hover:text-sm-teal transition-colors">
-            {product.title}
-          </h3>
+      <div className="relative mx-3 md:mx-4 mt-2 aspect-square">
+        {image && (
+          <Image src={image.url} alt={image.altText ?? product.title} fill sizes="(min-width:1024px) 260px, 45vw" className="object-contain group-hover:scale-[1.03] transition-transform duration-300" />
+        )}
+      </div>
 
-          {/* Price + variant hint */}
-          <div className="flex items-center justify-between mt-2 mb-3">
-            <p className="font-bold text-sm-navy">
-              {hasMultipleVariants && <span className="text-xs font-normal text-sm-gray mr-1">From</span>}
-              ${price.toFixed(2)}
-            </p>
-            {hasMultipleVariants && (
-              <p className="text-xs text-sm-gray">{variants.length} options</p>
-            )}
-          </div>
+      <div className="flex flex-col flex-1 px-3 md:px-4 pt-4 pb-4 text-center">
+        <h3 className="text-[15px] md:text-[18px] leading-6 md:leading-7 font-medium line-clamp-3 min-h-[48px] md:min-h-[56px]">{product.title}</h3>
+        {r?.reviews ? (
+          <p className="mt-1 flex items-center justify-center gap-1 text-[12px]"><Stars size={20} /> ({r.reviews})</p>
+        ) : <div className="h-[22px]" />}
+        <p className="mt-1 text-[16px] md:text-[18px] leading-7 font-bold">
+          {onSale ? (
+            <><span className="block text-[14px] font-normal text-gray-400 line-through">{fmt(compare)}</span><span className="text-[#DD7164]">{fmt(min)}</span></>
+          ) : max > min ? `${fmt(min)} — ${fmt(max)}` : fmt(min)}
+        </p>
 
-          {/* CTA button */}
+        <div className="mt-auto pt-3">
           {!isAvailable ? (
-            <button
-              disabled
-              className="w-full bg-gray-100 text-gray-400 text-xs font-bold py-2.5 rounded-full cursor-not-allowed"
-            >
-              Sold Out
-            </button>
-          ) : hasMultipleVariants ? (
-            // Multiple variants — go to product page to select
-            <div className="w-full bg-sm-navy text-white text-xs font-bold py-2.5 rounded-full text-center hover:bg-sm-teal transition-colors">
-              Select Options
-            </div>
+            <span className="block w-full rounded-lg bg-gray-100 py-2 text-[14px] font-bold text-gray-400">Sold Out</span>
+          ) : multi ? (
+            <span className="block w-full rounded-lg bg-[#FFE920] py-2 text-[14px] font-bold group-hover:opacity-90">Select Options</span>
           ) : (
-            // Single variant — add to cart directly
-            <button
-              onClick={handleAddToCart}
-              disabled={isLoading}
-              className="w-full bg-sm-yellow text-sm-navy text-xs font-bold py-2.5 rounded-full hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {isLoading ? 'Adding...' : 'Add to Cart'}
+            <button onClick={add} disabled={isLoading} className="block w-full rounded-lg bg-[#FFE920] py-2 text-[14px] font-bold hover:opacity-90 disabled:opacity-50">
+              {isLoading ? 'Adding…' : 'Add to Cart'}
             </button>
           )}
         </div>
