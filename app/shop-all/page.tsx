@@ -2,7 +2,7 @@ import Footer from '@/components/Footer'
 import { ShopAllHero } from '@/components/shop/Hero'
 import FilterGrid from '@/components/shop/FilterGrid'
 import { shop } from '@/components/shop/data'
-import { sortLikeOriginal } from '@/components/shop/ui'
+import { sortLikeOriginal, onlyOriginal } from '@/components/shop/ui'
 import { getShopProducts, getCollectionMembership, type ShopProduct } from '@/lib/shop-queries'
 
 export const revalidate = 60
@@ -27,7 +27,7 @@ export default async function ShopAllPage() {
   return (
     <div className="bg-white font-[family-name:var(--font-montserrat)] tracking-[-0.01em] text-[#394C97]">
       <ShopAllHero hero={shop.shopAll} />
-      <FilterGrid products={sortLikeOriginal('shop-all', products)} membership={membership} mode="shopAll" ageOptions={shop.ageFilters} categoryOptions={shop.categoryFilters} />
+      <FilterGrid products={sortLikeOriginal('shop-all', onlyOriginal('shop-all', products))} membership={membership} mode="shopAll" ageOptions={shop.ageFilters} categoryOptions={shop.categoryFilters} />
       <Footer />
     </div>
   )

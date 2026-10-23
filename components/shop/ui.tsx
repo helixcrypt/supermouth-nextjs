@@ -32,6 +32,14 @@ export const SplitTitle = ({ word, script, color = TEAL, className = '' }: { wor
 )
 
 const ORDER = shop.order as Record<string, readonly string[]>
+/** Keep only the products supermouth.com lists on a given page (all items if no list is captured). */
+export function onlyOriginal<T extends { title: string }>(key: string, items: T[]): T[] {
+  const order = ORDER[key]
+  if (!order) return items
+  const kept = items.filter(i => order.includes(norm(i.title)))
+  return kept.length >= order.length * 0.6 ? kept : items
+}
+
 /** Sort products into the order supermouth.com shows them on a given page; unknown products go last. */
 export function sortLikeOriginal<T extends { title: string }>(key: string, items: T[]): T[] {
   const order = ORDER[key]
