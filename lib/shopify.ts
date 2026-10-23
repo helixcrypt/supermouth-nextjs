@@ -328,3 +328,47 @@ export async function removeFromCart(cartId: string, lineId: string) {
   const data = await shopifyFetch<any>({ query, variables: { cartId, lineIds: [lineId] } })
   return data.cartLinesRemove.cart
 }
+
+// ── Product detail (product & system page templates) ─────
+
+export async function getProductDetail(handle: string) {
+  const query = `
+    query GetProductDetail($handle: String!) {
+      product(handle: $handle) {
+        id
+        title
+        handle
+        description
+        descriptionHtml
+        productType
+        tags
+        options { name values }
+        priceRange {
+          minVariantPrice { amount currencyCode }
+          maxVariantPrice { amount currencyCode }
+        }
+        images(first: 40) { edges { node { url altText } } }
+        variants(first: 100) {
+          edges {
+            node {
+              id
+              title
+              availableForSale
+              price { amount currencyCode }
+              compareAtPrice { amount currencyCode }
+              selectedOptions { name value }
+              image { url altText }
+            }
+          }
+        }
+      }
+    }
+  `
+  try {
+    const data = await shopifyFetch<any>({ query, variables: { handle } })
+    return data.product
+  } catch (error) {
+    console.error('getProductDetail error:', error)
+    return null
+  }
+}
