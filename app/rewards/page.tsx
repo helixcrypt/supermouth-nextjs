@@ -1,109 +1,156 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import Footer from '@/components/Footer'
+import Accordion from '@/components/info/Accordion'
+import { faqData } from '@/components/info/faq-data'
 
 export const metadata = {
-  title: 'Rewards Program — SuperMouth',
-  description: 'Earn store credit back on every SuperMouth purchase. The more you buy, the more you save.',
+  title: 'Rewards & Referrals — SuperMouth',
+  description: 'Earn SuperBucks every time you care for your mouth, then redeem for money off or free products.',
 }
 
-const tiers = [
-  { name: 'Starter', spend: '$0+', reward: '5% back', color: 'bg-sm-teal-bg border-sm-teal', icon: '🦷' },
-  { name: 'Super', spend: '$200+', reward: '8% back', color: 'bg-sm-peach border-orange-300', icon: '⭐' },
-  { name: 'SuperMouth Pro', spend: '$500+', reward: '12% back', color: 'bg-sm-yellow/20 border-sm-yellow', icon: '🏆' },
+const BLUE = '#394C97'
+const SCRIPT = { fontFamily: 'var(--font-script), cursive' }
+
+// Account-dependent actions (balance, referral link, redemption) live in the customer account.
+const ACCOUNT = '/account'
+
+const steps = [
+  { n: '1.', title: 'join free', text: 'Join our newsletter or make your 1st purchase to automatically join.', cta: 'SIGN UP / SIGN IN', href: ACCOUNT },
+  { n: '2.', title: 'earn SB', text: '1 SB for every $1 you spend.', note: '(product subtotal; excludes tax, shipping, gift cards)', cta: 'START EARNING', href: '/shop-all' },
+  { n: '3.', title: 'redeem SB', text: 'take dollars off or choose a free product group.', cta: 'REDEEM SUPERBUCKS', href: ACCOUNT },
 ]
 
-const ways = [
-  { icon: '🛍️', title: 'Make a Purchase', desc: 'Earn store credit on every order — automatically added to your account.' },
-  { icon: '📧', title: 'Sign Up for Emails', desc: 'Subscribe to our newsletter and earn bonus store credit.' },
-  { icon: '🎂', title: 'Birthday Bonus', desc: 'We celebrate your birthday with a special reward just for you.' },
-  { icon: '📱', title: 'Follow on Social', desc: 'Connect with us on Instagram, TikTok, or Facebook for bonus points.' },
-  { icon: '⭐', title: 'Write a Review', desc: 'Share your experience and earn store credit for every approved review.' },
-  { icon: '👫', title: 'Refer a Friend', desc: 'Give friends 15% off their first order and earn store credit when they buy.' },
+const earn = [
+  { t: 'starter SuperBucks:', d: '+100 SB credited when you join (existing customers receive a one-time "Founding Member" +100SB)' },
+  { t: 'make a purchase:', d: '1 SB per $1' },
+  { t: 'subscriptions:', d: '1.25x SB on every renewal' },
+  { t: 'write a verified review', d: '+50 SB (1 per order)' },
+  { t: 'add photo/video to your review:', d: '+100 SB (1 per order)' },
+  { t: 'take the assessment:', d: '+50 SB (one time)' },
+  { t: 'bonus SB on select products:', d: 'look for the "Bonus SB" badge' },
+  { t: 'birthday SB', d: '+100 SB once per year (month & year only)' },
 ]
+
+const referralSteps = [
+  { n: '1.', title: 'share your link', text: '(SMS, WhatsApp, Messenger, or email).', cta: 'GET MY LINK', href: ACCOUNT },
+  { n: '2.', title: 'friend checks out', text: 'with $10 off applied.' },
+  { n: '3.', title: 'you earn 200 SB', text: 'when their order ships.' },
+]
+
+const milestones = [
+  { k: '3 Friends:', v: '300 extra SB', bg: '#F59E44' },
+  { k: '5 Friends:', v: '300 extra SB', bg: '#0BAAC0' },
+  { k: '10 Friends:', v: '900 extra SB', bg: BLUE },
+]
+
+const levels = [
+  { l: 'Level 1:', name: 'Explorer', sb: '100 SB', off: '$5 off or', item: 'free selected item up to $9.99', bg: '#FEE81F', fg: BLUE },
+  { l: 'Level 2:', name: 'Protector', sb: '500 SB', off: '$25 off or', item: 'free selected item up to $49.99', bg: '#F59E44', fg: '#FFFFFF' },
+  { l: 'Level 3:', name: 'Champion', sb: '750 SB', off: '$50 off or', item: 'free selected item up to $74.99', bg: '#EC695D', fg: '#FFFFFF' },
+  { l: 'Level 4:', name: 'Hero', sb: '1,000 SB', off: '$75 off or', item: 'free selected item up to $99.99', bg: '#0BAAC0', fg: '#FFFFFF' },
+  { l: 'Level 5:', name: 'Legend', sb: '2,500 SB', off: '$200 off or', item: 'free selected item up to $250', bg: '#5AC3B4', fg: '#FFFFFF' },
+]
+
+const StepCard = ({ n, title, text, note, cta, href, border, numColor, linkColor }: { n: string; title: string; text: string; note?: string; cta?: string; href?: string; border: string; numColor: string; linkColor: string }) => (
+  <div className="relative rounded-lg border-2 px-6 pt-8 pb-6 text-center min-h-[240px] flex flex-col" style={{ borderColor: border }}>
+    <span className="absolute -top-6 left-1/2 -translate-x-1/2 px-4 text-[36px] leading-[44px]" style={{ ...SCRIPT, color: numColor, background: 'inherit' }}>{n}</span>
+    <h3 className="text-[22px] md:text-[24px] leading-8 font-bold">{title}</h3>
+    <p className="mt-4 text-[18px] md:text-[20px] leading-7">{text}</p>
+    {note && <p className="mt-1 text-[14px] leading-5 opacity-80">{note}</p>}
+    {cta && href && <Link href={href} className="mt-auto pt-6 text-[16px] md:text-[18px] underline font-medium" style={{ color: linkColor }}>{cta}</Link>}
+  </div>
+)
 
 export default function RewardsPage() {
+  const groups = faqData.rewards
   return (
-    <div className="bg-sm-bg text-sm-navy">
-      {/* Hero */}
-      <section className="bg-sm-navy text-white py-20 text-center">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-sm-yellow text-xs font-bold uppercase tracking-widest mb-4">SuperMouth Rewards</p>
-          <h1 className="font-display font-black text-4xl md:text-6xl mb-4">
-            Earn Up to <span className="text-sm-yellow">$75</span> in Store Credit Back
-          </h1>
-          <p className="text-white/70 text-sm max-w-xl mx-auto mb-8">
-            Every purchase earns you store credit. The more you invest in your family's oral health, the more you get back. Lock in 15% off subscriptions for life.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/shop-all" className="bg-sm-yellow text-sm-navy font-bold px-8 py-4 rounded-full text-sm hover:opacity-90 transition-opacity">
-              Start Earning Now →
-            </Link>
-            <Link href="/account" className="border border-white/40 text-white font-semibold px-8 py-4 rounded-full text-sm hover:bg-white/10 transition-colors">
-              Sign In to Your Account
-            </Link>
+    <div className="bg-white font-[family-name:var(--font-montserrat)] tracking-[-0.01em]" style={{ color: BLUE }}>
+      {/* HERO */}
+      <section className="bg-[#5AC3B2]">
+        <div className="max-w-[1280px] mx-auto px-4 md:px-6 py-10 grid md:grid-cols-[1fr_320px] gap-8 items-center">
+          <div className="text-white">
+            <h1 className="text-[40px] md:text-[48px] leading-[56px]">
+              <span className="text-[#394C97]" style={SCRIPT}>rewards</span> <span className="font-bold text-[36px] md:text-[40px]">and</span> <span className="text-[#394C97]" style={SCRIPT}>referrals</span>
+            </h1>
+            <p className="mt-6 text-[18px] md:text-[20px] leading-7 max-w-[640px]">Earn SuperBucks (SB) every time you care for your mouth - then redeem for money off or free products. Share SuperMouth with friends to earn even more.</p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              {[['REWARDS', '#rewards'], ['REFERRALS', '#referrals'], ['REDEEM', '#redeem']].map(([l, h]) => (
+                <a key={l} href={h} className="min-w-[187px] text-center bg-[#FFE920] text-[#394C97] text-[18px] leading-7 py-2 px-6 rounded hover:opacity-90">{l}</a>
+              ))}
+            </div>
+          </div>
+          <Image src="/info/rewards-sb-coin.png" alt="SuperBucks coin" width={320} height={320} className="mx-auto w-[220px] md:w-[320px] h-auto" priority />
+        </div>
+      </section>
+
+      {/* REWARDS */}
+      <section id="rewards" className="text-white scroll-mt-28" style={{ background: BLUE }}>
+        <div className="max-w-[1312px] mx-auto px-4 pt-6 pb-10">
+          <h2 className="text-[40px] md:text-[44px] leading-[56px] text-[#F8D41B]" style={SCRIPT}>rewards</h2>
+          <div className="mt-10 grid md:grid-cols-3 gap-10 md:gap-4 [&>div]:bg-[#394C97]">
+            {steps.map(s => <StepCard key={s.n} {...s} border="#F8D41B" numColor="#F8D41B" linkColor="#F8D41B" />)}
+          </div>
+          <h3 className="mt-10 text-center text-[28px] md:text-[30px] leading-9 font-bold">ways to earn</h3>
+          <ul className="mt-6 grid sm:grid-cols-2 lg:grid-cols-5 gap-x-6 gap-y-8">
+            {earn.map(e => (
+              <li key={e.t} className="flex gap-3">
+                <span className="mt-0.5 grid place-items-center w-6 h-6 shrink-0 rounded-full bg-[#F8D41B] text-[#394C97] text-[13px] font-bold" aria-hidden>✓</span>
+                <span className="text-[16px] leading-6"><b className="block">{e.t}</b>{e.d}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* REFERRALS */}
+      <section id="referrals" className="bg-white scroll-mt-28">
+        <div className="max-w-[1280px] mx-auto px-4 pt-4 pb-12 text-center">
+          <h2 className="text-left text-[40px] md:text-[44px] leading-[56px] text-[#0BAAC0]" style={SCRIPT}>referrals</h2>
+          <p className="text-[28px] md:text-[30px] leading-9 font-bold">refer a friend!</p>
+          <p className="mt-4 text-[17px] md:text-[18px] leading-7">They&apos;ll get <b>$10 off</b> their first order of <b>$40+</b>, and you&apos;ll earn <b>200 SB</b> after their order ships.</p>
+          <p className="mt-1 text-[13px] italic">First-time customers only. Free shipping on $50+ orders.</p>
+          <h3 className="mt-10 text-[28px] md:text-[30px] leading-9 font-bold">how to make a referral</h3>
+          <div className="mt-10 grid md:grid-cols-3 gap-10 md:gap-4 text-left [&>div]:bg-white">
+            {referralSteps.map(s => <StepCard key={s.n} {...s} border="#7DCFCB" numColor="#5AC3B2" linkColor="#5AC3B2" />)}
+          </div>
+          <h3 className="mt-10 text-[28px] md:text-[30px] leading-9 font-bold">referral milestones</h3>
+          <p className="mt-2 text-[15px] leading-6">bonuses that stack on top of your 200 SuperBucks per referral.</p>
+          <div className="mt-6 grid md:grid-cols-3 gap-4">
+            {milestones.map(m => (
+              <div key={m.k} className="py-4 text-white text-[18px] md:text-[20px]" style={{ background: m.bg }}><b>{m.k}</b> {m.v}</div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Tiers */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="font-display font-black text-3xl text-center mb-3 text-sm-navy">Reward Tiers</h2>
-        <p className="text-sm-gray text-sm text-center mb-10">The more you spend, the more you earn back on every order.</p>
-        <div className="grid md:grid-cols-3 gap-6">
-          {tiers.map(tier => (
-            <div key={tier.name} className={`rounded-2xl border-2 p-8 text-center ${tier.color}`}>
-              <div className="text-4xl mb-4">{tier.icon}</div>
-              <h3 className="font-display font-black text-xl mb-1 text-sm-navy">{tier.name}</h3>
-              <p className="text-sm-gray text-xs mb-4">{tier.spend} annual spend</p>
-              <p className="font-display font-black text-3xl text-sm-purple">{tier.reward}</p>
-              <p className="text-xs text-sm-gray mt-1">on every purchase</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Ways to earn */}
-      <section className="bg-white py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-display font-black text-3xl text-center mb-3 text-sm-navy">Ways to Earn</h2>
-          <p className="text-sm-gray text-sm text-center mb-10">More ways to rack up store credit beyond just shopping.</p>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
-            {ways.map(way => (
-              <div key={way.title} className="bg-sm-bg rounded-2xl p-6">
-                <div className="text-3xl mb-3">{way.icon}</div>
-                <h3 className="font-display font-bold text-base mb-2 text-sm-navy">{way.title}</h3>
-                <p className="text-sm text-sm-gray leading-relaxed">{way.desc}</p>
+      {/* REDEEM */}
+      <section id="redeem" className="text-white scroll-mt-28" style={{ background: BLUE }}>
+        <div className="max-w-[1280px] mx-auto px-4 pt-4 pb-12 text-center">
+          <h2 className="text-left text-[40px] md:text-[44px] leading-[56px] text-[#F8D41B]" style={SCRIPT}>redeem</h2>
+          <p className="text-[28px] md:text-[30px] leading-9 font-bold">how to redeem SuperBucks</p>
+          <p className="mt-1 text-[18px] md:text-[20px] leading-7">To redeem your SuperBucks, go to our redemption page and place your order. Below are the current redemption levels to choose from:</p>
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-5 gap-4">
+            {levels.map(l => (
+              <div key={l.name} className="py-5 px-2" style={{ background: l.bg, color: l.fg }}>
+                <p className="text-[18px] md:text-[20px] leading-7 font-bold">{l.l}<br />{l.name}</p>
+                <p className="mt-3 text-[13px] leading-5">{l.sb} → {l.off}<br />{l.item}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How to redeem */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <h2 className="font-display font-black text-3xl mb-4 text-sm-navy">How to Redeem</h2>
-        <p className="text-sm-gray text-sm mb-8">Your store credit is applied automatically at checkout. No codes needed — just shop and save.</p>
-        <div className="grid grid-cols-3 gap-6 mb-10">
-          {[
-            { step: '1', label: 'Create an account or sign in' },
-            { step: '2', label: 'Shop and earn credit automatically' },
-            { step: '3', label: 'Credit applies at checkout' },
-          ].map(s => (
-            <div key={s.step} className="text-center">
-              <div className="w-12 h-12 bg-sm-yellow rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="font-display font-black text-sm-navy text-lg">{s.step}</span>
-              </div>
-              <p className="text-xs text-sm-gray leading-snug">{s.label}</p>
+      {/* FAQ */}
+      <section className="max-w-[1312px] mx-auto px-4 pt-12 pb-16">
+        <h2 className="text-center text-[28px] md:text-[30px] leading-9 font-bold">rewards &amp; referrals FAQ</h2>
+        <div className="mt-6 grid md:grid-cols-2 gap-x-4 gap-y-8 items-start">
+          {groups.map(g => (
+            <div key={g.cat}>
+              <h3 className="px-4 pb-1 text-[22px] md:text-[24px] leading-8 text-[#7DCFCB] border-b-2 border-[#7DCFCB]">{g.cat}</h3>
+              <Accordion items={g.items} size="md" />
             </div>
           ))}
-        </div>
-        <div className="flex flex-wrap justify-center gap-4">
-          <Link href="/account" className="bg-sm-yellow text-sm-navy font-bold px-8 py-4 rounded-full text-sm hover:opacity-90 transition-opacity">
-            Sign In to View Your Rewards
-          </Link>
-          <Link href="/shop-all" className="bg-sm-purple text-white font-bold px-8 py-4 rounded-full text-sm hover:opacity-90 transition-opacity">
-            Shop Now
-          </Link>
         </div>
       </section>
 
