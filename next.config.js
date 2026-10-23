@@ -11,11 +11,10 @@ const nextConfig = {
   async redirects() {
     return [
       { source: '/account', destination: 'https://newsupermouth.myshopify.com/account', permanent: false },
-      { source: '/pages/systems', destination: '/systems-overview', permanent: true },
-      { source: '/pages/supermouth-quiz', destination: '/assessment', permanent: true },
-      { source: '/pages/assessment', destination: '/assessment', permanent: true },
       { source: '/collections/:collection/products/:product', destination: '/products/:product', permanent: true },
-      { source: '/pages/:slug', destination: '/:slug', permanent: true },
+      { source: '/pages/systems', destination: '/systems-overview', permanent: false },
+      { source: '/pages/:slug(supermouth-quiz|assessment)', destination: '/assessment', permanent: false },
+      { source: '/pages/:slug((?!systems$|supermouth-quiz$|assessment$).*)', destination: '/:slug', permanent: false },
     ]
   },
 }

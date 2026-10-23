@@ -29,7 +29,7 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
             <Image src={a.hero} alt={a.heroAlt || a.title} width={1200} height={675} priority className="mt-2 w-full h-auto" />
           )}
           <div
-            className="article-body pt-6 text-[16px] leading-[1.6] text-[#1f2340]
+            className="article-body min-w-0 break-words pt-6 text-[16px] leading-[1.6] text-[#1f2340] [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_img]:max-w-full [&_img]:h-auto [&_iframe]:max-w-full [&_pre]:overflow-x-auto [&_a]:break-words
               [&_p]:mb-4 [&_ul]:mb-4 [&_ol]:mb-4 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_li]:mb-1
               [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:text-[20px] [&_h2]:leading-7 [&_h2]:font-bold [&_h2]:text-[#394C97]
               [&_h3]:mt-5 [&_h3]:mb-2 [&_h3]:text-[17px] [&_h3]:font-bold [&_h3]:text-[#2BB3A6]
