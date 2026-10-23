@@ -14,7 +14,8 @@ export async function generateStaticParams() {
   }
 }
 
-export async function generateMetadata({ params }: { params: { handle: string } }) {
+export async function generateMetadata(props: { params: Promise<{ handle: string }> }) {
+  const params = await props.params
   const product = await getProductDetail(decodeURIComponent(params.handle))
   if (!product) return {}
   return {
@@ -23,7 +24,8 @@ export async function generateMetadata({ params }: { params: { handle: string } 
   }
 }
 
-export default async function ProductPage({ params }: { params: { handle: string } }) {
+export default async function ProductPage(props: { params: Promise<{ handle: string }> }) {
+  const params = await props.params
   const handle = decodeURIComponent(params.handle)
   const product = await getProductDetail(handle)
   if (!product) notFound()

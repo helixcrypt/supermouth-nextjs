@@ -69,14 +69,16 @@ export function generateStaticParams() {
   return Object.keys(SYSTEMS).map(slug => ({ slug }))
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params
   const sys = SYSTEMS[params.slug]
   if (!sys) return {}
   const c = loadContent(params.slug)
   return { title: `SuperMouth Systems ${sys.label} — SuperMouth`, description: c?.header.shortDesc?.slice(0, 160) }
 }
 
-export default async function SystemPage({ params }: { params: { slug: string } }) {
+export default async function SystemPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params
   const sys = SYSTEMS[params.slug]
   if (!sys) notFound()
   const content = loadContent(params.slug)

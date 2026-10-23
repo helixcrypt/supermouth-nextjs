@@ -12,7 +12,8 @@ export const metadata: Metadata = {
 const BLUE = '#394C97'
 const SCRIPT = { fontFamily: 'var(--font-script), cursive' }
 
-export default function LearnPage({ searchParams }: { searchParams: { page?: string } }) {
+export default async function LearnPage(props: { searchParams: Promise<{ page?: string }> }) {
+  const searchParams = await props.searchParams
   const pages = Math.ceil(articles.length / PAGE_SIZE)
   const page = Math.min(Math.max(1, parseInt(searchParams.page || '1', 10) || 1), pages)
   const list = articles.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)

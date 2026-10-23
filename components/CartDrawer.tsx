@@ -16,12 +16,12 @@ export default function CartDrawer() {
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2147483646]"
         onClick={closeCart}
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-sm-dark z-50 cart-drawer flex flex-col shadow-2xl">
+      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-sm-dark z-[2147483647] cart-drawer flex flex-col shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <h2 className="font-display font-bold text-lg">Your Cart</h2>

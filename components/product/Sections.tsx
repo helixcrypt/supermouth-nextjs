@@ -1,3 +1,4 @@
+import type React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import Carousel from '@/components/home/Carousel'
@@ -17,9 +18,9 @@ function Img({ src, alt, className, w = 600, h = 600 }: { src: string | null; al
 
 function Comparison({ s }: { s: ComparisonSection }) {
   // Colour the highlighted words of the title the way the original does
-  let title: (string | JSX.Element)[] = [s.title]
+  let title: (string | React.JSX.Element)[] = [s.title]
   for (const sp of s.titleSpans.filter(x => x.t.trim())) {
-    title = title.flatMap((part): (string | JSX.Element)[] => {
+    title = title.flatMap((part): (string | React.JSX.Element)[] => {
       if (typeof part !== 'string' || !part.includes(sp.t)) return [part]
       const [a, ...rest] = part.split(sp.t)
       return [a, <span key={sp.t} style={{ color: sp.c }}>{sp.t}</span>, rest.join(sp.t)]
