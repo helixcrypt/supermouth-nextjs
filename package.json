@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@shopify/hydrogen-react": "^2024.4.3",
     "next": "15.5.28",
     "react": "19.1.1",
     "react-dom": "19.1.1"
