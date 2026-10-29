@@ -29,5 +29,50 @@ export default function QunicerAgent() {
     document.body.appendChild(script)
   }, [])
 
+  // TEMPORARY WORKAROUND (added Oct 29 2026; remove once Quincer fixes it):
+  // the widget does not scroll to new replies, so on phones Emma's answers and
+  // product cards land below the visible area. Keep .cw-messages pinned to the
+  // bottom when content arrives, unless the shopper scrolled within the last 4s.
+  useEffect(() => {
+    let box: HTMLElement | null = null
+    let lastUserScroll = 0
+    let pending = 0
+    const markUser = () => { lastUserScroll = Date.now() }
+    const toBottom = () => {
+      if (!box || Date.now() - lastUserScroll < 4000) return
+      cancelAnimationFrame(pending)
+      pending = requestAnimationFrame(() => { if (box) box.scrollTop = box.scrollHeight })
+    }
+    const inner = new MutationObserver(toBottom)
+    const attach = () => {
+      const found = document.querySelector<HTMLElement>('.cw-messages')
+      if (!found || found === box) return
+      if (box) {
+        box.removeEventListener('wheel', markUser)
+        box.removeEventListener('touchmove', markUser)
+        box.removeEventListener('load', toBottom, true)
+      }
+      box = found
+      inner.disconnect()
+      inner.observe(box, { childList: true, subtree: true, characterData: true })
+      box.addEventListener('wheel', markUser, { passive: true })
+      box.addEventListener('touchmove', markUser, { passive: true })
+      box.addEventListener('load', toBottom, true) // card images change height after load
+      toBottom()
+    }
+    const outer = new MutationObserver(attach)
+    outer.observe(document.body, { childList: true, subtree: true })
+    // Replies held while iOS froze the page appear on wake; jump to them.
+    const onVisible = () => { if (document.visibilityState === 'visible') { lastUserScroll = 0; toBottom() } }
+    document.addEventListener('visibilitychange', onVisible)
+    attach()
+    return () => {
+      outer.disconnect()
+      inner.disconnect()
+      document.removeEventListener('visibilitychange', onVisible)
+      cancelAnimationFrame(pending)
+    }
+  }, [])
+
   return null
 }
