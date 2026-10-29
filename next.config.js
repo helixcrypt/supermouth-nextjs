@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    minimumCacheTTL: 0,
+    // Serve images directly instead of through Vercel Image Optimization:
+    // the Hobby plan's monthly optimization quota ran out (402 errors, Oct 29 2026),
+    // which left most product photos blank. Shopify's CDN already resizes and compresses.
+    unoptimized: true,
     remotePatterns: [
       { protocol: 'https', hostname: 'cdn.shopify.com' },
       { protocol: 'https', hostname: 'pics.io' },
