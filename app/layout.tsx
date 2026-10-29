@@ -24,6 +24,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${montserrat.variable} ${script.variable}`}>
       <body className="bg-sm-navy text-sm-white font-sans antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'SuperMouth',
+              url: 'https://www.gregorypatterson.com',
+              logo: 'https://www.gregorypatterson.com/cdn/supermouth-logo-square.png',
+            }),
+          }}
+        />
         <CartProvider>
           <Navbar />
           <main>{children}</main>
