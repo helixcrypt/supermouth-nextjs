@@ -17,7 +17,7 @@ export default function QunicerAgent() {
     }
 
     w.ChatWidgetConfig = {
-      apiKey: 'cw_live_1263a1242a91bbe2959217091769e01bba6ef1a0262d670b',
+      apiKey: 'cw_live_585864e8db83d5dbeafc7d5e4dd2a35d4a8669a9c037ed93',
       apiUrl: 'https://chat.quincer.com/api', // Uses default persona, or auto-detects from URL patterns
     }
 
