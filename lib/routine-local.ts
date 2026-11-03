@@ -15,6 +15,7 @@
  */
 
 import { start, answer, question, record, codeFor, encode, decode, GOALS, State, Member, label } from './routine/engine'
+import { logStart, logResume, logEvent, logHandoff, logShopperFollowup } from './routine-log-client'
 
 const KEY = 'sm_routine_local_v1'
 const START_TEXT = /^\s*(build my routine|find my routine|find my oral care routine)\s*[.!]*\s*$/i
@@ -26,6 +27,7 @@ let resumeAfterEmma = false
 /** Marks a side question sent to Emma mid-interview; the page hides it in the shopper's bubble. */
 export const SIDE_MARK = '(Side question during my routine) '
 function askEmmaSide(text: string) {
+  if (active) logEvent({ kind: 'side', step: question(active).step })
   resumeAfterEmma = true
   removeChips()
   w().ChatWidget?.open?.(SIDE_MARK + text)
@@ -170,6 +172,7 @@ function textFor(st: State): string {
 function ask(prefix = '') {
   if (!active) return
   const q = question(active)
+  logEvent({ kind: 'question', step: q.step, about: q.about })
   addBot((prefix ? prefix + '\n\n' : '') + textFor(active))
   showChips(q.choices)
 }
@@ -182,6 +185,7 @@ function finish() {
   const codes = st.members.map(codeFor).filter(Boolean).join(' ')
   const goal = st.goal ? GOALS[st.goal] : 'not given'
   const habit = st.habit === 'r' ? 'room to build' : st.habit === 's' ? 'pretty solid' : 'not given'
+  logHandoff(codes, goal, habit, encode(st))
   active = null
   save()
   removeChips()
@@ -193,9 +197,16 @@ function finish() {
 function handle(text: string, fromChip = false) {
   if (!active) return
   addUser(text)
+  const before = question(active)
+  const kidsBefore = active.members.length
   const probe = decode(encode(active))!
   const r = answer(probe, text)
   if (r.ok) {
+    // log the button label, or for typed answers only what was understood (never the raw text)
+    const value = fromChip ? text
+      : before.step === 'a' ? r.state.members.slice(kidsBefore).map(m => m.bracket).join(',')
+      : '[typed]'
+    logEvent({ kind: before.step === 'r' && /start over/i.test(text) ? 'restart' : 'answer', step: before.step, about: before.about, value, state: encode(r.state) })
     active = r.state
     save()
     const q = question(active)
@@ -208,11 +219,12 @@ function handle(text: string, fromChip = false) {
     ask()
     return
   }
+  logEvent({ kind: 'unparsed', step: before.step })
   ask(fromChip ? '' : "Sorry, I didn't catch that.")
 }
 
 /** Start the interview in Emma's window. */
-export function startLocalInterview() {
+export function startLocalInterview(source = 'menu') {
   let tries = 0
   const go = () => {
     const ready = w().ChatWidget?.open && document.querySelector('.cw-messages')
@@ -220,6 +232,7 @@ export function startLocalInterview() {
     try { w().ChatWidget.open() } catch { /* opens on next try */ }
     active = start()
     save()
+    logStart(source)
     addUser('Build my routine')
     ask("Let's build your routine. I'll ask a few quick questions; tap an answer or type it.")
   }
@@ -236,6 +249,7 @@ export function resumeLocalInterview() {
   const go = () => {
     if (!document.querySelector('.cw-messages')) { if (++tries < 60) setTimeout(go, 250); return }
     active = st
+    logResume()
     ask("Let's pick up where we left off.")
   }
   go()
@@ -259,9 +273,10 @@ export function installRoutineInterception(): () => void {
     const chip = t?.closest?.('.cw-slot-chip') as HTMLElement | null
     if (chip && !chip.closest('.sm-routine-chips') && START_TEXT.test(chip.textContent || '')) {
       e.preventDefault(); e.stopImmediatePropagation()
-      startLocalInterview()
+      startLocalInterview('starter_chip')
       return
     }
+    if (chip && !active && !chip.closest('.sm-routine-chips')) logShopperFollowup()
     const send = t?.closest?.('.cw-send')
     if (send && interceptTyped()) { e.preventDefault(); e.stopImmediatePropagation() }
   }
@@ -285,7 +300,8 @@ function interceptTyped(): boolean {
     input.dispatchEvent(new Event('input', { bubbles: true }))
   }
   if (!active) {
-    if (START_TEXT.test(text)) { clear(); startLocalInterview(); return true }
+    if (START_TEXT.test(text)) { clear(); startLocalInterview('typed'); return true }
+    logShopperFollowup()
     return false
   }
   // during the interview: a question to Emma goes to Emma (unless it is exactly a button),

@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { openEmma, cleanRoutineCode, EMMA_BUILD_ROUTINE } from '@/lib/emma'
 import { ensureRoutineButtons, hideStateTokens } from '@/lib/routine-buttons-client'
 import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive, hideSideMarks } from '@/lib/routine-local'
+import { logEmmaReply } from '@/lib/routine-log-client'
 
 const WIDGET_SRC = 'https://chat.quincer.com/api/embed/widget.js'
 
@@ -41,7 +42,7 @@ export default function QunicerAgent() {
     const code = cleanRoutineCode(params.get('code'))
     const start = params.get('routine') === 'start'
     if (code || start) {
-      openEmma(code ? `My routine code is ${code}` : EMMA_BUILD_ROUTINE)
+      openEmma(code ? `My routine code is ${code}` : EMMA_BUILD_ROUTINE, 'link')
       params.delete('code'); params.delete('routine')
       const q = params.toString()
       window.history.replaceState(null, '', window.location.pathname + (q ? `?${q}` : '') + window.location.hash)
@@ -54,7 +55,7 @@ export default function QunicerAgent() {
       try { url = new URL(a.href, window.location.href) } catch { return }
       if (url.origin !== window.location.origin || url.pathname !== '/assessment') return
       e.preventDefault()
-      openEmma(EMMA_BUILD_ROUTINE)
+      openEmma(EMMA_BUILD_ROUTINE, 'menu')
     }
     document.addEventListener('click', onClick, true)
     return () => document.removeEventListener('click', onClick, true)
@@ -66,7 +67,19 @@ export default function QunicerAgent() {
   useEffect(() => {
     let t: ReturnType<typeof setTimeout> | undefined
     const later = (ms: number) => { clearTimeout(t); t = setTimeout(() => { if (!isLocalInterviewActive()) ensureRoutineButtons() }, ms) }
-    const onDone = () => { afterEmmaReply(); later(700) }
+    const onDone = () => {
+      afterEmmaReply()
+      later(700)
+      // quality log: Emma's replies right after a routine handoff (her text only, token removed)
+      setTimeout(() => {
+        const b = document.querySelector('.cw-messages')
+        if (!b) return
+        hideStateTokens(b)
+        const bots = b.querySelectorAll('.cw-msg-bot:not(.sm-local)')
+        const last = bots[bots.length - 1] as HTMLElement | undefined
+        if (last) logEmmaReply(last.innerText)
+      }, 400)
+    }
     const uninstall = installRoutineInterception()
     resumeLocalInterview()
     window.addEventListener('quincer:done', onDone)

@@ -10,10 +10,10 @@ export const EMMA_HAVE_CODE = 'I have a routine code'
  * Open the Emma chat widget and send a message as the shopper.
  * The widget script loads after the page, so wait for it (up to ~10 seconds).
  */
-export function openEmma(message: string) {
+export function openEmma(message: string, source = 'menu') {
   if (typeof window === 'undefined') return
   // the routine interview runs on the page, inside Emma's window
-  if (message === EMMA_BUILD_ROUTINE) { startLocalInterview(); return }
+  if (message === EMMA_BUILD_ROUTINE) { startLocalInterview(source); return }
   const w = window as any
   let tries = 0
   // ChatWidget exists as soon as the script loads, but open() does nothing until the
