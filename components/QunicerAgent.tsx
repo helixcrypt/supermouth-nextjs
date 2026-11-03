@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { openEmma, cleanRoutineCode, EMMA_BUILD_ROUTINE } from '@/lib/emma'
 import { ensureRoutineButtons, hideStateTokens } from '@/lib/routine-buttons-client'
-import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive } from '@/lib/routine-local'
+import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive, hideSideMarks } from '@/lib/routine-local'
 
 const WIDGET_SRC = 'https://chat.quincer.com/api/embed/widget.js'
 
@@ -73,7 +73,7 @@ export default function QunicerAgent() {
     const first = setTimeout(() => later(0), 4000)
     // hide Emma's interview state tokens as soon as they appear (also while a reply streams in)
     let box: Element | null = null
-    const obs = new MutationObserver(() => { if (box) hideStateTokens(box) })
+    const obs = new MutationObserver(() => { if (box) { hideStateTokens(box); hideSideMarks(box) } })
     const attach = setInterval(() => {
       const found = document.querySelector('.cw-messages')
       if (found && found !== box) {

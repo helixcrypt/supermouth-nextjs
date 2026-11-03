@@ -23,6 +23,23 @@ const QUESTIONISH = /\?\s*$|^(what|how|why|is|are|can|could|does|do|should|which
 let active: State | null = null
 let resumeAfterEmma = false
 
+/** Marks a side question sent to Emma mid-interview; the page hides it in the shopper's bubble. */
+export const SIDE_MARK = '(Side question during my routine) '
+function askEmmaSide(text: string) {
+  resumeAfterEmma = true
+  removeChips()
+  w().ChatWidget?.open?.(SIDE_MARK + text)
+}
+
+/** Hide the side-question mark in the shopper's bubbles. */
+export function hideSideMarks(root: Element) {
+  root.querySelectorAll('.cw-msg-user').forEach(u => {
+    const t = u.firstChild
+    if (t && t.nodeType === 3 && t.nodeValue && t.nodeValue.startsWith(SIDE_MARK)) t.nodeValue = t.nodeValue.slice(SIDE_MARK.length)
+    else if (u.textContent?.startsWith(SIDE_MARK) && u.childNodes.length === 1) u.textContent = u.textContent.slice(SIDE_MARK.length)
+  })
+}
+
 const w = () => window as any
 const box = () => document.querySelector('.cw-messages')
 
@@ -185,8 +202,7 @@ function handle(text: string, fromChip = false) {
     if (q.step === 'done') { finish(); return }
     if (r.question.note && /Explain/.test(r.question.note)) {
       // "Tell me more": let Emma explain, then ask again
-      resumeAfterEmma = true
-      w().ChatWidget?.open?.('Can you tell me more about fluoride versus fluoride-free toothpaste?')
+      askEmmaSide('Tell me more about fluoride versus fluoride-free toothpaste.')
       return
     }
     ask()
@@ -275,8 +291,8 @@ function interceptTyped(): boolean {
   // during the interview: a question to Emma goes to Emma (unless it is exactly a button),
   // anything else is treated as an answer on the page
   const exact = question(active).choices.some(c => c.toLowerCase() === text.toLowerCase())
-  if (!exact && QUESTIONISH.test(text)) { resumeAfterEmma = true; removeChips(); return false }
   clear()
+  if (!exact && QUESTIONISH.test(text)) { askEmmaSide(text); return true }
   handle(text)
   return true
 }
