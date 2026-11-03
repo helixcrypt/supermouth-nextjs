@@ -104,6 +104,12 @@ function authorized(req: Request) {
 export async function POST(req: Request) {
   if (!authorized(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   const msg = await req.json().catch(() => null) as any
+  if (msg?.method === 'tools/call') {
+    // TEMP: which identity headers Quincer sends (values only for id-like, non-secret headers)
+    const hs: Record<string, string> = {}
+    req.headers.forEach((v, k) => { if (!/^(x-vercel|x-forwarded|x-real-ip|accept|connection|content-|host|forwarded|sec-|user-agent|x-matched|x-invocation|authorization)/i.test(k)) hs[k] = /token|secret|key|auth/i.test(k) ? '*' : v.slice(0, 80) })
+    console.log(JSON.stringify({ routine_headers: hs, meta: msg.params?._meta ?? null }))
+  }
   if (!msg || msg.jsonrpc !== '2.0' || typeof msg.method !== 'string') return rpc(msg?.id ?? null, undefined, { code: -32600, message: 'Invalid request' })
   if (msg.id === undefined) return new NextResponse(null, { status: 202 })    // notification
   switch (msg.method) {
