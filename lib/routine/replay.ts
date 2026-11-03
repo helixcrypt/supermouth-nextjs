@@ -17,6 +17,7 @@ export interface ReplayInput {
 export interface ReplayResult {
   st: State
   skipped: string[]
+  applied: string[]
   lastRejected?: string
   codeErrors?: string[]
   fromCode: boolean
@@ -53,16 +54,18 @@ export function replay(input: ReplayInput): ReplayResult {
   }
 
   const skipped: string[] = []
+  const applied: string[] = []
   let lastRejected: string | undefined
   answers.forEach((a, n) => {
     if (shortAfter !== null && n === shortAfter && st.mode !== 'S') st = setMode(st, 'short')
     if (st.step === 'done') return
+    const before = question(st)
     const r = answer(st, a)
-    if (r.ok) { st = r.state; lastRejected = undefined }
+    if (r.ok) { st = r.state; lastRejected = undefined; applied.push(`${before.about ? before.about + ': ' : ''}${before.ask.slice(0, 50)} => ${a.slice(0, 40)}`) }
     else { skipped.push(a); lastRejected = r.error }
   })
   if (shortAfter !== null && answers.length <= shortAfter && String(input.mode) === 'short' && st.mode !== 'S') st = setMode(st, 'short')
-  return { st, skipped, lastRejected, codeErrors, fromCode }
+  return { st, skipped, applied, lastRejected, codeErrors, fromCode }
 }
 
 /** Apply the shopper's "no" to systems: each entry names a person (as in the record, or a number). */
