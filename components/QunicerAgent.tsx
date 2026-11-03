@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { openEmma, cleanRoutineCode, EMMA_BUILD_ROUTINE } from '@/lib/emma'
+import { ensureRoutineButtons } from '@/lib/routine-buttons-client'
 
 const WIDGET_SRC = 'https://chat.quincer.com/api/embed/widget.js'
 
@@ -56,6 +57,18 @@ export default function QunicerAgent() {
     }
     document.addEventListener('click', onClick, true)
     return () => document.removeEventListener('click', onClick, true)
+  }, [])
+
+  // Routine interview buttons: after each Emma reply, make sure the current question's
+  // tap buttons are shown (Quincer sometimes leaves them out). Also checks when a
+  // restored conversation opens.
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout> | undefined
+    const later = (ms: number) => { clearTimeout(t); t = setTimeout(() => { ensureRoutineButtons() }, ms) }
+    const onDone = () => later(700)
+    window.addEventListener('quincer:done', onDone)
+    const first = setTimeout(() => later(0), 4000)
+    return () => { window.removeEventListener('quincer:done', onDone); clearTimeout(t); clearTimeout(first) }
   }, [])
 
   // TEMPORARY WORKAROUND (added Oct 29 2026; remove once Quincer fixes it):

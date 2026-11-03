@@ -163,6 +163,18 @@ async function main() {
     check('applyDeclines unknown name', applyDeclines(r3.st, ['grandma']).unknown.length === 1)
     void d
   }
+  // Page-side button segment detection
+  {
+    const { currentSegment } = await import('../lib/routine-buttons-client')
+    const s1 = currentSegment(['hello', 'Build my routine', 'Just me'])
+    check('segment after start', !!s1 && s1.answers.join('|') === 'Just me')
+    const s2 = currentSegment(['I have a routine code', 'AFM KNS'])
+    check('segment from typed code', !!s2 && s2.routine_code === 'AFM KNS' && s2.answers.length === 0)
+    const s3 = currentSegment(['My routine code is PNS', "That's right"])
+    check('segment from code message', !!s3 && s3.routine_code === 'PNS' && s3.answers.length === 1)
+    check('no segment outside interview', currentSegment(['What flavors do you have?']) === null)
+    check('waiting for code', currentSegment(['Build my routine', 'I have a routine code']) === null)
+  }
   // Tampered state rejected
   {
     const s = encode(start())
