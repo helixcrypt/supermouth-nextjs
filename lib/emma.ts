@@ -1,5 +1,7 @@
 'use client'
 
+import { startLocalInterview } from './routine-local'
+
 /** Messages a page can open Emma with. The routine interview starts on these. */
 export const EMMA_BUILD_ROUTINE = 'Build my routine'
 export const EMMA_HAVE_CODE = 'I have a routine code'
@@ -10,6 +12,8 @@ export const EMMA_HAVE_CODE = 'I have a routine code'
  */
 export function openEmma(message: string) {
   if (typeof window === 'undefined') return
+  // the routine interview runs on the page, inside Emma's window
+  if (message === EMMA_BUILD_ROUTINE) { startLocalInterview(); return }
   const w = window as any
   let tries = 0
   // ChatWidget exists as soon as the script loads, but open() does nothing until the

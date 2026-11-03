@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { openEmma, cleanRoutineCode, EMMA_BUILD_ROUTINE } from '@/lib/emma'
 import { ensureRoutineButtons, hideStateTokens } from '@/lib/routine-buttons-client'
+import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive } from '@/lib/routine-local'
 
 const WIDGET_SRC = 'https://chat.quincer.com/api/embed/widget.js'
 
@@ -64,8 +65,10 @@ export default function QunicerAgent() {
   // restored conversation opens.
   useEffect(() => {
     let t: ReturnType<typeof setTimeout> | undefined
-    const later = (ms: number) => { clearTimeout(t); t = setTimeout(() => { ensureRoutineButtons() }, ms) }
-    const onDone = () => later(700)
+    const later = (ms: number) => { clearTimeout(t); t = setTimeout(() => { if (!isLocalInterviewActive()) ensureRoutineButtons() }, ms) }
+    const onDone = () => { afterEmmaReply(); later(700) }
+    const uninstall = installRoutineInterception()
+    resumeLocalInterview()
     window.addEventListener('quincer:done', onDone)
     const first = setTimeout(() => later(0), 4000)
     // hide Emma's interview state tokens as soon as they appear (also while a reply streams in)
@@ -80,7 +83,7 @@ export default function QunicerAgent() {
         hideStateTokens(box)
       }
     }, 1000)
-    return () => { window.removeEventListener('quincer:done', onDone); clearTimeout(t); clearTimeout(first); clearInterval(attach); obs.disconnect() }
+    return () => { uninstall(); window.removeEventListener('quincer:done', onDone); clearTimeout(t); clearTimeout(first); clearInterval(attach); obs.disconnect() }
   }, [])
 
   // TEMPORARY WORKAROUND (added Oct 29 2026; remove once Quincer fixes it):

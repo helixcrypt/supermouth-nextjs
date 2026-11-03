@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { record, codeFor, question, encode, State } from '@/lib/routine/engine'
+import { record, codeFor, question, encode, parseGoal, State } from '@/lib/routine/engine'
 import { replay, applyDeclines, toList } from '@/lib/routine/replay'
 import { recommend } from '@/lib/routine/recommend'
 
@@ -42,6 +42,8 @@ const TOOLS = [
       properties: {
         ...COMMON,
         declined: { type: 'array', items: { type: 'string' }, description: 'Only the new "no" from the shopper this turn, naming the person as in the record (e.g. "you", "child 2"). Earlier ones are already in the state.' },
+        goal: { type: 'string', description: 'The goal from the shopper\'s confirmed-routine message, e.g. "gum health".' },
+        brushing: { type: 'string', description: 'The brushing habit from that message: "pretty solid" or "room to build".' },
       },
     },
   },
@@ -91,6 +93,8 @@ async function callTool(name: string, args: any) {
       if (q.step !== 'done' && q.step !== 'r') {
         return { ...view(r.st, r), not_ready: true, instruction: 'The interview is not finished. Do not recommend products yet; ask the current question.' }
       }
+      if (args?.goal) { const g = parseGoal(args.goal); if (g) r.st.goal = g }
+      if (args?.brushing) r.st.habit = /room|build|hit|miss/i.test(String(args.brushing)) ? 'r' : 's'
       const d = applyDeclines(r.st, args?.declined)
       const rec = await recommend(r.st)
       const token = `[[${encode(r.st)}]]`
