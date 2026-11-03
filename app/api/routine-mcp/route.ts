@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic'
 const COMMON = {
   answers: {
     type: 'array', items: { type: 'string' },
-    description: "Every reply the shopper has given to routine questions since the interview began, in order, exactly as they tapped or typed it (for example [\"Just me\", \"Neither\", \"Fluoride\"]). Empty at the start. Leave out side questions.",
+    description: "Copy, word for word and in order, every message the shopper has sent since they tapped Build my routine (or gave their routine code), including the one they just sent. Do not summarize, reword, drop or reorder any. Side questions can stay in; the tool skips them. Example: [\"Just me\", \"Neither\", \"is fluoride safe?\", \"Fluoride\"]. Empty at the start.",
   },
   mode: { type: 'string', enum: ['full', 'short'], description: 'short if the shopper wanted it quick from the start.' },
   short_after: { type: 'integer', description: 'If the shopper asked to speed up partway, how many answers had been given at that moment.' },
@@ -104,12 +104,6 @@ function authorized(req: Request) {
 export async function POST(req: Request) {
   if (!authorized(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   const msg = await req.json().catch(() => null) as any
-  if (msg?.method === 'tools/call') {
-    // TEMP: which identity headers Quincer sends (values only for id-like, non-secret headers)
-    const hs: Record<string, string> = {}
-    req.headers.forEach((v, k) => { if (!/^(x-vercel|x-forwarded|x-real-ip|accept|connection|content-|host|forwarded|sec-|user-agent|x-matched|x-invocation|authorization)/i.test(k)) hs[k] = /token|secret|key|auth/i.test(k) ? '*' : v.slice(0, 80) })
-    console.log(JSON.stringify({ routine_headers: hs, meta: msg.params?._meta ?? null }))
-  }
   if (!msg || msg.jsonrpc !== '2.0' || typeof msg.method !== 'string') return rpc(msg?.id ?? null, undefined, { code: -32600, message: 'Invalid request' })
   if (msg.id === undefined) return new NextResponse(null, { status: 202 })    // notification
   switch (msg.method) {

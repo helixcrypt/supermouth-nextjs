@@ -59,6 +59,9 @@ export function replay(input: ReplayInput): ReplayResult {
   answers.forEach((a, n) => {
     if (shortAfter !== null && n === shortAfter && st.mode !== 'S') st = setMode(st, 'short')
     if (st.step === 'done') return
+    // a question back to Emma is a side question, not an answer (unless it is exactly a button label)
+    const exact = question(st).choices.some(c => c.toLowerCase() === a.toLowerCase())
+    if (!exact && /\?\s*$/.test(a)) { skipped.push(a); return }
     const before = question(st)
     const r = answer(st, a)
     if (r.ok) { st = r.state; lastRejected = undefined; applied.push(`${before.about ? before.about + ': ' : ''}${before.ask.slice(0, 50)} => ${a.slice(0, 40)}`) }
