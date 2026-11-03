@@ -12,12 +12,17 @@ export function openEmma(message: string) {
   if (typeof window === 'undefined') return
   const w = window as any
   let tries = 0
+  // ChatWidget exists as soon as the script loads, but open() does nothing until the
+  // widget has fetched its config and built its window, so wait for that window.
   const go = () => {
-    if (w.ChatWidget && typeof w.ChatWidget.open === 'function') {
-      try { w.ChatWidget.open(message) } catch { /* widget not ready yet */ }
+    const ready = w.ChatWidget && typeof w.ChatWidget.open === 'function' && document.querySelector('.cw-messages')
+    if (ready) {
+      try { w.ChatWidget.open(message) } catch { /* not ready yet */ }
+      // confirm it opened; otherwise try again shortly
+      setTimeout(() => { if (!document.querySelector('.cw-open') && ++tries < 60) go() }, 400)
       return
     }
-    if (++tries < 50) setTimeout(go, 200)
+    if (++tries < 60) setTimeout(go, 250)
   }
   go()
 }
