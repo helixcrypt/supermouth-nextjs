@@ -190,6 +190,14 @@ async function main() {
     check('no segment outside interview', currentSegment(['What flavors do you have?']) === null)
     check('waiting for code', currentSegment(['Build my routine', 'I have a routine code']) === null)
   }
+  // "Back to Mint or Strawberry" goes back to the first flavor screen, it does not pick Mint
+  {
+    let st = start()
+    for (const a of ['Just me', 'Neither', 'Fluoride', 'More flavors']) st = answer(st, a).state
+    const r = answer(st, 'Back to Mint or Strawberry')
+    check('back to mint or strawberry returns to flavor screen', r.ok && r.state.step === 'v' && r.state.members[0].flavor === '?')
+  }
+
   // Tampered state rejected
   {
     const s = encode(start())

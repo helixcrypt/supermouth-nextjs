@@ -411,6 +411,8 @@ export function answer(st: State, raw: unknown, goalText?: unknown): StepResult 
       break
     }
     case 'v2': {
+      // "Back to Mint or Strawberry" names flavors, so check it before reading a flavor from the text
+      if (i === 2) { st.step = 'v'; return { ok: true, state: st, question: question(st) } }
       const direct = flavorFromText(norm(raw), m)
       if (direct) { m.flavor = direct; advance(st); break }
       if (i < 0) return bad('Answer was not one of the choices.')
