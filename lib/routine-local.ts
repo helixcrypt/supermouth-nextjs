@@ -16,6 +16,7 @@
 
 import { start, answer, question, record, codeFor, encode, decode, readCodes, GOALS, State, Member, label } from './routine/engine'
 import { logStart, logResume, logEvent, logHandoff, logShopperFollowup } from './routine-log-client'
+import { showRoutineCards, resetRoutineCards } from './routine-cards-client'
 
 const KEY = 'sm_routine_local_v1'
 const START_TEXT = /^\s*(build my routine|find my routine|find my oral care routine)\s*[.!]*\s*$/i
@@ -26,6 +27,7 @@ let resumeAfterEmma = false
 let codeEntry = false              // waiting for the shopper to type a routine code
 let postHandoffReplies = 0         // Emma replies after a handoff that get our buttons
 let handoffPeople: string[] = []   // the people in the last confirmed routine, for "which one?" buttons
+let handoffCodes = ''              // the routine codes sent at the handoff, for the product cards
 export const inPostHandoff = () => postHandoffReplies > 0
 
 const CODE_ASK_TEXT = /^\s*i have a routine code\s*[.!]*\s*$/i
@@ -202,6 +204,8 @@ function finish() {
   logHandoff(codes, goal, habit, encode(st))
   postHandoffReplies = 4
   handoffPeople = st.members.map((_, i) => cap(label(st, i)))
+  handoffCodes = codes
+  resetRoutineCards()
   active = null
   save()
   removeChips()
@@ -361,6 +365,7 @@ export function afterEmmaReply() {
       }
       // the recommendation itself, or a recommendation after a step-down: our three buttons
       if (first || /SuperMouth [^.?!]*System/i.test(text)) {
+        if (last) showRoutineCards(last, handoffCodes)
         showChips(AFTER_RECOMMEND.map(([l]) => l), pick => {
           const msg = AFTER_RECOMMEND.find(([l]) => l === pick)?.[1] || pick
           if (pick === 'Looks good') postHandoffReplies = 0

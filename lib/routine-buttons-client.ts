@@ -16,6 +16,11 @@ const TOKEN = /\[\[R1\.[^\]\s]*\]\]/
 const TOKEN_ALL = /\s*\[\[R1\.[^\]\s]*(\]\])?/g
 const tokenOf = new WeakMap<Element, string>()
 
+/** The state token a bubble carried before it was hidden, if any. */
+export function tokenFor(el: Element): string | undefined {
+  return tokenOf.get(el)
+}
+
 /** Strip state tokens from Emma's bubbles, remembering the token for each bubble. */
 export function hideStateTokens(root: Element) {
   root.querySelectorAll('.cw-msg-bot').forEach(bot => {
