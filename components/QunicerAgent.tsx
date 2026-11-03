@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { openEmma, cleanRoutineCode, EMMA_BUILD_ROUTINE } from '@/lib/emma'
 import { ensureRoutineButtons, hideStateTokens } from '@/lib/routine-buttons-client'
-import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive, hideSideMarks, fixDashes } from '@/lib/routine-local'
+import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive, inPostHandoff, hideSideMarks, fixDashes } from '@/lib/routine-local'
 import { logEmmaReply } from '@/lib/routine-log-client'
 
 const WIDGET_SRC = 'https://chat.quincer.com/api/embed/widget.js'
@@ -66,7 +66,7 @@ export default function QunicerAgent() {
   // restored conversation opens.
   useEffect(() => {
     let t: ReturnType<typeof setTimeout> | undefined
-    const later = (ms: number) => { clearTimeout(t); t = setTimeout(() => { if (!isLocalInterviewActive()) ensureRoutineButtons() }, ms) }
+    const later = (ms: number) => { clearTimeout(t); t = setTimeout(() => { if (!isLocalInterviewActive() && !inPostHandoff()) ensureRoutineButtons() }, ms) }
     const onDone = () => {
       afterEmmaReply()
       later(700)

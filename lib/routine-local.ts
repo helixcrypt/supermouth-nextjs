@@ -25,6 +25,8 @@ let active: State | null = null
 let resumeAfterEmma = false
 let codeEntry = false              // waiting for the shopper to type a routine code
 let postHandoffReplies = 0         // Emma replies after a handoff that get our buttons
+let handoffPeople: string[] = []   // the people in the last confirmed routine, for "which one?" buttons
+export const inPostHandoff = () => postHandoffReplies > 0
 
 const CODE_ASK_TEXT = /^\s*i have a routine code\s*[.!]*\s*$/i
 // Quincer's generic reply when a turn fails
@@ -198,7 +200,8 @@ function finish() {
   const goal = st.goal ? GOALS[st.goal] : 'not given'
   const habit = st.habit === 'r' ? 'room to build' : st.habit === 's' ? 'pretty solid' : 'not given'
   logHandoff(codes, goal, habit, encode(st))
-  postHandoffReplies = 3
+  postHandoffReplies = 4
+  handoffPeople = st.members.map((_, i) => cap(label(st, i)))
   active = null
   save()
   removeChips()
@@ -350,6 +353,13 @@ export function afterEmmaReply() {
     }
     if (postHandoffReplies > 0) {
       postHandoffReplies--
+      // Emma asks which person: offer each person as a button
+      if (handoffPeople.length > 1 && handoffPeople.length <= 3 && /\?\s*$/.test(text) && /\b(which|who|whose)\b/i.test(text)) {
+        showChips(handoffPeople.slice(0, 3), pick => w().ChatWidget?.open?.(pick))
+        return
+      }
+      // a yes/no style question from Emma: leave Quincer's buttons
+      if (/\?\s*$/.test(text) && !/look right|anything else|how does that sound|what do you think|sound good|changed\?/i.test(text)) return
       showChips(AFTER_RECOMMEND.map(([l]) => l), pick => {
         const msg = AFTER_RECOMMEND.find(([l]) => l === pick)?.[1] || pick
         if (pick === 'Looks good') postHandoffReplies = 0

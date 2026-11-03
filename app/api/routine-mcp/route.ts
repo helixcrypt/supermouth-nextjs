@@ -97,6 +97,7 @@ async function callTool(name: string, args: any) {
       if (args?.brushing) r.st.habit = /room|build|hit|miss/i.test(String(args.brushing)) ? 'r' : 's'
       const d = applyDeclines(r.st, args?.declined)
       const rec = await recommend(r.st)
+      r.st.step = 'done'     // the interview is over; the token only carries the people and their step-downs
       const token = `[[${encode(r.st)}]]`
       return { ok: true, state_token: token, rule: tokenRule(token), routine_codes: r.st.members.map(codeFor).filter(Boolean).join(' '), declines_applied: d.applied, declines_not_matched: d.unknown.length ? d.unknown : undefined, ...rec }
     }
