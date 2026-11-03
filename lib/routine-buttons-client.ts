@@ -26,7 +26,10 @@ export function hideStateTokens(root: Element) {
     const nodes: Text[] = []
     while (walker.nextNode()) nodes.push(walker.currentNode as Text)
     for (const n of nodes) {
-      if (n.nodeValue && /\[\[R1/.test(n.nodeValue)) n.nodeValue = n.nodeValue.replace(TOKEN_ALL, '')
+      if (!n.nodeValue || !/\[\[R1/.test(n.nodeValue)) continue
+      // also hides a malformed or half-streamed token; write only when the text really changes
+      const next = n.nodeValue.replace(TOKEN_ALL, '').replace(/\s*\[\[R1[^\]]*\]?\]?/g, '')
+      if (next !== n.nodeValue) n.nodeValue = next
     }
   })
 }

@@ -51,7 +51,6 @@ export function hideSideMarks(root: Element) {
   root.querySelectorAll('.cw-msg-user').forEach(u => {
     const t = u.firstChild
     if (t && t.nodeType === 3 && t.nodeValue && t.nodeValue.startsWith(SIDE_MARK)) t.nodeValue = t.nodeValue.slice(SIDE_MARK.length)
-    else if (u.textContent?.startsWith(SIDE_MARK) && u.childNodes.length === 1) u.textContent = u.textContent.slice(SIDE_MARK.length)
   })
 }
 
@@ -377,10 +376,11 @@ export function fixDashes(root: Element) {
     for (const n of nodes) {
       const v = n.nodeValue || ''
       if (!/[\u2013\u2014]/.test(v)) continue
-      n.nodeValue = v
+      const next = v
         .replace(/(\d)\s*\u2013\s*(\d)/g, '$1 to $2')
         .replace(/\s*[\u2013\u2014]\s*/g, ', ')
         .replace(/,\s*,/g, ',')
+      if (next !== v) n.nodeValue = next
     }
   })
 }

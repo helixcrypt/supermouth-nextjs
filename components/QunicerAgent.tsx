@@ -86,14 +86,22 @@ export default function QunicerAgent() {
     const first = setTimeout(() => later(0), 4000)
     // hide Emma's interview state tokens as soon as they appear (also while a reply streams in)
     let box: Element | null = null
-    const obs = new MutationObserver(() => { if (box) { hideStateTokens(box); hideSideMarks(box); fixDashes(box) } })
+    // our own edits are made with the observer paused, so they can never re-trigger it
+    const clean = () => {
+      if (!box) return
+      obs.disconnect()
+      try { hideStateTokens(box); hideSideMarks(box); fixDashes(box) } finally {
+        obs.observe(box, { childList: true, subtree: true, characterData: true })
+      }
+    }
+    const obs: MutationObserver = new MutationObserver(clean)
     const attach = setInterval(() => {
       const found = document.querySelector('.cw-messages')
       if (found && found !== box) {
         box = found
         obs.disconnect()
         obs.observe(box, { childList: true, subtree: true, characterData: true })
-        hideStateTokens(box)
+        clean()
       }
     }, 1000)
     return () => { uninstall(); window.removeEventListener('quincer:done', onDone); clearTimeout(t); clearTimeout(first); clearInterval(attach); obs.disconnect() }
