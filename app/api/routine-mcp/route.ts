@@ -71,7 +71,7 @@ function view(st: State, extra: Record<string, unknown> = {}) {
     quick_replies: q.choices.length ? q.choices.map(label => ({ label })) : undefined,
     typed_answer: q.typed || undefined,
     note: q.note,
-    record: record(st),
+    record: q.step === 'r' || q.step === 'done' ? record(st) : record(st).map(({ code, ...rest }) => rest),
     routine_codes: q.step === 'r' || q.step === 'done' ? codes.join(' ') : undefined,
     rule: STATE_RULE,
     ...extra,
@@ -112,7 +112,7 @@ async function callTool(name: string, args: any) {
     case 'recommend': {
       const st = loadState(args)
       if ('error' in st) return { ok: false, error: st.error }
-      if (st.step !== 'done' && st.step !== 'r') return { ok: false, error: 'The interview is not finished. Continue with the current question.', ...view(st) }
+      if (st.step !== 'done' && st.step !== 'r') return { ok: true, not_ready: true, instruction: 'The interview is not finished yet. Do not recommend products. Ask the current question below and wait for the reply.', ...view(st) }
       const rec = await recommend(st)
       return { ok: true, state: encode(st), routine_codes: st.members.map(codeFor).filter(Boolean).join(' '), ...rec }
     }
@@ -164,7 +164,8 @@ export async function POST(req: Request) {
         const out = await callTool(msg.params?.name, args)
         // log shape only: tool, steps and errors, never the shopper's words
         console.log(JSON.stringify({ routine: msg.params?.name, in_step: decode(String(args.state ?? ''))?.step ?? (args.state ? 'BAD_STATE' : null), out_step: (out as any).step ?? null, ok: (out as any).ok, error: (out as any).error ?? null, answer_len: typeof args.answer === 'string' ? args.answer.length : null }))
-        return rpc(msg.id, { content: [{ type: 'text', text: JSON.stringify(out) }], isError: (out as any).ok === false })
+        // flow corrections (ok:false with guidance) are normal results, not tool failures
+        return rpc(msg.id, { content: [{ type: 'text', text: JSON.stringify(out) }], isError: false })
       } catch (e: any) {
         if (e?.code === -32601) return rpc(msg.id, undefined, { code: -32602, message: e.message })
         return rpc(msg.id, { content: [{ type: 'text', text: JSON.stringify({ ok: false, error: 'Tool failed. Continue the conversation without it and offer the shop links.' }) }], isError: true })
