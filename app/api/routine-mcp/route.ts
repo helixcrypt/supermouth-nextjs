@@ -159,7 +159,10 @@ export async function POST(req: Request) {
       return rpc(msg.id, { tools: TOOLS })
     case 'tools/call':
       try {
-        const out = await callTool(msg.params?.name, msg.params?.arguments || {})
+        const args = msg.params?.arguments || {}
+        const out = await callTool(msg.params?.name, args)
+        // log shape only: tool, steps and errors, never the shopper's words
+        console.log(JSON.stringify({ routine: msg.params?.name, in_step: decode(String(args.state ?? ''))?.step ?? (args.state ? 'BAD_STATE' : null), out_step: (out as any).step ?? null, ok: (out as any).ok, error: (out as any).error ?? null, answer_len: typeof args.answer === 'string' ? args.answer.length : null }))
         return rpc(msg.id, { content: [{ type: 'text', text: JSON.stringify(out) }], isError: (out as any).ok === false })
       } catch (e: any) {
         if (e?.code === -32601) return rpc(msg.id, undefined, { code: -32602, message: e.message })
