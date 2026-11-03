@@ -14,7 +14,7 @@
  * asked again after she answers. Progress is kept in sessionStorage so a reload resumes.
  */
 
-import { start, answer, question, record, codeFor, encode, decode, GOALS, State, Member, label } from './routine/engine'
+import { start, answer, question, record, codeFor, encode, decode, readCodes, GOALS, State, Member, label } from './routine/engine'
 import { logStart, logResume, logEvent, logHandoff, logShopperFollowup } from './routine-log-client'
 
 const KEY = 'sm_routine_local_v1'
@@ -23,6 +23,19 @@ const QUESTIONISH = /\?\s*$|^(what|how|why|is|are|can|could|does|do|should|which
 
 let active: State | null = null
 let resumeAfterEmma = false
+let codeEntry = false              // waiting for the shopper to type a routine code
+let postHandoffReplies = 0         // Emma replies after a handoff that get our buttons
+
+const CODE_ASK_TEXT = /^\s*i have a routine code\s*[.!]*\s*$/i
+// Quincer's generic reply when a turn fails
+const FALLBACK = /^(i'd be happy to help you with that\. could you tell me a bit more about what you need\?|happy to keep helping\W+is there anything else i can do for you\?)\s*$/i
+// Quincer's own suggestions that push a smaller system before any objection
+const UNWANTED_CHIP = /cheaper|cheapest|lower price|budget option|compare these/i
+const AFTER_RECOMMEND: [string, string][] = [
+  ['Looks good', 'Looks good, thanks!'],
+  ['Something is too much', 'One of these systems is too much for us.'],
+  ['I have a question', 'I have a question.'],
+]
 
 /** Marks a side question sent to Emma mid-interview; the page hides it in the shopper's bubble. */
 export const SIDE_MARK = '(Side question during my routine) '
@@ -101,7 +114,7 @@ function addUser(text: string) {
   scrollEnd(d)
 }
 
-function showChips(labels: string[]) {
+function showChips(labels: string[], onPick: (label: string) => void = l => handle(l, true)) {
   const b = box()
   if (!b || !labels.length) return
   removeChips()
@@ -118,7 +131,7 @@ function showChips(labels: string[]) {
       e.preventDefault(); e.stopPropagation()
       if (btn.getAttribute('disabled')) return
       wrap.querySelectorAll('.cw-slot-chip').forEach(x => x.setAttribute('disabled', 'true'))
-      handle(l, true)
+      onPick(l)
     })
     row.appendChild(btn)
   }
@@ -186,6 +199,7 @@ function finish() {
   const goal = st.goal ? GOALS[st.goal] : 'not given'
   const habit = st.habit === 'r' ? 'room to build' : st.habit === 's' ? 'pretty solid' : 'not given'
   logHandoff(codes, goal, habit, encode(st))
+  postHandoffReplies = 3
   active = null
   save()
   removeChips()
@@ -239,6 +253,60 @@ export function startLocalInterview(source = 'menu') {
   go()
 }
 
+function openWidgetThen(fn: () => void) {
+  let tries = 0
+  const go = () => {
+    const ready = w().ChatWidget?.open && document.querySelector('.cw-messages')
+    if (!ready) { if (++tries < 60) setTimeout(go, 250); return }
+    try { w().ChatWidget.open() } catch { /* opens on next try */ }
+    fn()
+  }
+  go()
+}
+
+/** "I have a routine code": the page asks for it and reads it. */
+export function startCodeEntry(source = 'menu') {
+  openWidgetThen(() => {
+    active = null
+    save()
+    logStart(source)
+    addUser('I have a routine code')
+    addBot('Great, that saves time. Type your routine code, for example **AFM** or, for a family, **AFM KNS LFC**.')
+    codeEntry = true
+  })
+}
+
+/** A routine code arrived with the page (a ?code= link) or was typed. */
+export function startFromCode(code: string, source = 'code_link') {
+  openWidgetThen(() => {
+    logStart(source)
+    addUser(`My routine code is ${code}`)
+    tryCode(code)
+  })
+}
+
+function tryCode(text: string) {
+  codeEntry = false
+  const { members } = readCodes(text)
+  if (!members.length) {
+    logEvent({ kind: 'unparsed', step: 'code' })
+    addBot("That code didn't read. Codes are three letters per person, like **AFM** or **KNS**. Want to try again, or build your routine?")
+    showChips(['Try again', 'Build my routine'], pick => {
+      if (pick === 'Try again') { addUser('Try again'); addBot('Go ahead and type your code.'); codeEntry = true }
+      else startLocalInterview('code_retry')
+    })
+    return
+  }
+  const st = start()
+  st.members = members
+  st.habit = 's'
+  st.step = 'r'
+  active = st
+  save()
+  logEvent({ kind: 'answer', step: 'code', value: members.map(codeFor).join(' '), state: encode(st) })
+  ask()
+}
+
 /** After a reload, pick up where the shopper left off. */
 export function resumeLocalInterview() {
   let s: string | null = null
@@ -255,12 +323,66 @@ export function resumeLocalInterview() {
   go()
 }
 
-/** Called after each Emma reply: if she answered a side question, ask the current question again. */
+/**
+ * Called after each Emma reply:
+ * - after a side question, ask the current routine question again;
+ * - if Quincer's turn failed (its generic fallback), offer "Try again";
+ * - after a recommendation, replace Quincer's own suggestions with ours;
+ * - anywhere, drop Quincer suggestions that push a cheaper system unasked.
+ */
 export function afterEmmaReply() {
   if (active && resumeAfterEmma) {
     resumeAfterEmma = false
     setTimeout(() => ask(), 300)
+    return
   }
+  setTimeout(() => {
+    const b = box()
+    if (!b || active) return
+    const bots = b.querySelectorAll('.cw-msg-bot:not(.sm-local)')
+    const last = bots[bots.length - 1] as HTMLElement | undefined
+    const text = (last?.innerText || '').trim()
+    if (FALLBACK.test(text)) {
+      const users = [...b.querySelectorAll('.cw-msg-user')].map(u => (u as HTMLElement).innerText.trim()).filter(Boolean)
+      const again = users[users.length - 1]
+      logEvent({ kind: 'fallback' })
+      if (again) showChips(['Try again'], () => w().ChatWidget?.open?.(again))
+      return
+    }
+    if (postHandoffReplies > 0) {
+      postHandoffReplies--
+      showChips(AFTER_RECOMMEND.map(([l]) => l), pick => {
+        const msg = AFTER_RECOMMEND.find(([l]) => l === pick)?.[1] || pick
+        if (pick === 'Looks good') postHandoffReplies = 0
+        w().ChatWidget?.open?.(msg)
+      })
+      return
+    }
+    b.querySelectorAll('.cw-reply-chips:not(.sm-routine-chips) .cw-slot-chip').forEach(c => {
+      if (UNWANTED_CHIP.test(c.textContent || '')) c.remove()
+    })
+    b.querySelectorAll('.cw-reply-chips:not(.sm-routine-chips)').forEach(row => {
+      if (!row.querySelector('.cw-slot-chip')) row.remove()
+    })
+  }, 500)
+}
+
+/** Replace em and en dashes in Emma's bubbles (Quincer ignores the no-dash rule). */
+export function fixDashes(root: Element) {
+  root.querySelectorAll('.cw-msg-bot').forEach(bot => {
+    if (!/[\u2013\u2014]/.test(bot.textContent || '')) return
+    const walker = document.createTreeWalker(bot, NodeFilter.SHOW_TEXT)
+    const nodes: Text[] = []
+    while (walker.nextNode()) nodes.push(walker.currentNode as Text)
+    for (const n of nodes) {
+      const v = n.nodeValue || ''
+      if (!/[\u2013\u2014]/.test(v)) continue
+      n.nodeValue = v
+        .replace(/(\d)\s*\u2013\s*(\d)/g, '$1 to $2')
+        .replace(/\s*[\u2013\u2014]\s*/g, ', ')
+        .replace(/,\s*,/g, ',')
+    }
+  })
 }
 
 /**
@@ -274,6 +396,11 @@ export function installRoutineInterception(): () => void {
     if (chip && !chip.closest('.sm-routine-chips') && START_TEXT.test(chip.textContent || '')) {
       e.preventDefault(); e.stopImmediatePropagation()
       startLocalInterview('starter_chip')
+      return
+    }
+    if (chip && !chip.closest('.sm-routine-chips') && CODE_ASK_TEXT.test(chip.textContent || '')) {
+      e.preventDefault(); e.stopImmediatePropagation()
+      startCodeEntry('starter_chip')
       return
     }
     if (chip && !active && !chip.closest('.sm-routine-chips')) logShopperFollowup()
@@ -299,8 +426,10 @@ function interceptTyped(): boolean {
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, '')
     input.dispatchEvent(new Event('input', { bubbles: true }))
   }
+  if (codeEntry) { clear(); addUser(text); tryCode(text); return true }
   if (!active) {
     if (START_TEXT.test(text)) { clear(); startLocalInterview('typed'); return true }
+    if (CODE_ASK_TEXT.test(text)) { clear(); startCodeEntry('typed'); return true }
     logShopperFollowup()
     return false
   }

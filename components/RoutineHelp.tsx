@@ -11,7 +11,7 @@ export default function RoutineHelp({ className = '' }: { className?: string }) 
         Build my routine with Emma
       </button>
       <span aria-hidden className="mx-2">·</span>
-      <button type="button" onClick={() => openEmma(EMMA_HAVE_CODE)} className="underline underline-offset-2 hover:opacity-80">
+      <button type="button" onClick={() => openEmma(EMMA_HAVE_CODE, 'product_page')} className="underline underline-offset-2 hover:opacity-80">
         I have a routine code
       </button>
     </p>

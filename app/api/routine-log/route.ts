@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
 const URL_ = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const KINDS = new Set(['start', 'resume', 'question', 'answer', 'unparsed', 'side', 'restart', 'handoff', 'emma_reply', 'shopper_followup'])
+const KINDS = new Set(['start', 'resume', 'question', 'answer', 'unparsed', 'side', 'restart', 'handoff', 'emma_reply', 'shopper_followup', 'fallback'])
 
 const s = (v: unknown, n: number) => (typeof v === 'string' ? v.slice(0, n) : null)
 
