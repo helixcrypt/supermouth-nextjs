@@ -272,10 +272,10 @@ function interceptTyped(): boolean {
     if (START_TEXT.test(text)) { clear(); startLocalInterview(); return true }
     return false
   }
-  // during the interview: an answer that fits stays on the page; a question goes to Emma
-  const probe = decode(encode(active))!
-  const fits = answer(probe, text).ok
-  if (!fits && QUESTIONISH.test(text)) { resumeAfterEmma = true; return false }
+  // during the interview: a question to Emma goes to Emma (unless it is exactly a button),
+  // anything else is treated as an answer on the page
+  const exact = question(active).choices.some(c => c.toLowerCase() === text.toLowerCase())
+  if (!exact && QUESTIONISH.test(text)) { resumeAfterEmma = true; removeChips(); return false }
   clear()
   handle(text)
   return true
