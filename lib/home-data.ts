@@ -189,8 +189,8 @@ export const home = {
  "getStarted": [
   {
    "title": "Let Us Guide You",
-   "desc": "Take a quick quiz and get a custom plan from our experts - with oral care products tailored to your age, stage, and needs, ready to be delivered to your door.",
-   "btn": "Take Assessment",
+   "desc": "Answer a few quick questions with Emma, our oral care advisor, and get a routine for each person in your family, with products tailored to their age, stage and needs.",
+   "btn": "Build My Routine",
    "href": "/assessment",
    "img": "/home/SM-website_get_started_1_guide_you.jpg"
   },

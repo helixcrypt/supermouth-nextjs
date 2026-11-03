@@ -51,7 +51,7 @@ export const faqData: Record<string, FaqGroup[]> = {
     },
     {
      "q": "What age group are your products recommended for?",
-     "a": "<p>We offer products tailored for all age groups, from infants to adults, ensuring everyone gets the best oral care possible. Our recommendations are based on age, stage of development, and risk factors. To ensure you’re using the right oral care products, you can take our free oral care assessment <a href=\"/assessment\">here</a>.</p>"
+     "a": "<p>We offer products tailored for all age groups, from infants to adults, ensuring everyone gets the best oral care possible. Our recommendations are based on age, stage of development, and risk factors. To ensure you’re using the right oral care products, you can build a free routine with Emma, our oral care advisor, <a href=\"/assessment\">here</a>.</p>"
     },
     {
      "q": "Do you have any research on the safety and efficacy of your products?",
@@ -254,7 +254,7 @@ export const faqData: Record<string, FaqGroup[]> = {
     },
     {
      "q": "How soon can my kids start using fluoride products?",
-     "a": "<p>The AAPD recommends children under 3 use a rice-sized smear of fluoride toothpaste and between ages 3-6 use a pea-sized amount. You can also take our oral care assessment to see if your children need fluoride or not.</p>"
+     "a": "<p>The AAPD recommends children under 3 use a rice-sized smear of fluoride toothpaste and between ages 3-6 use a pea-sized amount. You can also build a routine with Emma, our oral care advisor, to see if your children need fluoride or not.</p>"
     },
     {
      "q": "Is it safe to swallow your toothpaste?",
@@ -270,7 +270,7 @@ export const faqData: Record<string, FaqGroup[]> = {
     },
     {
      "q": "Can adults use the kids’ toothpaste?",
-     "a": "<p>Our toothpastes are designed based on stage of development (for example, orthodontics or pregnancy) and risk factors (for example, Hydroxamin with or without fluoride) and not specifically for kids versus adults. Different people have different risks and preferences regardless of age. Customers can take our oral care assessment if unsure which toothpaste is right for their family members.</p>"
+     "a": "<p>Our toothpastes are designed based on stage of development (for example, orthodontics or pregnancy) and risk factors (for example, Hydroxamin with or without fluoride) and not specifically for kids versus adults. Different people have different risks and preferences regardless of age. Customers can build a routine with Emma, our oral care advisor, if unsure which toothpaste is right for their family members.</p>"
     },
     {
      "q": "Is nano-hydroxyapatite safe?",
@@ -319,7 +319,7 @@ export const faqData: Record<string, FaqGroup[]> = {
     },
     {
      "q": "What’s the best oral care routine for me or my child?",
-     "a": "<p>An effective oral care routine includes brushing twice a day with fluoride toothpaste and/or Hydroxamin-based toothpaste, flossing daily, using mouthwash and mouth spray, and visiting your dentist regularly. Tailor the routine to specific needs with products like sensitivity toothpaste, orthodontic care items, or age-appropriate products. Incorporate the use of a tongue cleaner to remove bacteria from the tongue’s surface. Taking our oral care assessment can help determine the best products for your family’s needs.</p>"
+     "a": "<p>An effective oral care routine includes brushing twice a day with fluoride toothpaste and/or Hydroxamin-based toothpaste, flossing daily, using mouthwash and mouth spray, and visiting your dentist regularly. Tailor the routine to specific needs with products like sensitivity toothpaste, orthodontic care items, or age-appropriate products. Incorporate the use of a tongue cleaner to remove bacteria from the tongue’s surface. Building a routine with Emma, our oral care advisor, can help determine the best products for your family’s needs.</p>"
     },
     {
      "q": "When is the best time to brush/floss each day?",
@@ -347,7 +347,7 @@ export const faqData: Record<string, FaqGroup[]> = {
     },
     {
      "q": "How can I choose the right toothpaste for my family?",
-     "a": "<p>Choosing the right toothpaste involves understanding the specific needs and preferences of each family member. Consider factors such as fluoride content, sensitivity, whitening, and whether a Hydroxamin-based product is suitable. Our oral care assessment can help you select the best products tailored to your family’s needs.</p>"
+     "a": "<p>Choosing the right toothpaste involves understanding the specific needs and preferences of each family member. Consider factors such as fluoride content, sensitivity, whitening, and whether a Hydroxamin-based product is suitable. Emma, our oral care advisor, can build a routine to help you select the best products tailored to your family’s needs.</p>"
     },
     {
      "q": "What should I look for on oral care product labels?",
@@ -451,7 +451,7 @@ export const faqData: Record<string, FaqGroup[]> = {
     },
     {
      "q": "What other ways can I earn?",
-     "a": "<p>Take the Assessment (+50 SB, once), write a verified review (+50 SB per order), add photo/video to your review (+100 SB per order), birthday (+100 SB annually), and look for Bonus SB badges on select products.</p>"
+     "a": "<p>Build your routine with Emma (+50 SB, once, coming soon with account sign-in), write a verified review (+50 SB per order), add photo/video to your review (+100 SB per order), birthday (+100 SB annually), and look for Bonus SB badges on select products.</p>"
     },
     {
      "q": "When do SB appear in my account?",
