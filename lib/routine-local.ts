@@ -352,21 +352,24 @@ export function afterEmmaReply() {
       return
     }
     if (postHandoffReplies > 0) {
+      const first = postHandoffReplies === 4
       postHandoffReplies--
       // Emma asks which person: offer each person as a button
-      if (handoffPeople.length > 1 && handoffPeople.length <= 3 && /\?\s*$/.test(text) && /\b(which|who|whose)\b/i.test(text)) {
+      if (!first && handoffPeople.length > 1 && handoffPeople.length <= 3 && /\?\s*$/.test(text) && /\b(which|who|whose)\b/i.test(text)) {
         showChips(handoffPeople.slice(0, 3), pick => w().ChatWidget?.open?.(pick))
         return
       }
-      // a yes/no style question from Emma: leave Quincer's buttons
-      if (/\?\s*$/.test(text) && !/look right|anything else|how does that sound|what do you think|sound good|changed\?/i.test(text)) return
-      showChips(AFTER_RECOMMEND.map(([l]) => l), pick => {
-        const msg = AFTER_RECOMMEND.find(([l]) => l === pick)?.[1] || pick
-        if (pick === 'Looks good') postHandoffReplies = 0
-        w().ChatWidget?.open?.(msg)
-      })
-      return
+      // the recommendation itself, or a recommendation after a step-down: our three buttons
+      if (first || /SuperMouth [^.?!]*System/i.test(text)) {
+        showChips(AFTER_RECOMMEND.map(([l]) => l), pick => {
+          const msg = AFTER_RECOMMEND.find(([l]) => l === pick)?.[1] || pick
+          if (pick === 'Looks good') postHandoffReplies = 0
+          w().ChatWidget?.open?.(msg)
+        })
+        return
+      }
     }
+    // anywhere else: keep Quincer's buttons but drop ones that push a cheaper system unasked
     b.querySelectorAll('.cw-reply-chips:not(.sm-routine-chips) .cw-slot-chip').forEach(c => {
       if (UNWANTED_CHIP.test(c.textContent || '')) c.remove()
     })
