@@ -10,7 +10,7 @@ import { recommend, stepDown } from '@/lib/routine/recommend'
 
 export const dynamic = 'force-dynamic'
 
-const STATE_RULE = 'Pass state back exactly as given on your next routine call. Ask the question in your own words and show the buttons as tap choices (at most 3). Do not skip or reorder questions.'
+const STATE_RULE = 'Ask this one question in your own words and stop. Do not list the choices in your text; they are shown as buttons. Wait for the shopper to reply, then call interview_next once with their reply and this exact state. Never call interview_next without a new reply from the shopper.'
 
 const TOOLS = [
   {
@@ -68,6 +68,7 @@ function view(st: State, extra: Record<string, unknown> = {}) {
     about: q.about,
     ask: q.ask,
     buttons: q.choices,
+    quick_replies: q.choices.length ? q.choices.map(label => ({ label })) : undefined,
     typed_answer: q.typed || undefined,
     note: q.note,
     record: record(st),

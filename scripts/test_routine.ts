@@ -42,7 +42,7 @@ async function main() {
   }
   // 2b Pregnant, no preference -> Show me the other -> fluoride adult system
   {
-    const { st } = play(['Just me', 'Pregnant', 'No', 'No preference', 'Show me the other', 'Mint', 'x', 'Pretty solid', "That's right"])
+    const { st } = play(['Just me', 'Pregnant', 'No', 'No preference', 'Show me the other', 'Mint', 'Cavity prevention', 'Pretty solid', "That's right"])
     check('2b code PFM', codeFor(st.members[0]) === 'PFM', codeFor(st.members[0]))
     const rec = await recommend(st)
     check('2b adult fluoride system', /with Fluoride System for Teens & Adults/.test(rec.people[0].system || ''), rec.people[0].system || '')
@@ -124,7 +124,7 @@ async function main() {
   }
   // Ortho: braces + fluoride-free -> conflict -> stay with ortho
   {
-    const { st, steps } = play(['Just me', 'Braces or aligners', 'Fluoride-free', 'Stay with ortho', 'Chocolate', 'x', 'Pretty solid', "That's right"])
+    const { st, steps } = play(['Just me', 'Braces or aligners', 'Fluoride-free', 'Stay with ortho', 'Chocolate', 'Cavity prevention', 'Pretty solid', "That's right"])
     check('ortho conflict asked', steps.includes('oc'), steps.join(','))
     check('ortho code AOC', codeFor(st.members[0]) === 'AOC', codeFor(st.members[0]))
     const rec = await recommend(st)
@@ -132,7 +132,7 @@ async function main() {
   }
   // Baby skips fluoride question
   {
-    const { st, steps } = play(['Family with kids', 'Just me', '10 months', 'Neither', 'Fluoride', 'Mint', 'Strawberry', 'x', 'Pretty solid', "That's right"])
+    const { st, steps } = play(['Family with kids', 'Just me', '10 months', 'Neither', 'Fluoride', 'Mint', 'Strawberry', 'Cavity prevention', 'Pretty solid', "That's right"])
     check('baby code BNS', codeFor(st.members[1]) === 'BNS', codeFor(st.members[1]))
     check('baby fluoride question skipped', steps.filter(s => s === 'f').length === 1, steps.join(','))
   }

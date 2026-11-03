@@ -149,7 +149,11 @@ export function question(st: State): Question {
   const who = label(st, st.idx)
   switch (st.step) {
     case 'goal':
-      return { step: 'goal', ask: 'Ask, in conversation, what matters most to them: cavity prevention, sensitivity, gum health, whitening, clean ingredients or fresh breath. You may also ask what they use today (for contrast only). Pass their words as the answer.', choices: [], typed: true }
+      return { step: 'goal', ask: 'What matters most to you in an oral care routine?', choices: ['Cavity prevention', 'Gum health', 'More options'] }
+    case 'goal2':
+      return { step: 'goal2', ask: 'Which of these matters most?', choices: ['Sensitivity', 'Whitening', 'More options'] }
+    case 'goal3':
+      return { step: 'goal3', ask: 'Which of these matters most?', choices: ['Fresh breath', 'Clean ingredients', 'Back to the first ones'] }
     case 'h':
       return { step: 'h', ask: 'Who are we putting a routine together for?', choices: ['Just me', 'Me and a partner', 'Family with kids'] }
     case 'ha':
@@ -299,10 +303,17 @@ export function answer(st: State, raw: unknown, goalText?: unknown): StepResult 
   const bad = (msg: string): StepResult => ({ ok: false, error: msg, state: st, question: q })
   const i = pick(raw, q.choices, SYN[st.step] || {})
 
+  if (!norm(raw)) return bad('No answer given. Ask the question and wait for the shopper to reply before calling again.')
   switch (st.step) {
-    case 'goal': {
-      const g = parseGoal(raw)
-      st.goal = g || st.goal || 'c'
+    case 'goal':
+    case 'goal2':
+    case 'goal3': {
+      const picked = i >= 0 ? q.choices[i] : ''
+      if (picked === 'More options') { st.step = st.step === 'goal' ? 'goal2' : 'goal3'; return { ok: true, state: st, question: question(st) } }
+      if (picked === 'Back to the first ones') { st.step = 'goal'; return { ok: true, state: st, question: question(st) } }
+      const g = parseGoal(picked || raw)
+      if (!g) return bad('Could not tell the goal. Ask again with the same buttons.')
+      st.goal = g
       if (!st.members.length) st.step = 'h'
       else advance(st)
       break
