@@ -27,7 +27,7 @@ const earn = [
   { t: 'subscriptions:', d: '1.25x SB on every renewal' },
   { t: 'write a verified review', d: '+50 SB (1 per order)' },
   { t: 'add photo/video to your review:', d: '+100 SB (1 per order)' },
-  { t: 'take the assessment:', d: '+50 SB (one time)' },
+  { t: 'build your routine with Emma:', d: '+50 SB (one time, coming soon with account sign-in)' },
   { t: 'bonus SB on select products:', d: 'look for the "Bonus SB" badge' },
   { t: 'birthday SB', d: '+100 SB once per year (month & year only)' },
 ]

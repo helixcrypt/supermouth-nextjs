@@ -64,7 +64,7 @@ export default function WhatMakesUsSuperPage() {
         <div className="relative w-full max-w-[1440px] mx-auto px-4 lg:pl-[132px] py-8 lg:py-12 text-white">
           <div className="max-w-[600px]">
             <h2 className="text-[26px] md:text-[30px] leading-9 font-bold">we think your mouth is one of your greatest assets</h2>
-            <p className="mt-6 text-[18px] leading-7 font-light max-w-[480px]">take our assessment for each family member to see what are the best products for you</p>
+            <p className="mt-6 text-[18px] leading-7 font-light max-w-[480px]">build a routine with Emma for each family member to see which products fit them best</p>
             <YellowLink href="/assessment" className="mt-5">How Super Are Your Mouths</YellowLink>
           </div>
         </div>

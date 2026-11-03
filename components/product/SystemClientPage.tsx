@@ -10,6 +10,7 @@ import MoreText from './MoreText'
 import Accordion from './Accordion'
 import { BLUE, CORAL, TEAL, SCRIPT, Stars } from './ui'
 import type { ProductDetail, Variant } from '@/components/ProductClientPage'
+import RoutineHelp from '@/components/RoutineHelp'
 
 export type SystemHeader = {
   familyTitle: string
@@ -77,6 +78,7 @@ export default function SystemClientPage({ header, tiers, products, reviewCount 
 
           {reviewCount ? <a href="#product-reviews" className="mt-3 inline-flex items-center gap-1 text-[13px]"><Stars size={22} /> ({reviewCount})</a> : null}
           <p className="mt-2 text-[26px] font-medium">{fmt(price)}</p>
+          <RoutineHelp className="mt-1" />
           {header.note && <p className="mt-1 text-[14px] font-medium" style={{ color: TEAL }}>{header.note}</p>}
           <div className="mt-4"><MoreText text={header.shortDesc} /></div>
 

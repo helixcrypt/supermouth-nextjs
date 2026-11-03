@@ -12,7 +12,7 @@ const TEAL = '#5AC3B2'
 type Row = { label: string; href: string; tag?: string; teal?: boolean; highlight?: boolean; isNew?: boolean }
 
 const learnLinks: Row[] = [
-  { label: 'Take an Assessment', href: '/assessment' },
+  { label: 'Build My Routine with Emma', href: '/assessment' },
   { label: 'Rewards & Referrals', href: '/rewards', isNew: true },
   { label: 'Subscription Benefits', href: '/subscription-benefits' },
   { label: 'Articles & Guides', href: '/learn' },
@@ -172,7 +172,7 @@ export default function Navbar() {
               </nav>
               <div className="flex items-center" onMouseEnter={() => setActive(null)}>
                 <Link href="/assessment" onClick={closeAll} className="mx-3 bg-[#FFE920] text-[16px] leading-6 px-3 py-1 rounded hover:opacity-90 transition-opacity whitespace-nowrap" style={{ color: BLUE }}>
-                  TAKE ASSESSMENT
+                  BUILD MY ROUTINE
                 </Link>
                 <Link href="/account" onClick={closeAll} className="mx-3 text-[#FFE920] border border-[#FFE920] text-[16px] leading-6 font-medium px-3 py-1 rounded hover:bg-white/10 transition-colors whitespace-nowrap">
                   SIGN IN
@@ -243,10 +243,10 @@ export default function Navbar() {
 
               <div className="mt-4 flex items-center justify-between gap-4 rounded-lg bg-[#EEEFF6] px-4 py-2">
                 <p className="text-[14px]" style={{ color: BLUE }}>
-                  <span className="font-bold">Not sure where to start?</span> Take an assessment to get a personalized routine for your family in 2 minutes.
+                  <span className="font-bold">Not sure where to start?</span> Build a personalized routine for your family with Emma in about 2 minutes.
                 </p>
                 <Link href="/assessment" onClick={closeAll} className="flex-shrink-0 text-white text-[14px] font-semibold tracking-wide px-5 py-2 rounded hover:opacity-90" style={{ background: '#6E5BAA' }}>
-                  TAKE ASSESSMENT
+                  BUILD MY ROUTINE
                 </Link>
               </div>
 
@@ -282,9 +282,9 @@ export default function Navbar() {
                 </div>
                 <div className="text-center mt-6">
                   <p className="text-[20px] leading-7 font-semibold" style={{ color: BLUE }}>Not sure where to start?</p>
-                  <p className="text-[18px] leading-7" style={{ color: BLUE }}>Take an Assessment to learn about your dental needs</p>
+                  <p className="text-[18px] leading-7" style={{ color: BLUE }}>Build your family&apos;s routine with Emma</p>
                   <Link href="/assessment" onClick={closeAll} className="inline-block mt-2 bg-[#FFE920] text-[18px] leading-7 font-bold px-2 py-2 rounded hover:opacity-90" style={{ color: BLUE }}>
-                    Take an Assessment
+                    Build My Routine
                   </Link>
                 </div>
               </div>
@@ -329,7 +329,7 @@ export default function Navbar() {
             <p className="text-xs text-white/50 font-bold uppercase tracking-widest mt-4 mb-2">Why SuperMouth?</p>
             {whyLinks.map(l => <Link key={l.href} href={l.href} onClick={closeAll} className="block py-2 text-sm hover:text-sm-yellow">{l.label}</Link>)}
             <div className="pt-4">
-              <Link href="/assessment" onClick={closeAll} className="block w-full text-center bg-sm-yellow text-sm-navy font-bold py-3 rounded-full text-sm">TAKE ASSESSMENT</Link>
+              <Link href="/assessment" onClick={closeAll} className="block w-full text-center bg-sm-yellow text-sm-navy font-bold py-3 rounded-full text-sm">BUILD MY ROUTINE</Link>
             </div>
           </div>
         </div>

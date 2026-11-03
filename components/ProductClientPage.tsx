@@ -9,6 +9,7 @@ import LeftBlocks from '@/components/product/LeftBlocks'
 import MoreText from '@/components/product/MoreText'
 import { BLUE, CORAL, TEAL, SCRIPT, Stars } from '@/components/product/ui'
 import type { ProductHeader } from '@/lib/product-content'
+import RoutineHelp from '@/components/RoutineHelp'
 
 type Money = { amount: string; currencyCode: string }
 export interface Variant {
@@ -112,6 +113,7 @@ export default function ProductClientPage({ product, header, reviewCount }: { pr
           <p className="mt-4 text-[22px] font-semibold">
             {cardOption && min !== max ? <>{fmt(min)} — {fmt(max)}</> : <>{fmt(price)}{compareAt !== null && compareAt > price ? <span className="ml-3 text-[18px] line-through" style={{ color: CORAL }}>{fmt(compareAt)}</span> : null}</>}
           </p>
+          <RoutineHelp className="mt-2" />
           {desc && <p className="mt-5 text-[18px] leading-7">{desc}</p>}
 
           {(header?.superHtml || (!header && product.descriptionHtml)) && (

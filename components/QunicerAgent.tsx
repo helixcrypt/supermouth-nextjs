@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { openEmma, cleanRoutineCode, EMMA_BUILD_ROUTINE } from '@/lib/emma'
 
 const WIDGET_SRC = 'https://chat.quincer.com/api/embed/widget.js'
 
@@ -27,6 +28,34 @@ export default function QunicerAgent() {
     script.src = WIDGET_SRC
     script.defer = true
     document.body.appendChild(script)
+  }, [])
+
+  // Routine interview entry points.
+  // 1. Links: ?routine=start opens Emma and starts the interview; ?code=AFM opens Emma with that routine code.
+  //    (Follow-up emails, printed cards and, later, the dentist portal use these.)
+  // 2. Any link to /assessment (the old assessment page) opens Emma instead of navigating.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = cleanRoutineCode(params.get('code'))
+    const start = params.get('routine') === 'start'
+    if (code || start) {
+      openEmma(code ? `My routine code is ${code}` : EMMA_BUILD_ROUTINE)
+      params.delete('code'); params.delete('routine')
+      const q = params.toString()
+      window.history.replaceState(null, '', window.location.pathname + (q ? `?${q}` : '') + window.location.hash)
+    }
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+      const a = (e.target as HTMLElement | null)?.closest?.('a')
+      if (!a) return
+      let url: URL
+      try { url = new URL(a.href, window.location.href) } catch { return }
+      if (url.origin !== window.location.origin || url.pathname !== '/assessment') return
+      e.preventDefault()
+      openEmma(EMMA_BUILD_ROUTINE)
+    }
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
   }, [])
 
   // TEMPORARY WORKAROUND (added Oct 29 2026; remove once Quincer fixes it):
