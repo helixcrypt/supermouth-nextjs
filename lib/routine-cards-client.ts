@@ -24,7 +24,15 @@ function money(n: number | null | undefined) { return typeof n === 'number' ? `$
 
 function cardEl(title: string, sub: string, price: string, url: string | null, image?: string) {
   const a = document.createElement(url ? 'a' : 'div') as HTMLAnchorElement
-  if (url) { a.href = url; a.target = '_blank'; a.rel = 'noopener' }
+  if (url) {
+    a.href = url
+    // open the product inside the site without a page reload, so the chat and its history stay
+    a.addEventListener('click', e => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+      e.preventDefault(); e.stopPropagation()
+      window.dispatchEvent(new CustomEvent('sm:navigate', { detail: url }))
+    }, true)
+  }
   a.className = 'sm-card'
   a.setAttribute('style', 'display:flex;gap:10px;align-items:center;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:10px;background:#fff;color:#1d2a33;text-decoration:none;margin-top:6px')
   if (image) {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { openEmma, cleanRoutineCode, EMMA_BUILD_ROUTINE } from '@/lib/emma'
 import { ensureRoutineButtons, hideStateTokens } from '@/lib/routine-buttons-client'
 import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive, inPostHandoff, hideSideMarks, fixDashes } from '@/lib/routine-local'
@@ -10,6 +11,23 @@ const WIDGET_SRC = 'https://chat.quincer.com/api/embed/widget.js'
 
 /** Quincer floating chat widget (site-wide). Mirrors Quincer's official embed snippet. */
 export default function QunicerAgent() {
+  const router = useRouter()
+
+  // Product cards drawn in the chat ask for a client-side page change, so the chat window
+  // and its history stay in place (a full page load would empty the page-drawn messages).
+  useEffect(() => {
+    const onNav = (e: Event) => {
+      const href = String((e as CustomEvent).detail || '')
+      let url: URL
+      try { url = new URL(href, window.location.href) } catch { return }
+      const host = (h: string) => h.replace(/^www\./, '')
+      if (host(url.hostname) === host(window.location.hostname)) router.push(url.pathname + url.search + url.hash)
+      else window.open(url.href, '_blank', 'noopener')
+    }
+    window.addEventListener('sm:navigate', onNav)
+    return () => window.removeEventListener('sm:navigate', onNav)
+  }, [router])
+
   useEffect(() => {
     const w = window as any
 
