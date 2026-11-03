@@ -1,4 +1,4 @@
-import { start, answer, setMode, readCodes, question, State, Member, label } from './engine'
+import { start, answer, setMode, readCodes, question, decode, State, Member, label } from './engine'
 
 /**
  * Quincer does not keep tool results between turns, so each turn Emma sends every
@@ -6,6 +6,7 @@ import { start, answer, setMode, readCodes, question, State, Member, label } fro
  * Answers that do not fit the question they land on (side questions, chit-chat) are skipped.
  */
 export interface ReplayInput {
+  state?: unknown
   answers?: unknown
   mode?: unknown
   short_after?: unknown
@@ -21,6 +22,8 @@ export interface ReplayResult {
   lastRejected?: string
   codeErrors?: string[]
   fromCode: boolean
+  fromState?: boolean
+  badState?: boolean
 }
 
 export function toList(a: unknown): string[] {
@@ -40,8 +43,14 @@ export function replay(input: ReplayInput): ReplayResult {
   let fromCode = false
   let codeErrors: string[] | undefined
 
+  // Preferred: continue from the state token Emma carried in her last message.
+  const rawState = String(input.state ?? '').trim().replace(/^\[\[|\]\]$/g, '')
+  const fromState = rawState ? decode(rawState) : null
+  const badState = !!rawState && !fromState
+  if (fromState) st = fromState
+
   const code = String(input.routine_code ?? '').trim()
-  if (code) {
+  if (code && !fromState) {
     const { members, errors } = readCodes(code)
     codeErrors = errors.length ? errors : undefined
     if (members.length) {
@@ -68,7 +77,7 @@ export function replay(input: ReplayInput): ReplayResult {
     else { skipped.push(a); lastRejected = r.error }
   })
   if (shortAfter !== null && answers.length <= shortAfter && String(input.mode) === 'short' && st.mode !== 'S') st = setMode(st, 'short')
-  return { st, skipped, applied, lastRejected, codeErrors, fromCode }
+  return { st, skipped, applied, lastRejected, codeErrors, fromCode, fromState: !!fromState, badState }
 }
 
 /** Apply the shopper's "no" to systems: each entry names a person (as in the record, or a number). */

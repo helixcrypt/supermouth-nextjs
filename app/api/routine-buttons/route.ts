@@ -11,9 +11,9 @@ import { question } from '@/lib/routine/engine'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => null) as { answers?: unknown; routine_code?: unknown; mode?: unknown } | null
+  const body = await req.json().catch(() => null) as { state?: unknown; answers?: unknown; routine_code?: unknown; mode?: unknown } | null
   if (!body) return NextResponse.json({ error: 'bad request' }, { status: 400 })
-  const r = replay({ answers: body.answers, routine_code: body.routine_code, mode: body.mode })
+  const r = replay({ state: body.state, answers: body.answers, routine_code: body.routine_code, mode: body.mode })
   const q = question(r.st)
   return NextResponse.json({ step: q.step, buttons: q.step === 'done' ? [] : q.choices }, { headers: { 'Cache-Control': 'no-store' } })
 }

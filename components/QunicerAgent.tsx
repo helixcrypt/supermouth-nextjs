@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { openEmma, cleanRoutineCode, EMMA_BUILD_ROUTINE } from '@/lib/emma'
-import { ensureRoutineButtons } from '@/lib/routine-buttons-client'
+import { ensureRoutineButtons, hideStateTokens } from '@/lib/routine-buttons-client'
 
 const WIDGET_SRC = 'https://chat.quincer.com/api/embed/widget.js'
 
@@ -68,7 +68,19 @@ export default function QunicerAgent() {
     const onDone = () => later(700)
     window.addEventListener('quincer:done', onDone)
     const first = setTimeout(() => later(0), 4000)
-    return () => { window.removeEventListener('quincer:done', onDone); clearTimeout(t); clearTimeout(first) }
+    // hide Emma's interview state tokens as soon as they appear (also while a reply streams in)
+    let box: Element | null = null
+    const obs = new MutationObserver(() => { if (box) hideStateTokens(box) })
+    const attach = setInterval(() => {
+      const found = document.querySelector('.cw-messages')
+      if (found && found !== box) {
+        box = found
+        obs.disconnect()
+        obs.observe(box, { childList: true, subtree: true, characterData: true })
+        hideStateTokens(box)
+      }
+    }, 1000)
+    return () => { window.removeEventListener('quincer:done', onDone); clearTimeout(t); clearTimeout(first); clearInterval(attach); obs.disconnect() }
   }, [])
 
   // TEMPORARY WORKAROUND (added Oct 29 2026; remove once Quincer fixes it):

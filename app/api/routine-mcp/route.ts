@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { record, codeFor, question, State } from '@/lib/routine/engine'
+import { record, codeFor, question, encode, State } from '@/lib/routine/engine'
 import { replay, applyDeclines, toList } from '@/lib/routine/replay'
 import { recommend } from '@/lib/routine/recommend'
 
@@ -13,9 +13,13 @@ import { recommend } from '@/lib/routine/recommend'
 export const dynamic = 'force-dynamic'
 
 const COMMON = {
+  state: {
+    type: 'string',
+    description: 'The state token from the end of your most recent interview message, the text between [[ and ]] (for example R1.F.w0.f.0.-.-.MA-??-0.hb). Omit only on the first call of a new interview.',
+  },
   answers: {
     type: 'array', items: { type: 'string' },
-    description: "Copy, word for word and in order, every message the shopper has sent since they tapped Build my routine (or gave their routine code), including the one they just sent. Do not summarize, reword, drop or reorder any. Side questions can stay in; the tool skips them. Example: [\"Just me\", \"Neither\", \"is fluoride safe?\", \"Fluoride\"]. Empty at the start.",
+    description: "The shopper's message(s) sent after your message that carried that state token, word for word, usually just the newest one (for example [\"Neither\"]). Empty when starting.",
   },
   mode: { type: 'string', enum: ['full', 'short'], description: 'short if the shopper wanted it quick from the start.' },
   short_after: { type: 'integer', description: 'If the shopper asked to speed up partway, how many answers had been given at that moment.' },
@@ -27,30 +31,34 @@ const COMMON = {
 const TOOLS = [
   {
     name: 'routine_interview',
-    description: 'The routine interview. Call it once per turn while the interview is running: send all the shopper\'s interview answers so far, and it returns the one question to ask now with its buttons. Call with an empty answers list when the shopper taps Build my routine, or with routine_code when they give a code.',
+    description: 'The routine interview. Call it once per turn while the interview is running, with the state token from your last interview message and the shopper\'s newest message. It returns the one question to ask now, its buttons and a new state token. Start a new interview with no state and empty answers, or with routine_code when the shopper gives a code.',
     inputSchema: { type: 'object', properties: COMMON },
   },
   {
     name: 'routine_recommend',
-    description: "When routine_interview returns step done: one system per person with product links, add-ons, family-wide discounts and presentation rules. If the shopper says no to a person's system after you answered the objection, call again with that person added to declined; it returns the next smaller system, or limit_reached.",
+    description: "When routine_interview returns step done: call with the latest state token. Returns one system per person with product links, add-ons, family-wide discounts, presentation rules and a state token. If the shopper says no to a person's system after you answered the objection, call again with the latest state and that person in declined; it returns the next smaller system, or limit_reached.",
     inputSchema: {
       type: 'object',
       properties: {
         ...COMMON,
-        declined: { type: 'array', items: { type: 'string' }, description: 'One entry per "no" the shopper gave to a person\'s system, naming the person as in the record (e.g. "you", "child 2"). Repeat a person for a second no.' },
+        declined: { type: 'array', items: { type: 'string' }, description: 'Only the new "no" from the shopper this turn, naming the person as in the record (e.g. "you", "child 2"). Earlier ones are already in the state.' },
       },
     },
   },
 ]
 
-const RULE = 'Ask only this question, in your own words, then stop and wait for the reply. The choices appear as buttons. On the next turn call routine_interview once with all answers including the new one.'
+const tokenRule = (token: string) => `End your message with this exact line, unchanged: ${token} (the page hides it from the shopper). Next turn, pass the text inside the brackets as state, with the shopper's newest message as answers.`
+const RULE = 'Ask only this question, in your own words, then stop and wait for the reply. The choices appear as buttons.'
 
 function view(st: State, r: ReturnType<typeof replay>) {
   const q = question(st)
   const done = q.step === 'r' || q.step === 'done'
   const rec = record(st)
+  const token = `[[${encode(st)}]]`
   return {
     ok: true,
+    state_token: token,
+    state_problem: r.badState ? 'The state token you sent was changed or incomplete. Copy it exactly from the end of your last interview message. If it is lost, start the interview again.' : undefined,
     step: q.step,
     about: q.about,
     ask: q.ask,
@@ -64,7 +72,7 @@ function view(st: State, r: ReturnType<typeof replay>) {
     last_answer_problem: r.lastRejected,
     from_code: r.fromCode || undefined,
     code_errors: r.codeErrors,
-    rule: q.step === 'done' ? 'The interview is complete. Call routine_recommend with the same answers.' : RULE,
+    rule: (q.step === 'done' ? 'The interview is complete. Call routine_recommend with this state now.' : RULE) + ' ' + tokenRule(token),
   }
 }
 
@@ -85,7 +93,8 @@ async function callTool(name: string, args: any) {
       }
       const d = applyDeclines(r.st, args?.declined)
       const rec = await recommend(r.st)
-      return { ok: true, routine_codes: r.st.members.map(codeFor).filter(Boolean).join(' '), declines_applied: d.applied, declines_not_matched: d.unknown.length ? d.unknown : undefined, ...rec }
+      const token = `[[${encode(r.st)}]]`
+      return { ok: true, state_token: token, rule: tokenRule(token), routine_codes: r.st.members.map(codeFor).filter(Boolean).join(' '), declines_applied: d.applied, declines_not_matched: d.unknown.length ? d.unknown : undefined, ...rec }
     }
   }
   throw Object.assign(new Error(`Unknown tool: ${name}`), { code: -32601 })

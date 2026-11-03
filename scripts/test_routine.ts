@@ -163,6 +163,21 @@ async function main() {
     check('applyDeclines unknown name', applyDeclines(r3.st, ['grandma']).unknown.length === 1)
     void d
   }
+  // State token: continue from Emma's carried state with only the newest message
+  {
+    const { replay } = await import('../lib/routine/replay')
+    const full = replay({ answers: ['Family with kids', 'Two of us', '4 and 9', 'Neither', 'Fluoride', 'Mint', 'Neither', 'Fluoride-free', 'Strawberry', 'Fluoride', 'Chocolate'] })
+    let st = encode(full.st)
+    for (const a of ['Flossers', 'Fluoride', 'Vanilla', 'Cavity prevention', 'Pretty solid']) {
+      const r = replay({ state: `[[${st}]]`, answers: [a] })
+      check(`state step ${a}`, r.fromState === true && r.skipped.length === 0, JSON.stringify(r.skipped))
+      st = encode(r.st)
+    }
+    const last = replay({ state: st, answers: [] })
+    check('state family reaches recap', question(last.st).step === 'r', question(last.st).step)
+    check('state family codes', last.st.members.map(codeFor).join(' ') === 'AFM ANS LFC KFV', last.st.members.map(codeFor).join(' '))
+    check('bad state flagged', replay({ state: st.slice(0, -1) + 'x', answers: [] }).badState === true)
+  }
   // Page-side button segment detection
   {
     const { currentSegment } = await import('../lib/routine-buttons-client')

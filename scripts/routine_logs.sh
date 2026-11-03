@@ -1,15 +1,18 @@
 #!/bin/bash
-# Recent routine MCP requests from Vercel runtime logs. Usage: bash scripts/routine_logs.sh [count]
+# Recent routine MCP log lines from Vercel. Usage: bash scripts/routine_logs.sh [lines]
 export PATH=/Users/gregorypatterson/.nvm/versions/node/v22.22.3/bin:/opt/homebrew/bin:$PATH
 cd ~/Desktop/supermouth-nextjs
-vercel logs --scope helixcrypt --json -n ${1:-80} 2>/dev/null | /usr/bin/python3 -c '
-import sys, json
-for line in sys.stdin:
-    try: d = json.loads(line)
+vercel logs --scope helixcrypt --json -n 150 2>/dev/null | /usr/bin/python3 -c '
+import sys, json, time
+rows = []
+for l in sys.stdin:
+    try: d = json.loads(l)
     except Exception: continue
-    if "routine-mcp" not in json.dumps(d): continue
-    msgs = d.get("logs") or []
-    txt = " ".join((m.get("message") if isinstance(m, dict) else str(m)) for m in msgs)
-    keys = {k: d.get(k) for k in ("timestamp", "requestMethod", "responseStatusCode", "message") if d.get(k) is not None}
-    print(keys, txt[:300])
-'
+    if d.get("requestPath") != "/api/routine-mcp": continue
+    msgs = [m.get("message", "") for m in (d.get("logs") or []) if isinstance(m, dict)] or [d.get("message") or ""]
+    for m in msgs:
+        if "routine" in m and "routine_headers" not in m:
+            rows.append((d["timestamp"], m))
+for ts, m in sorted(rows)[-int(sys.argv[1] if len(sys.argv) > 1 else 12):]:
+    print(time.strftime("%H:%M:%S", time.localtime(ts / 1000)), m[:500])
+' "${1:-12}"
