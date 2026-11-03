@@ -141,6 +141,28 @@ async function main() {
     const { steps } = play(['Family with kids', 'Just me', '14', 'Neither', 'Fluoride', 'Mint', 'Yes', 'Fluoride'])
     check('teen braces question', steps.includes('t'), steps.join(','))
   }
+  // Replay (how Quincer calls it: all answers every turn)
+  {
+    const { replay, applyDeclines } = await import('../lib/routine/replay')
+    const r1 = replay({ answers: [] })
+    check('replay empty starts at household', question(r1.st).step === 'h')
+    const r2 = replay({ answers: ['Just me', 'is nano-HA safe?', 'Neither', 'Fluoride', 'Mint'] })
+    check('replay skips side question', question(r2.st).step === 'goal' && r2.skipped.length === 1, question(r2.st).step + ' ' + JSON.stringify(r2.skipped))
+    const r3 = replay({ answers: ['Family with kids', 'Just me', '4 and 8', 'Neither', 'Fluoride-free', 'Mint', 'Fluoride', 'Chocolate', 'Flossers', 'No preference', '2 or more', 'Go with that', 'Strawberry', 'More options', 'Whitening', 'Pretty solid', "That's right"] })
+    check('replay family to done', question(r3.st).step === 'done', question(r3.st).step)
+    const d = applyDeclines(r3.st, ['child 2', 'child 2', 'child 2'])
+    const rec = await recommend(r3.st)
+    check('declines: child 2 three times hits limit', !!(rec.people[2] as any).limit_reached && /Basic/.test(rec.people[2].system || ''), JSON.stringify(rec.people[2]))
+    check('declines: others unchanged', /Complete/.test(rec.people[0].system || '') && /Complete/.test(rec.people[1].system || ''))
+    const r4 = replay({ routine_code: 'AFM KNS', answers: ["That's right"] })
+    check('replay code to done', question(r4.st).step === 'done' && r4.st.members.length === 2)
+    const r5 = replay({ answers: ['gums', 'Just me', 'Neither', 'Fluoride', 'Mint'], mode: 'short' })
+    check('replay short to done', question(r5.st).step === 'done', question(r5.st).step)
+    const r6 = replay({ answers: ['Just me', 'Neither', 'Fluoride', 'Mint', 'Cavity prevention'], short_after: 4 })
+    check('replay switch to short ends done', question(r6.st).step === 'done', question(r6.st).step)
+    check('applyDeclines unknown name', applyDeclines(r3.st, ['grandma']).unknown.length === 1)
+    void d
+  }
   // Tampered state rejected
   {
     const s = encode(start())

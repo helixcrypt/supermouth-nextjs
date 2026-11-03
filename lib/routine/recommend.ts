@@ -120,7 +120,9 @@ export async function recommend(st: State) {
   const live = await liveStock(gids)
   const people = st.members.map((m, i) => {
     const tiers = sellableTiers(m, live)
-    const tier = tiers[Math.min(m.tier, tiers.length - 1)]
+    const lastIdx = Math.max(0, Math.min(MAX_STEP_DOWNS, tiers.length - 1))
+    const eff = Math.min(m.tier, lastIdx)
+    const tier = tiers[eff]
     const p = tier ? choose(m, tier, live) : null
     const add = addonsFor(m, live)
     const s = p?.sys
@@ -136,7 +138,10 @@ export async function recommend(st: State) {
       url: s ? `${SITE}/products/${encodeURIComponent(s.handle)}` : null,
       substitution_notice: p?.substituted,
       unavailable: !s ? 'No system in stock for these answers. Say so and offer to help with individual products.' : undefined,
-      step_downs_left: Math.max(0, Math.min(MAX_STEP_DOWNS - m.tier, tiers.length - 1 - Math.min(m.tier, tiers.length - 1))),
+      step_downs_left: Math.max(0, lastIdx - eff),
+      declined_times: m.tier || undefined,
+      limit_reached: m.tier > lastIdx ? 'The shopper has said no to the smallest system offered for this person. Do not offer anything smaller or push again; accept gracefully, offer individual products if they want, or skip this person.' : undefined,
+      just_stepped_down: m.tier > 0 && m.tier <= lastIdx ? 'This is a smaller system than first offered. Give one clinical reason for what it leaves out, then accept their answer.' : undefined,
       addons: add.addons,
       optional_addons: add.optional,
     }
