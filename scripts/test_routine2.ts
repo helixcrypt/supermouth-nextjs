@@ -19,7 +19,7 @@ check('pregnant + braces, recommend -> Ortho', formulaOf(adult({ fluoride: 'choo
 check('pregnant + braces, recommend -> Orthodontics pathway', pathway(adult({ fluoride: 'choose', pregnant: true, ortho: true })) === 'Orthodontics')
 check('pregnant + braces, fluoride -> Ortho', formulaOf(adult({ fluoride: 'f', pregnant: true, ortho: true })) === 'O')
 check('pregnant + braces, fluoride-free -> Pregnancy pathway', pathway(adult({ fluoride: 'ff', pregnant: true, ortho: true })) === 'Pregnancy')
-check('code POM round-trips to pregnant + Ortho', (() => { const c = codeFor(adult({ pregnant: true, ortho: true, fluoride: 'choose', flavor: 'Mint' })); const b = peopleFromCodes([c])[0]; return c === 'POM' && b.pregnant && b.ortho && formulaOf(b) === 'O' })())
+check('code POM round-trips to pregnant + Ortho', (() => { const c = codeFor(adult({ pregnant: true, ortho: true, fluoride: 'choose', flavor: 'Mint' })); const b = peopleFromCodes(c)?.[0]; return c === 'POM' && !!b && b.pregnant && b.ortho && formulaOf(b) === 'O' })())
 check('pregnant, no braces -> Pregnancy pathway', pathway(adult({ fluoride: 'choose', pregnant: true })) === 'Pregnancy')
 const baby = Object.assign(newPerson('child'), { age: 'baby' as const, fluoride: 'f' as const })
 check('baby always fluoride-free', formulaOf(baby) === 'N')
