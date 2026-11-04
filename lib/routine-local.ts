@@ -1,56 +1,525 @@
 'use client'
 
 /**
- * Page-run routine interview, shown inside Emma's chat window.
+ * Emma's routine interview, version 2 (SuperMouth's November 2026 prototype), run by the page
+ * inside Emma's chat window.
  *
- * Why: inside Quincer, the model does not reliably call the routine tool on every turn of a
- * 15-question interview, and it only sees the last ~10 messages. So the page asks the
- * questions itself, in Emma's bubble style with tap buttons, using the same engine as the tool
- * (lib/routine/engine.ts). Nothing goes to Quincer during the questions. When the shopper
- * confirms the recap, the page sends Emma one message with the routine codes, and Emma takes
- * over for recommendations, objections and step-downs.
+ * The page asks every question with tap buttons and builds the routine, products, System and
+ * price itself (lib/routine2/engine.ts, /api/routine-system), so no Quincer tool calls are
+ * needed. Typed questions go to Emma (she answers from her FAQ and articles), and the current
+ * question comes back after she answers. Systems go into the site's Shopify cart, one line per
+ * person, marked "For <person>". Routine codes (three letters per person) let a returning
+ * shopper skip the questions. Progress is kept in sessionStorage so a reload resumes.
  *
- * Side questions typed during the interview go to Emma as normal; the current question is
- * asked again after she answers. Progress is kept in sessionStorage so a reload resumes.
+ * Flow spec: the "Emma Routine Flow v2" page. Version 1 (v2.28 phone script) is in git history.
  */
 
-import { start, answer, question, record, codeFor, encode, decode, readCodes, GOALS, State, Member, label } from './routine/engine'
+import {
+  Person, Item, Tod, newPerson, steps, products, tierOf, smallerTiers, dropForTier, systemName,
+  recapText, routineIntro, codeFor, peopleFromCodes, priceLines, pronoun, isMe, TOD_LABEL, NAMES, pathway,
+} from './routine2/engine'
 import { logStart, logResume, logEvent, logHandoff, logShopperFollowup } from './routine-log-client'
-import { showRoutineCards, resetRoutineCards } from './routine-cards-client'
 
-const KEY = 'sm_routine_local_v1'
-const START_TEXT = /^\s*(build my routine|find my routine|find my oral care routine)\s*[.!]*\s*$/i
-const QUESTIONISH = /\?\s*$|^(what|how|why|is|are|can|could|does|do|should|which|where|when|will|would)\b/i
-
-let active: State | null = null
-let resumeAfterEmma = false
-let codeEntry = false              // waiting for the shopper to type a routine code
-let postHandoffReplies = 0         // Emma replies after a handoff that get our buttons
-let handoffPeople: string[] = []   // the people in the last confirmed routine, for "which one?" buttons
-let handoffCodes = ''              // the routine codes sent at the handoff, for the product cards
-export const inPostHandoff = () => postHandoffReplies > 0
-
+const KEY = 'sm_routine_v2'
+const START_TEXT = /^\s*(build my routine|find my routine|find my oral care routine|shop for my family)\s*[.!]*\s*$/i
 const CODE_ASK_TEXT = /^\s*i have a routine code\s*[.!]*\s*$/i
-// Quincer's generic reply when a turn fails
+const QUESTIONISH = /\?\s*$|^(what|how|why|is|are|can|could|does|do|should|which|where|when|will|would)\b/i
+const RED = /swollen|swelling|severe pain|infection|abscess|pus|trauma|knocked|lesion|lump|bleeding a lot|won'?t stop bleeding|broken tooth|tooth (really )?hurts/i
 const FALLBACK = /^(i'd be happy to help you with that\. could you tell me a bit more about what you need\?|happy to keep helping\W+is there anything else i can do for you\?)\s*$/i
-// Quincer's own suggestions that push a smaller system before any objection
 const UNWANTED_CHIP = /cheaper|cheapest|lower price|budget option|compare these/i
-const AFTER_RECOMMEND: [string, string][] = [
-  ['Looks good', 'Looks good, thanks!'],
-  ['Something is too much', 'One of these systems is too much for us.'],
-  ['I have a question', 'I have a question.'],
-]
 
-/** Marks a side question sent to Emma mid-interview; the page hides it in the shopper's bubble. */
 export const SIDE_MARK = '(Side question during my routine) '
-function askEmmaSide(text: string) {
-  if (active) logEvent({ kind: 'side', step: question(active).step })
-  resumeAfterEmma = true
+
+// ---------- state ----------
+
+interface Saved { people: Person[]; queue: Person[]; cur: Person | null; step: string; introduced: boolean }
+let S: Saved | null = null
+let resumeAfterEmma = false
+let codeEntry = false
+let typedHandler: ((t: string) => void) | null = null   // "Something else" and similar typed answers
+let reask: (() => void) | null = null                    // shows the current question again
+
+export const isLocalInterviewActive = () => !!S
+export const inPostHandoff = () => false
+
+function save() {
+  try { if (S) sessionStorage.setItem(KEY, JSON.stringify(S)); else sessionStorage.removeItem(KEY) } catch { /* ignore */ }
+}
+
+const w = () => window as any
+const box = () => document.querySelector('.cw-messages')
+
+// ---------- chat elements ----------
+
+function esc(s: string) {
+  return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string))
+}
+function fmt(s: string) { return esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>') }
+function scrollEnd(el: Element) { try { el.scrollIntoView({ block: 'end', behavior: 'smooth' }) } catch { /* ignore */ } }
+function removeChips() { box()?.querySelectorAll('.cw-reply-chips').forEach(n => n.remove()) }
+
+function bubble(): HTMLDivElement | null {
+  const b = box()
+  if (!b) return null
   removeChips()
+  if (!b.querySelector('.cw-msg-persona')) {
+    const p = document.createElement('div'); p.className = 'cw-msg-persona'; p.textContent = 'Emma'; b.appendChild(p)
+  }
+  const d = document.createElement('div')
+  d.className = 'cw-msg cw-msg-bot sm-local'
+  const ref = b.querySelector('.cw-msg-bot[style]') as HTMLElement | null
+  if (ref) d.setAttribute('style', ref.getAttribute('style') || '')
+  b.appendChild(d)
+  return d
+}
+function say(text: string) { const d = bubble(); if (!d) return; d.innerHTML = fmt(text); scrollEnd(d) }
+function sayHtml(html: string) { const d = bubble(); if (!d) return; d.innerHTML = html; scrollEnd(d) }
+function addUser(text: string) {
+  const b = box(); if (!b) return
+  removeChips()
+  const d = document.createElement('div'); d.className = 'cw-msg cw-msg-user sm-local'; d.textContent = text
+  b.appendChild(d); scrollEnd(d)
+}
+
+function chipRow(): [HTMLDivElement, HTMLDivElement] {
+  const wrap = document.createElement('div'); wrap.className = 'cw-slot-chips cw-reply-chips sm-routine-chips'
+  const row = document.createElement('div'); row.className = 'cw-slot-chips-row'; row.style.flexWrap = 'wrap'
+  wrap.appendChild(row)
+  return [wrap, row]
+}
+function chipBtn(label: string): HTMLButtonElement {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'cw-slot-chip'; b.textContent = label; return b
+}
+
+/** Single choice: tap one. */
+function chips<T>(list: [string, T][], on: (v: T, label: string) => void) {
+  const b = box(); if (!b) return
+  removeChips()
+  const [wrap, row] = chipRow()
+  for (const [label, v] of list) {
+    const btn = chipBtn(label)
+    btn.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation()
+      if (btn.getAttribute('disabled')) return
+      wrap.querySelectorAll('.cw-slot-chip').forEach(x => x.setAttribute('disabled', 'true'))
+      addUser(label); typedHandler = null
+      logEvent({ kind: 'answer', step: S?.step, value: label })
+      on(v, label)
+    })
+    row.appendChild(btn)
+  }
+  b.appendChild(wrap); scrollEnd(wrap)
+}
+
+const ON_STYLE = 'outline:2px solid currentColor;outline-offset:-2px;font-weight:600'
+
+/** Several choices, then Done. "Something else" takes a typed answer. */
+function multi(list: [string, string][], opts: { none?: string; other?: string }, on: (vals: string[], extra: string[], label: string) => void) {
+  const b = box(); if (!b) return
+  removeChips()
+  const [wrap, row] = chipRow()
+  const picked = new Set<string>(); const extra: string[] = []
+  const mark = (btn: HTMLElement, on: boolean) => { if (on) btn.setAttribute('style', ON_STYLE); else btn.removeAttribute('style') }
+  let noneBtn: HTMLButtonElement | null = null
+  for (const [label, v] of list) {
+    const btn = chipBtn(label)
+    btn.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation()
+      if (picked.has(v)) picked.delete(v); else picked.add(v)
+      mark(btn, picked.has(v)); if (noneBtn) mark(noneBtn, false)
+    })
+    row.appendChild(btn)
+  }
+  if (opts.none) {
+    noneBtn = chipBtn(opts.none)
+    noneBtn.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation()
+      picked.clear(); extra.length = 0
+      row.querySelectorAll('.cw-slot-chip').forEach(x => (x as HTMLElement).removeAttribute('style'))
+      mark(noneBtn!, true); finish()
+    })
+    row.appendChild(noneBtn)
+  }
+  if (opts.other) {
+    const ob = chipBtn('Something else')
+    ob.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation()
+      say(`Type it in the box below (${opts.other}), then tap Done.`)
+      b.appendChild(wrap); scrollEnd(wrap)
+      typedHandler = t => { extra.push(t); const tag = chipBtn(t); mark(tag, true); row.insertBefore(tag, ob); addUser(t); b.appendChild(wrap); scrollEnd(wrap) }
+    })
+    row.appendChild(ob)
+  }
+  const done = chipBtn('Done')
+  done.style.fontWeight = '700'
+  const finish = () => {
+    wrap.querySelectorAll('.cw-slot-chip').forEach(x => x.setAttribute('disabled', 'true'))
+    const labels = [...list.filter(([, v]) => picked.has(v)).map(([l]) => l), ...extra]
+    const label = labels.length ? labels.join(', ') : (opts.none || 'None')
+    addUser(label); typedHandler = null
+    logEvent({ kind: 'answer', step: S?.step, value: label })
+    on([...picked], [...extra], label)
+  }
+  done.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); finish() })
+  row.appendChild(done)
+  b.appendChild(wrap); scrollEnd(wrap)
+}
+
+/** Tap items in the order used; numbers show the order. */
+function orderPicker(tod: Tod, on: (order: Item[], extra: string[]) => void) {
+  const b = box(); if (!b) return
+  removeChips()
+  const [wrap, row] = chipRow()
+  const list: [string, Item][] = [['🪥 Brush / toothpaste', 'br'], ['🧵 Floss', 'fl'], ['🫙 Mouthwash', 'mw'], ['👅 Tongue cleaner', 'tc'], ['💨 Mouth spray', 'sp'], ['💧 Water flosser', 'wf']]
+  const order: Item[] = []; const extra: string[] = []
+  const btns: [HTMLButtonElement, Item, string][] = []
+  const paint = () => btns.forEach(([btn, v, label]) => {
+    const n = order.indexOf(v)
+    btn.textContent = n >= 0 ? `${n + 1}. ${label}` : label
+    if (n >= 0) btn.setAttribute('style', ON_STYLE); else btn.removeAttribute('style')
+  })
+  for (const [label, v] of list) {
+    const btn = chipBtn(label); btns.push([btn, v, label])
+    btn.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation()
+      const i = order.indexOf(v); if (i >= 0) order.splice(i, 1); else order.push(v); paint()
+    })
+    row.appendChild(btn)
+  }
+  const finish = (label: string) => {
+    wrap.querySelectorAll('.cw-slot-chip').forEach(x => x.setAttribute('disabled', 'true'))
+    addUser(label); typedHandler = null
+    logEvent({ kind: 'answer', step: S?.step, value: label })
+    on([...order], [...extra])
+  }
+  const done = chipBtn('Done'); done.style.fontWeight = '700'
+  done.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); const l = [...order.map(k => NAMES[k]), ...extra]; finish(l.length ? l.join(' → ') : 'Nothing') })
+  const none = chipBtn(`Nothing ${tod === 'day' ? 'during the day' : tod === 'morning' ? 'in the morning' : 'at night'}`)
+  none.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); order.length = 0; extra.length = 0; finish(none.textContent || 'Nothing') })
+  const other = chipBtn('Something else')
+  other.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation()
+    say('Type it in the box below (for example, a water flosser or a rinse from your dentist), then tap Done.')
+    b.appendChild(wrap); scrollEnd(wrap)
+    typedHandler = t => { extra.push(t); addUser(t); const tag = chipBtn(t); tag.setAttribute('style', ON_STYLE); row.insertBefore(tag, done); b.appendChild(wrap); scrollEnd(wrap) }
+  })
+  row.append(done, none, other)
+  b.appendChild(wrap); scrollEnd(wrap)
+}
+
+// ---------- the interview ----------
+
+const STEPS: Record<string, () => void> = {}
+function go(name: string) {
+  if (!S) return
+  S.step = name; save()
+  logEvent({ kind: 'question', step: name, about: S.cur ? S.cur.label : undefined })
+  STEPS[name]()
+}
+
+const cur = () => S!.cur!
+const you = () => pronoun(cur())
+
+function labelFor(p: Person) {
+  const base = p.who === 'me' ? 'You' : p.who === 'adult' ? 'Family member' : { baby: 'Baby', little: 'Little one', big: 'Big kid', teen: 'Teen' }[p.age]
+  const n = S!.people.filter(x => x.label === base || x.label.startsWith(base + ' ')).length
+  return n ? `${base} ${n + 1}` : base
+}
+const forWhom = (p: Person) => (p.who === 'me' ? 'you' : p.label.toLowerCase())
+
+STEPS.who = () => {
+  say(S!.people.length ? "Who's next?" : 'Is this for you or someone in your family?')
+  const opts: [string, Person['who']][] = [['Me', 'me'], ['My child', 'child'], ['Another adult in my family', 'adult']]
+  chips(S!.people.some(p => p.who === 'me') ? opts.filter(o => o[1] !== 'me') : opts, v => {
+    S!.cur = newPerson(v)
+    if (v === 'child') return go('age')
+    S!.cur.label = labelFor(S!.cur); go('morning')
+  })
+}
+STEPS.age = () => {
+  say('How old are they?')
+  chips<Person['age']>([['Baby or toddler (0 to 2)', 'baby'], ['Little kid (2 to 5)', 'little'], ['Big kid (6 to 12)', 'big'], ['Teen (13+)', 'teen']], v => {
+    cur().age = v; cur().label = labelFor(cur())
+    if (v === 'little' && cur().flavor === 'Mint') cur().flavor = 'Strawberry'
+    go(v === 'baby' ? 'teeth' : 'morning')
+  })
+}
+STEPS.teeth = () => {
+  say('How many teeth so far?')
+  chips<NonNullable<Person['teeth']>>([['None yet', 'none'], ['A few', 'few'], ['6 to 8', '68'], ['More than 8', 'more']], v => { cur().teeth = v; go('teething') })
+}
+STEPS.teething = () => {
+  say('Teething right now?')
+  chips([['Yes', true], ['No', false]], v => { cur().teething = v; go('flavor') })
+}
+STEPS.morning = () => {
+  say(`Let's start with what ${you()} do today. **In the morning**, tap what ${you()} use in the order ${you()} use it, then tap Done.`)
+  orderPicker('morning', (o, x) => { cur().routineNow.morning = o; cur().other.push(...x); go('day') })
+}
+STEPS.day = () => {
+  say('**During the day**, after meals or snacks?')
+  orderPicker('day', (o, x) => { cur().routineNow.day = o; cur().other.push(...x); go('night') })
+}
+STEPS.night = () => {
+  say('And **at night**, in order?')
+  orderPicker('night', (o, x) => { cur().routineNow.night = o; cur().other.push(...x); go('cavities') })
+}
+STEPS.cavities = () => {
+  say(isMe(cur()) ? "Any cavities recently, or has your doctor said you're at higher risk?" : "Any cavities recently, or has the doctor said they're at higher risk?")
+  chips<Person['cavities']>([['None in the last few years', 'none'], ['One or more recently', 'recent'], ['Doctor says higher risk', 'risk'], ['Not sure', 'unsure']], v => { cur().cavities = v; go('concerns') })
+}
+STEPS.concerns = () => {
+  say(`Anything ${you()}'re dealing with? Tap all that apply, then Done.`)
+  multi([['Sensitivity', 'Sensitivity'], ['Bleeding gums', 'Bleeding gums'], ['Dry mouth', 'Dry mouth'], ['Bad breath', 'Bad breath'], ['Staining', 'Staining']], { none: 'None of these', other: 'a few words' }, (vals, extra) => {
+    cur().concerns = [...vals, ...extra]
+    if (vals.includes('Bleeding gums')) say('Bleeding when you floss often settles as the routine improves; if it keeps up, it deserves a look from your dental team.')
+    go('special')
+  })
+}
+STEPS.special = () => {
+  say('Any special considerations? Tap all that apply, then Done.')
+  const opts: [string, string][] = [['Braces', 'braces'], ['Clear aligners', 'aligners']]
+  if (cur().age === 'teen') opts.push(['Pregnancy', 'preg'])
+  multi(opts, { none: 'None', other: 'for example, a bridge or an implant' }, (vals, extra) => {
+    cur().ortho = vals.includes('braces') || vals.includes('aligners')
+    cur().pregnant = vals.includes('preg')
+    cur().special = extra
+    go('fluoride')
+  })
+}
+STEPS.fluoride = () => {
+  say("Prefer fluoride, fluoride-free, or would you like me to recommend based on what you've told me?")
+  chips<Person['fluoride']>([['Fluoride', 'f'], ['Fluoride-free', 'ff'], ['Recommend for me', 'choose']], v => { cur().fluoride = v; go('flavor') })
+}
+STEPS.flavor = () => {
+  say('Which flavor?')
+  const kid = cur().age === 'baby' || cur().age === 'little'
+  const f: [string, Person['flavor']][] = kid ? [['🍓 Strawberry', 'Strawberry'], ['🍦 Vanilla', 'Vanilla'], ['🍫 Chocolate', 'Chocolate']] : [['🌿 Mint', 'Mint'], ['🍓 Strawberry', 'Strawberry'], ['🍦 Vanilla', 'Vanilla'], ['🍫 Chocolate', 'Chocolate']]
+  chips(f, v => { cur().flavor = v; go('recap') })
+}
+STEPS.recap = () => {
+  say(recapText(cur(), codeFor(cur())))
+  chips([["That's right", true], ['Let me fix something', false]], ok => {
+    if (ok) return go('routine')
+    if (cur().fromCode) { const who = cur().who; S!.cur = newPerson(who); S!.cur.label = labelFor(S!.cur); return go(who === 'child' ? 'age' : 'morning') }
+    go('fix')
+  })
+}
+STEPS.fix = () => {
+  say('No problem. What should I change?')
+  const opts: [string, string][] = cur().age === 'baby'
+    ? [["Who it's for", 'who'], ['Teeth', 'teeth'], ['Teething', 'teething'], ['Flavor', 'flavor']]
+    : [["Who it's for", 'who'], ['What I use now', 'morning'], ['Cavities', 'cavities'], ['Concerns', 'concerns'], ['Fluoride', 'fluoride'], ['Flavor', 'flavor']]
+  chips(opts, v => {
+    if (v === 'who') { S!.cur = null; return go('who') }
+    if (v === 'morning') { cur().routineNow = { morning: [], day: [], night: [] }; cur().other = [] }
+    go(v)
+  })
+}
+
+function routineCard(p: Person) {
+  const g: Record<Tod, ReturnType<typeof steps>> = { morning: [], day: [], night: [] }
+  steps(p).forEach(s => g[s.tod].push(s))
+  let h = ''
+  for (const t of ['morning', 'day', 'night'] as Tod[]) {
+    if (!g[t].length) continue
+    h += `<div style="margin:4px 0 8px"><strong>${esc(TOD_LABEL[t])}</strong>`
+    g[t].forEach((s, i) => {
+      const tag = s.keep ? 'KEEP' : 'ADD'
+      h += `<div style="margin-top:3px"><span style="font-size:11px;font-weight:700;letter-spacing:.04em;opacity:.7">${i + 1} · ${tag}</span> ${esc(s.text)}${s.reason && !s.keep ? `<span style="opacity:.75"> · ${esc(s.reason)}</span>` : ''}</div>`
+    })
+    h += '</div>'
+  }
+  sayHtml(h)
+}
+
+STEPS.routine = () => {
+  const p = cur()
+  say(routineIntro(p))
+  routineCard(p)
+  if (p.other.length) say(`About the ${p.other.join(' and ')}: keep using it if you like it; nothing here replaces it.`)
+  go('manageable')
+}
+STEPS.manageable = () => {
+  say("Does that feel manageable? If not, tell me what's in the way; the best routine is the one you'll keep.")
+  chips([['Yes, that works', true], ['Not quite', false]], v => go(v ? 'bridge' : 'simplify'))
+}
+STEPS.simplify = () => {
+  const lab: Record<string, string> = { tc: 'The tongue cleaner in the morning', sp: 'The mouth spray during the day', mw: 'The mouthwash at night' }
+  const opts = steps(cur()).filter(s => s.keys.some(k => ['tc', 'sp', 'mw'].includes(k))).map(s => [lab[s.keys[0]], s.keys[0]] as [string, string])
+  say('Which part feels hard? Tap any, then Done, or tell me in your own words.')
+  multi([...opts, ["It's the time it takes", '__time']], { other: 'what gets in the way' }, (vals, extra) => {
+    const drop = vals.filter(v => v !== '__time') as Item[]
+    if (extra.length || vals.includes('__time')) say(`Understood${extra.length ? `: ${extra.join('; ')}` : ''}. The morning and night steps take about two minutes each; the daytime spray is optional and the tongue cleaner takes ten seconds. Let's drop whatever you won't do and keep what protects you most.`)
+    if (!drop.length && !extra.length && !vals.includes('__time')) return go('bridge')
+    if (!drop.length) { say("Here's the lighter version: brushing and flossing, with the rest whenever you're ready."); cur().dropped = [...new Set([...cur().dropped, ...(opts.map(o => o[1]) as Item[])])] }
+    else cur().dropped = [...new Set([...cur().dropped, ...drop])]
+    routineCard(cur())
+    go('better')
+  })
+}
+STEPS.better = () => {
+  say('Better?')
+  chips([['Yes, that works', true], ['Still too much', false]], ok => {
+    if (!ok) { cur().dropped = [...new Set([...cur().dropped, 'tc', 'sp', 'mw'] as Item[])]; say("Then brushing and flossing it is. That's the foundation, and the rest can come later.") }
+    go('bridge')
+  })
+}
+STEPS.bridge = () => {
+  if (!S!.introduced) {
+    say("Here's something important: oral care products from different brands aren't necessarily designed to work together. For example, an acidic mouthwash may work against an alkaline toothpaste, while an antiseptic rinse can disrupt the beneficial bacteria that prebiotics help support.\n\nThat's why SuperMouth is different. Our dentist-developed products are designed as one coordinated system, with innovative ingredients and tools tailored to your needs.\n\n**Innovation in every product. Coordinated to work together. Personalized to you.**\n\nNow let me show you the products I'd recommend for your routine, and why.")
+    S!.introduced = true
+  } else say("Same approach for them: the SuperMouth products that fit this routine, in the order they're used.")
+  go('prod_morning')
+}
+
+function productsAt(t: Tod, next: string) {
+  const list = products(cur()).filter(p => p.tod === t)
+  if (!list.length) return go(next)
+  let h = `<strong>${esc(TOD_LABEL[t])}</strong>`
+  for (const p of list) h += `<div style="margin-top:6px"><strong>${esc(p.name)}</strong><div style="opacity:.8;font-size:.95em">${esc(p.why)}</div></div>`
+  sayHtml(h)
+  if (next === 'system') return go('system')
+  say('Make sense so far?')
+  chips([['Yes, go on', true], ['I have a question', false]], v => {
+    if (v) return go(next)
+    say("Ask away, and I'll pick up where we left off.")
+    S!.step = next; save()      // after Emma answers, the next part comes up
+  })
+}
+STEPS.prod_morning = () => productsAt('morning', products(cur()).some(p => p.tod === 'day') ? 'prod_day' : 'prod_night')
+STEPS.prod_day = () => productsAt('day', 'prod_night')
+STEPS.prod_night = () => productsAt('night', 'system')
+
+// ---------- System, price, cart ----------
+
+interface Sys { code: string; tier: string; title: string; flavor: string; floss?: string; price: number; gid: string; url: string; image?: string; substituted?: string; error?: string }
+
+async function fetchSystems(people: { code: string; tier: string }[]): Promise<Sys[]> {
+  try {
+    const r = await fetch('/api/routine-system', { method: 'POST', headers: { 'Content-Type': 'application/json' }, cache: 'no-store', body: JSON.stringify({ people }) })
+    return (await r.json())?.people || []
+  } catch { return [] }
+}
+
+function systemCard(s: Sys, sub: string) {
+  const b = box(); if (!b) return
+  const a = document.createElement('a')
+  a.href = s.url; a.className = 'sm-card'
+  a.addEventListener('click', e => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+    e.preventDefault(); e.stopPropagation()
+    window.dispatchEvent(new CustomEvent('sm:navigate', { detail: s.url }))
+  }, true)
+  a.setAttribute('style', 'display:flex;gap:10px;align-items:center;padding:8px;border:1px solid rgba(0,0,0,.12);border-radius:10px;background:#fff;color:#1d2a33;text-decoration:none;margin:4px 0 8px;max-width:92%')
+  a.innerHTML = `${s.image ? `<img src="${esc(s.image)}" alt="" style="width:56px;height:56px;object-fit:contain;flex:none;border-radius:6px;background:#f6f8f9">` : ''}<div style="min-width:0;flex:1;font-size:13px;line-height:1.3"><div style="font-weight:600">${esc(s.title)}</div><div style="color:#5b6a74">${esc(sub)}</div><div style="display:flex;justify-content:space-between;margin-top:2px"><span style="font-weight:600">$${s.price.toFixed(2)}</span><span style="color:#0f7c8c;font-weight:600">View product</span></div></div>`
+  b.appendChild(a); scrollEnd(a)
+}
+
+let lastSystem: Sys | null = null
+let added = false   // the last person's System went into the cart
+
+STEPS.system = async () => {
+  const p = cur()
+  const code = codeFor(p)
+  const [s] = await fetchSystems([{ code, tier: tierOf(p) }])
+  if (!s || s.error) {
+    say(`I couldn't find a ${systemName(p)} in stock right now. I can help you choose individual products instead.`)
+    return chips([['Help me choose products', true], ['Skip this person', false]], v => {
+      S!.cur = null; added = false
+      if (!v) return go('anyone')
+      S!.step = 'anyone'; save()
+      askEmma(`Help me choose individual products for ${forWhom(p)}: ${pathway(p)}, ${p.flavor}.`)
+    })
+  }
+  lastSystem = s
+  const sizeNote = s.tier !== tierOf(p) ? ` (the ${tierOf(p)} size is out of stock, so this is the ${s.tier})` : ''
+  say(`What we've put together is ${isMe(p) ? 'your' : 'their'} **${pathway(p)} ${s.tier} System**${sizeNote}: a full 90-day supply, including an oral health handbook for ${isMe(p) ? 'your' : 'their'} stage of life and a simple guide to the daily routine.`)
+  systemCard(s, [p.who === 'me' ? '' : `For ${forWhom(p)}`, s.flavor, s.floss].filter(Boolean).join(' · '))
+  if (s.substituted) say(s.substituted + '.')
+  const pr = priceLines(s.price)
+  const free = s.tier === 'Complete' || s.price >= 50
+  say(`Purchased separately, these products would cost **$${pr.separate.toFixed(2)}**. As a System, you save 15%, bringing it to **$${pr.oneTime.toFixed(2)}** for 90 days, about ${Math.round((pr.oneTime / 90) * 100)} cents a day.${free ? ' Shipping is free, and' : ''} you're covered by our 30-day money-back guarantee.\n\nHow does that sound?`)
+  chips([['Add to cart', 'add'], ['Show me a smaller option', 'small']], v => v === 'add' ? addToCart(s) : go('smaller'))
+}
+
+STEPS.smaller = async () => {
+  const p = cur()
+  const tiers = smallerTiers(p)
+  if (!tiers.length) {
+    say("This is already the smallest System for this routine. If you'd rather start with one product, toothpaste is the usual first step.")
+    return chips([['Just the toothpaste', 'tp'], [`Add the ${tierOf(p)} System`, 'add']], v => v === 'tp' ? justToothpaste() : (lastSystem ? addToCart(lastSystem) : go('system')))
+  }
+  say('Here are the smaller Systems for this routine. Each keeps the same formula and flavor; the difference is what\'s left out.')
+  const code = codeFor(p)
+  const list = (await fetchSystems(tiers.map(t => ({ code, tier: t })))).filter(s => !s.error)
+  const left: Record<string, string> = { Plus: 'leaves out the mouthwash', Basic: 'toothbrush, toothpaste and floss only' }
+  list.forEach(s => systemCard(s, `${s.tier}: ${left[s.tier] || ''}`))
+  const opts: [string, string][] = list.map(s => [`${s.tier}, $${s.price.toFixed(2)}`, s.tier])
+  opts.push([`Keep ${tierOf(p)}`, 'keep'], ['Something smaller still', 'less'])
+  chips(opts, v => {
+    if (v === 'keep') return lastSystem ? addToCart(lastSystem) : go('system')
+    if (v === 'less') return go('less')
+    const s = list.find(x => x.tier === v)!
+    dropForTier(p, v as 'Plus' | 'Basic')
+    addToCart(s)
+  })
+}
+STEPS.less = () => {
+  say('Then start with one product, or a pre-matched bundle for one part of the routine.')
+  chips([['Just the toothpaste', 'tp'], ['Toothpaste and floss bundle', 'b1'], ['Back to the Systems', 'back']], v => {
+    if (v === 'back') return go('smaller')
+    if (v === 'tp') return justToothpaste()
+    const p = cur()
+    S!.cur = null; S!.step = 'anyone'; added = false; save()
+    askEmma(`Show me the toothpaste and floss bundle for ${forWhom(p)}: ${p.fluoride === 'f' ? 'with fluoride' : 'fluoride-free'}, ${p.flavor}.`)
+  })
+}
+function justToothpaste() {
+  const p = cur()
+  S!.cur = null; S!.step = 'anyone'; added = false; save()
+  askEmma(`I'd like just the toothpaste for ${forWhom(p)}: ${pathway(p)}, ${p.ortho ? 'ortho formula' : p.fluoride === 'f' ? 'with fluoride' : 'fluoride-free'}, ${p.flavor}.`)
+}
+
+async function addToCart(s: Sys) {
+  const p = cur()
+  const cart = w().__smCart
+  let ok = false
+  try { if (cart?.addItem) { await cart.addItem(s.gid, 1, [{ key: 'For', value: p.who === 'me' ? 'you' : p.label }], false); ok = true } } catch { /* below */ }
+  if (!ok) { say(`I couldn't reach the cart just now. You can add it from the product page: ${s.title}.`); return }
+  S!.people.push(p); S!.cur = null; added = true; save()
+  logEvent({ kind: 'answer', step: 'cart', value: `${codeFor(p)} ${s.tier}` })
+  if (S!.queue.length) {
+    S!.cur = S!.queue.shift()!; S!.cur.label = labelFor(S!.cur); save()
+    say("It's in your cart. Next person from your codes:")
+    return go('recap')
+  }
+  go('anyone')
+}
+STEPS.anyone = () => {
+  say(`${added ? "Done. It's in your cart. " : ''}Would you like help with anyone else in your family?`)
+  added = false
+  chips([['Add a family member', 'more'], ["I'm done", 'done']], v => v === 'more' ? (S!.cur = null, go('who')) : finish())
+}
+
+function finish() {
+  if (!S) return
+  const codes = S.people.map(codeFor).join(' ')
+  logHandoff(codes, S.people.flatMap(p => p.concerns).join(', ') || 'none', 'v2', '')
+  say(`You're set. ${S.people.length > 1 ? 'Your routine codes' : 'Your routine code'}: **${codes}**. Write ${S.people.length > 1 ? 'them' : 'it'} down or take a screenshot, and next time I can skip the questions. Open your cart to review, or check out whenever you're ready. I'm here if you have any questions.`)
+  S = null; save()
+  chips([['View my cart', 'cart']], () => w().__smCart?.openCart?.())
+}
+
+// ---------- Emma (typed questions) ----------
+
+function askEmma(text: string) {
+  resumeAfterEmma = !!S
+  removeChips()
+  logEvent({ kind: 'side', step: S?.step })
   w().ChatWidget?.open?.(SIDE_MARK + text)
 }
 
-/** Hide the side-question mark in the shopper's bubbles. */
 export function hideSideMarks(root: Element) {
   root.querySelectorAll('.cw-msg-user').forEach(u => {
     const t = u.firstChild
@@ -58,293 +527,86 @@ export function hideSideMarks(root: Element) {
   })
 }
 
-const w = () => window as any
-const box = () => document.querySelector('.cw-messages')
-
-export const isLocalInterviewActive = () => !!active
-
-function save() {
-  try {
-    if (active) sessionStorage.setItem(KEY, encode(active))
-    else sessionStorage.removeItem(KEY)
-  } catch { /* storage blocked: progress just won't survive a reload */ }
-}
-
-function esc(s: string) {
-  return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string))
-}
-
-/** Plain text with **bold** and line breaks, escaped. */
-function fmt(s: string) {
-  return esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')
-}
-
-function scrollEnd(el: Element) {
-  try { el.scrollIntoView({ block: 'end', behavior: 'smooth' }) } catch { /* ignore */ }
-}
-
-function removeChips() {
-  box()?.querySelectorAll('.cw-reply-chips').forEach(n => n.remove())
-}
-
-function addBot(text: string) {
-  const b = box()
-  if (!b) return
-  removeChips()
-  if (!b.querySelector('.cw-msg-persona')) {
-    const p = document.createElement('div')
-    p.className = 'cw-msg-persona'
-    p.textContent = 'Emma'
-    b.appendChild(p)
-  }
-  const d = document.createElement('div')
-  d.className = 'cw-msg cw-msg-bot sm-local'
-  const ref = b.querySelector('.cw-msg-bot[style]') as HTMLElement | null
-  if (ref) d.setAttribute('style', ref.getAttribute('style') || '')
-  d.innerHTML = fmt(text)
-  b.appendChild(d)
-  scrollEnd(d)
-}
-
-function addUser(text: string) {
-  const b = box()
-  if (!b) return
-  removeChips()
-  const d = document.createElement('div')
-  d.className = 'cw-msg cw-msg-user sm-local'
-  d.textContent = text
-  b.appendChild(d)
-  scrollEnd(d)
-}
-
-function showChips(labels: string[], onPick: (label: string) => void = l => handle(l, true)) {
-  const b = box()
-  if (!b || !labels.length) return
-  removeChips()
-  const wrap = document.createElement('div')
-  wrap.className = 'cw-slot-chips cw-reply-chips sm-routine-chips'
-  const row = document.createElement('div')
-  row.className = 'cw-slot-chips-row'
-  for (const l of labels) {
-    const btn = document.createElement('button')
-    btn.type = 'button'
-    btn.className = 'cw-slot-chip'
-    btn.textContent = l
-    btn.addEventListener('click', e => {
-      e.preventDefault(); e.stopPropagation()
-      if (btn.getAttribute('disabled')) return
-      wrap.querySelectorAll('.cw-slot-chip').forEach(x => x.setAttribute('disabled', 'true'))
-      onPick(l)
-    })
-    row.appendChild(btn)
-  }
-  wrap.appendChild(row)
-  b.appendChild(wrap)
-  scrollEnd(wrap)
-}
-
-// ---------- shopper-facing wording ----------
-
-const FLAVOR: Record<string, string> = { M: 'Mint', S: 'Strawberry', C: 'Chocolate', V: 'Vanilla', X: 'no flavor preference' }
-const STAGE: Record<string, string> = { B: 'baby or toddler', L: 'little kid (2 to 5)', K: 'big kid (6 to 12)', A: 'teen or adult', P: 'pregnant' }
-const FORMULA: Record<string, string> = { F: 'fluoride', N: 'fluoride-free', O: 'ortho formula (contains fluoride)' }
-
-function cap(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
-
-function suggestion(st: State, m: Member): string {
-  const who = label(st, st.idx)
-  if (m.formula === 'u') return 'Both work well. Fluoride helps prevent cavities; the fluoride-free system supports enamel remineralization with nano-hydroxyapatite. Which would you like?'
-  if (m.bracket === 'P' && m.braces === 'b') return "Congratulations! For pregnancy I'd suggest the SuperMouth pregnancy system. It's fluoride-free and built around nano-hydroxyapatite, which helps remineralize and strengthen enamel. For your braces, I'd add the OrthoBrush and the ortho mouth spray. The ortho system is the other option; it contains fluoride. Which sounds right?"
-  if (m.bracket === 'P') return "Congratulations! For pregnancy I'd suggest the SuperMouth pregnancy system. It's fluoride-free and built around nano-hydroxyapatite, which helps remineralize and strengthen enamel, and many expecting moms like keeping ingredients simple right now. If you'd rather stay with fluoride, that's a fine choice too. Which sounds right?"
-  const forWho = who === 'you' ? '' : ` for ${who}`
-  if (m.formula === 'f') return `With a few cavities in the last couple of years, fluoride is the usual choice${forWho}, since it helps prevent cavities. The fluoride-free system is also an option. Which sounds right?`
-  return `That history is good, so the fluoride-free system is a great fit${forWho}. It supports enamel remineralization with nano-hydroxyapatite. Fluoride works well too. Which would you like?`
-}
-
-function recap(st: State): string {
-  const rec = record(st)
-  const lines = rec.map((r, i) => {
-    const m = st.members[i]
-    const parts = [STAGE[m.bracket] || r.stage, m.braces === 'b' ? 'braces or aligners' : '', FORMULA[m.formula] || r.formula, FLAVOR[m.flavor] || r.flavor, m.floss === 'R' ? 'flossers' : m.floss === 'L' ? 'floss' : ''].filter(Boolean)
-    return `• ${cap(r.person)}: ${parts.join(', ')} (**${codeFor(m)}**)`
-  })
-  const codes = st.members.map(codeFor).filter(Boolean).join(' ')
-  return `Here's what I have:\n${lines.join('\n')}\n\nYour routine code${st.members.length > 1 ? 's' : ''}: **${codes}**. Write ${st.members.length > 1 ? 'them' : 'it'} down or take a screenshot, and next time I can skip the questions.\n\nDoes that look right?`
-}
-
-function textFor(st: State): string {
-  const q = question(st)
-  const m = st.members[st.idx]
-  switch (q.step) {
-    case 'g': return suggestion(st, m)
-    case 'oc': return "The ortho formula contains fluoride, and it's designed to help prevent decalcification around braces. If you'd prefer fluoride-free, I can switch to the standard fluoride-free system instead. Which would you like?"
-    case 'r': return recap(st)
-    case 'rc': return q.choices.length ? 'Whose answers should we change?' : `Whose answers should we change? Type a name or number: ${q.note || ''}`
-    case 'a': return 'How old is each child? Type a number for each, like "4 and 9", or months for babies, like "10 months".'
-    default: return q.ask
-  }
-}
-
-function ask(prefix = '') {
-  if (!active) return
-  const q = question(active)
-  logEvent({ kind: 'question', step: q.step, about: q.about })
-  addBot((prefix ? prefix + '\n\n' : '') + textFor(active))
-  showChips(q.choices)
-}
-
-// ---------- flow ----------
-
-function finish() {
-  if (!active) return
-  const st = active
-  const codes = st.members.map(codeFor).filter(Boolean).join(' ')
-  const goal = st.goal ? GOALS[st.goal] : 'not given'
-  const habit = st.habit === 'r' ? 'room to build' : st.habit === 's' ? 'pretty solid' : 'not given'
-  logHandoff(codes, goal, habit, encode(st))
-  postHandoffReplies = 4
-  handoffPeople = st.members.map((_, i) => cap(label(st, i)))
-  handoffCodes = codes
-  resetRoutineCards()
-  active = null
-  save()
-  removeChips()
-  const msg = `My routine is confirmed. Routine code: ${codes}. Goal: ${goal}. Brushing: ${habit}. Please recommend my systems.`
-  w().ChatWidget?.open?.(msg)
-}
-
-/** Process an answer typed or tapped during the interview. */
-function handle(text: string, fromChip = false) {
-  if (!active) return
-  addUser(text)
-  const before = question(active)
-  const kidsBefore = active.members.length
-  const probe = decode(encode(active))!
-  const r = answer(probe, text)
-  if (r.ok) {
-    // log the button label, or for typed answers only what was understood (never the raw text)
-    const value = fromChip ? text
-      : before.step === 'a' ? r.state.members.slice(kidsBefore).map(m => m.bracket).join(',')
-      : '[typed]'
-    logEvent({ kind: before.step === 'r' && /start over/i.test(text) ? 'restart' : 'answer', step: before.step, about: before.about, value, state: encode(r.state) })
-    active = r.state
-    save()
-    const q = question(active)
-    if (q.step === 'done') { finish(); return }
-    if (r.question.note && /Explain/.test(r.question.note)) {
-      // "Tell me more": let Emma explain, then ask again
-      askEmmaSide('Tell me more about fluoride versus fluoride-free toothpaste.')
-      return
-    }
-    ask()
-    return
-  }
-  logEvent({ kind: 'unparsed', step: before.step })
-  ask(fromChip ? '' : "Sorry, I didn't catch that.")
-}
-
-/** Start the interview in Emma's window. */
-export function startLocalInterview(source = 'menu') {
-  let tries = 0
-  const go = () => {
-    const ready = w().ChatWidget?.open && document.querySelector('.cw-messages')
-    if (!ready) { if (++tries < 60) setTimeout(go, 250); return }
-    try { w().ChatWidget.open() } catch { /* opens on next try */ }
-    active = start()
-    save()
-    logStart(source)
-    addUser('Build my routine')
-    ask("Let's build your routine. I'll ask a few quick questions; tap an answer or type it.")
-  }
-  go()
-}
+// ---------- entry points ----------
 
 function openWidgetThen(fn: () => void) {
   let tries = 0
-  const go = () => {
+  const tick = () => {
     const ready = w().ChatWidget?.open && document.querySelector('.cw-messages')
-    if (!ready) { if (++tries < 60) setTimeout(go, 250); return }
+    if (!ready) { if (++tries < 60) setTimeout(tick, 250); return }
     try { w().ChatWidget.open() } catch { /* opens on next try */ }
     fn()
   }
-  go()
+  tick()
 }
 
-/** "I have a routine code": the page asks for it and reads it. */
+export function startLocalInterview(source = 'menu') {
+  openWidgetThen(() => {
+    S = { people: [], queue: [], cur: null, step: 'who', introduced: false }
+    codeEntry = false; typedHandler = null
+    logStart(source)
+    addUser('Find my routine')
+    say("Let's find your routine. I'll ask a few quick questions, one person at a time; tap an answer or type a question anytime.")
+    go('who')
+  })
+}
+
 export function startCodeEntry(source = 'menu') {
   openWidgetThen(() => {
-    active = null
-    save()
+    S = null; save()
     logStart(source)
     addUser('I have a routine code')
-    addBot('Great, that saves time. Type your routine code, for example **AFM** or, for a family, **AFM KNS LFC**.')
+    say('Great, that saves time. Type your routine code, for example **AFM** or, for a family, **AFM KNS LFC**.')
     codeEntry = true
   })
 }
 
-/** A routine code arrived with the page (a ?code= link) or was typed. */
 export function startFromCode(code: string, source = 'code_link') {
-  openWidgetThen(() => {
-    logStart(source)
-    addUser(`My routine code is ${code}`)
-    tryCode(code)
-  })
+  openWidgetThen(() => { logStart(source); addUser(`My routine code is ${code}`); tryCode(code) })
 }
 
 function tryCode(text: string) {
   codeEntry = false
-  const { members } = readCodes(text)
-  if (!members.length) {
+  const people = peopleFromCodes(text)
+  if (!people) {
     logEvent({ kind: 'unparsed', step: 'code' })
-    addBot("That code didn't read. Codes are three letters per person, like **AFM** or **KNS**. Want to try again, or build your routine?")
-    showChips(['Try again', 'Build my routine'], pick => {
-      if (pick === 'Try again') { addUser('Try again'); addBot('Go ahead and type your code.'); codeEntry = true }
-      else startLocalInterview('code_retry')
+    say("That code didn't read. Codes are three letters per person, like **AFM** or **KNS**. Want to try again, or find your routine?")
+    return chips([['Try again', 'again'], ['Find my routine', 'find']], v => {
+      if (v === 'again') { say('Go ahead and type your code.'); codeEntry = true } else startLocalInterview('code_retry')
     })
-    return
   }
-  const st = start()
-  st.members = members
-  st.habit = 's'
-  st.step = 'r'
-  active = st
-  save()
-  logEvent({ kind: 'answer', step: 'code', value: members.map(codeFor).join(' '), state: encode(st) })
-  ask()
+  S = { people: [], queue: people.slice(1), cur: people[0], step: 'recap', introduced: false }
+  S.cur!.label = labelFor(S.cur!)
+  logEvent({ kind: 'answer', step: 'code', value: people.map(codeFor).join(' ') })
+  go('recap')
 }
 
-/** After a reload, pick up where the shopper left off. */
 export function resumeLocalInterview() {
-  let s: string | null = null
-  try { s = sessionStorage.getItem(KEY) } catch { /* ignore */ }
-  const st = s ? decode(s) : null
-  if (!st) return
+  let raw: string | null = null
+  try { raw = sessionStorage.getItem(KEY) } catch { /* ignore */ }
+  if (!raw) return
+  try { S = JSON.parse(raw) } catch { S = null; return }
+  if (!S || !STEPS[S.step]) { S = null; return }
   let tries = 0
-  const go = () => {
-    if (!document.querySelector('.cw-messages')) { if (++tries < 60) setTimeout(go, 250); return }
-    active = st
+  const tick = () => {
+    if (!document.querySelector('.cw-messages')) { if (++tries < 60) setTimeout(tick, 250); return }
     logResume()
-    ask("Let's pick up where we left off.")
+    say("Let's pick up where we left off.")
+    go(S!.step)
   }
-  go()
+  tick()
 }
 
-/**
- * Called after each Emma reply:
- * - after a side question, ask the current routine question again;
- * - if Quincer's turn failed (its generic fallback), offer "Try again";
- * - after a recommendation, replace Quincer's own suggestions with ours;
- * - anywhere, drop Quincer suggestions that push a cheaper system unasked.
- */
+/** After each Emma reply: bring back the current question, or offer Try again on a failed turn. */
 export function afterEmmaReply() {
-  if (active && resumeAfterEmma) {
+  if (S && resumeAfterEmma) {
     resumeAfterEmma = false
-    setTimeout(() => ask(), 300)
+    setTimeout(() => { if (S) go(S.step) }, 300)
     return
   }
   setTimeout(() => {
     const b = box()
-    if (!b || active) return
+    if (!b || S) return
     const bots = b.querySelectorAll('.cw-msg-bot:not(.sm-local)')
     const last = bots[bots.length - 1] as HTMLElement | undefined
     const text = (last?.innerText || '').trim()
@@ -352,76 +614,45 @@ export function afterEmmaReply() {
       const users = [...b.querySelectorAll('.cw-msg-user')].map(u => (u as HTMLElement).innerText.trim()).filter(Boolean)
       const again = users[users.length - 1]
       logEvent({ kind: 'fallback' })
-      if (again) showChips(['Try again'], () => w().ChatWidget?.open?.(again))
+      if (again) {
+        const [wrap, row] = chipRow(); const btn = chipBtn('Try again')
+        btn.addEventListener('click', () => { wrap.remove(); w().ChatWidget?.open?.(again) })
+        row.appendChild(btn); b.appendChild(wrap)
+      }
       return
     }
-    if (postHandoffReplies > 0) {
-      const first = postHandoffReplies === 4
-      postHandoffReplies--
-      // Emma asks which person: offer each person as a button
-      if (!first && handoffPeople.length > 1 && handoffPeople.length <= 3 && /\?\s*$/.test(text) && /\b(which|who|whose)\b/i.test(text)) {
-        showChips(handoffPeople.slice(0, 3), pick => w().ChatWidget?.open?.(pick))
-        return
-      }
-      // the recommendation itself, or a recommendation after a step-down: our three buttons
-      if (first || /SuperMouth [^.?!]*System/i.test(text)) {
-        if (last) showRoutineCards(last, handoffCodes)
-        showChips(AFTER_RECOMMEND.map(([l]) => l), pick => {
-          const msg = AFTER_RECOMMEND.find(([l]) => l === pick)?.[1] || pick
-          if (pick === 'Looks good') postHandoffReplies = 0
-          w().ChatWidget?.open?.(msg)
-        })
-        return
-      }
-    }
-    // anywhere else: keep Quincer's buttons but drop ones that push a cheaper system unasked
-    b.querySelectorAll('.cw-reply-chips:not(.sm-routine-chips) .cw-slot-chip').forEach(c => {
-      if (UNWANTED_CHIP.test(c.textContent || '')) c.remove()
-    })
-    b.querySelectorAll('.cw-reply-chips:not(.sm-routine-chips)').forEach(row => {
-      if (!row.querySelector('.cw-slot-chip')) row.remove()
-    })
+    b.querySelectorAll('.cw-reply-chips:not(.sm-routine-chips) .cw-slot-chip').forEach(c => { if (UNWANTED_CHIP.test(c.textContent || '')) c.remove() })
   }, 500)
 }
 
 /** Replace em and en dashes in Emma's bubbles (Quincer ignores the no-dash rule). */
 export function fixDashes(root: Element) {
   root.querySelectorAll('.cw-msg-bot').forEach(bot => {
-    if (!/[\u2013\u2014]/.test(bot.textContent || '')) return
+    if (!/[–—]/.test(bot.textContent || '')) return
     const walker = document.createTreeWalker(bot, NodeFilter.SHOW_TEXT)
     const nodes: Text[] = []
     while (walker.nextNode()) nodes.push(walker.currentNode as Text)
     for (const n of nodes) {
       const v = n.nodeValue || ''
-      if (!/[\u2013\u2014]/.test(v)) continue
-      const next = v
-        .replace(/(\d)\s*\u2013\s*(\d)/g, '$1 to $2')
-        .replace(/\s*[\u2013\u2014]\s*/g, ', ')
-        .replace(/,\s*,/g, ',')
+      if (!/[–—]/.test(v)) continue
+      const next = v.replace(/(\d)\s*–\s*(\d)/g, '$1 to $2').replace(/\s*[–—]\s*/g, ', ').replace(/,\s*,/g, ',')
       if (next !== v) n.nodeValue = next
     }
   })
 }
 
-/**
- * Capture clicks on Quincer's own "Build my routine" buttons and typed messages, so the
- * interview runs on the page. Returns a cleanup function.
- */
+/** Capture Quincer's own starter buttons and typed messages that belong to the interview. */
 export function installRoutineInterception(): () => void {
   const onClick = (e: MouseEvent) => {
     const t = e.target as HTMLElement | null
     const chip = t?.closest?.('.cw-slot-chip') as HTMLElement | null
     if (chip && !chip.closest('.sm-routine-chips') && START_TEXT.test(chip.textContent || '')) {
-      e.preventDefault(); e.stopImmediatePropagation()
-      startLocalInterview('starter_chip')
-      return
+      e.preventDefault(); e.stopImmediatePropagation(); startLocalInterview('starter_chip'); return
     }
     if (chip && !chip.closest('.sm-routine-chips') && CODE_ASK_TEXT.test(chip.textContent || '')) {
-      e.preventDefault(); e.stopImmediatePropagation()
-      startCodeEntry('starter_chip')
-      return
+      e.preventDefault(); e.stopImmediatePropagation(); startCodeEntry('starter_chip'); return
     }
-    if (chip && !active && !chip.closest('.sm-routine-chips')) logShopperFollowup()
+    if (chip && !S && !chip.closest('.sm-routine-chips')) logShopperFollowup()
     const send = t?.closest?.('.cw-send')
     if (send && interceptTyped()) { e.preventDefault(); e.stopImmediatePropagation() }
   }
@@ -435,7 +666,7 @@ export function installRoutineInterception(): () => void {
   return () => { document.removeEventListener('click', onClick, true); document.removeEventListener('keydown', onKey, true) }
 }
 
-/** Decide whether a typed message belongs to the page interview. True = we handled it. */
+/** True when the page handled the typed message. */
 function interceptTyped(): boolean {
   const input = document.querySelector('.cw-input') as HTMLInputElement | null
   const text = (input?.value || '').trim()
@@ -445,17 +676,32 @@ function interceptTyped(): boolean {
     input.dispatchEvent(new Event('input', { bubbles: true }))
   }
   if (codeEntry) { clear(); addUser(text); tryCode(text); return true }
-  if (!active) {
+  if (!S) {
     if (START_TEXT.test(text)) { clear(); startLocalInterview('typed'); return true }
     if (CODE_ASK_TEXT.test(text)) { clear(); startCodeEntry('typed'); return true }
+    if (RED.test(text)) { clear(); addUser(text); say("That needs your doctor to take a look soon; please book that before changing your routine. When you've been seen, I'm happy to build a routine around what they recommend."); return true }
     logShopperFollowup()
     return false
   }
-  // during the interview: a question to Emma goes to Emma (unless it is exactly a button),
-  // anything else is treated as an answer on the page
-  const exact = question(active).choices.some(c => c.toLowerCase() === text.toLowerCase())
   clear()
-  if (!exact && QUESTIONISH.test(text)) { askEmmaSide(text); return true }
-  handle(text)
+  if (typedHandler) { const h = typedHandler; typedHandler = null; h(text); return true }
+  // a typed button label counts as tapping it
+  const chip = [...(box()?.querySelectorAll('.sm-routine-chips .cw-slot-chip:not([disabled])') || [])]
+    .find(c => (c.textContent || '').replace(/^[^A-Za-z0-9]+/, '').trim().toLowerCase() === text.toLowerCase()) as HTMLElement | undefined
+  if (chip) { chip.click(); return true }
+  addUser(text)
+  if (RED.test(text)) {
+    say("That needs your doctor to take a look soon; please book that before changing your routine. When you've been seen, I'm happy to build a routine around what they recommend.")
+    return true
+  }
+  if (/^\s*(start over|restart)\s*$/i.test(text)) { logEvent({ kind: 'restart' }); S = null; save(); startLocalInterview('restart'); return true }
+  // anything else (a question, a comment) goes to Emma; the current question comes back after
+  logEvent({ kind: QUESTIONISH.test(text) ? 'side' : 'unparsed', step: S.step })
+  resumeAfterEmma = true
+  removeChips()
+  w().ChatWidget?.open?.(SIDE_MARK + text)
+  // the shopper bubble we added stays; Quincer adds its own copy, so drop ours
+  const mine = [...(box()?.querySelectorAll('.cw-msg-user.sm-local') || [])].pop()
+  mine?.remove()
   return true
 }

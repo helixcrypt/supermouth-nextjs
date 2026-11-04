@@ -186,6 +186,7 @@ export async function createCart() {
               node {
                 id
                 quantity
+                attributes { key value }
                 merchandise {
                   ... on ProductVariant {
                     id
@@ -213,7 +214,7 @@ export async function createCart() {
   return data.cartCreate.cart
 }
 
-export async function addToCart(cartId: string, variantId: string, quantity = 1) {
+export async function addToCart(cartId: string, variantId: string, quantity = 1, attributes: { key: string; value: string }[] = []) {
   const query = `
     mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
       cartLinesAdd(cartId: $cartId, lines: $lines) {
@@ -225,6 +226,7 @@ export async function addToCart(cartId: string, variantId: string, quantity = 1)
               node {
                 id
                 quantity
+                attributes { key value }
                 merchandise {
                   ... on ProductVariant {
                     id
@@ -250,7 +252,7 @@ export async function addToCart(cartId: string, variantId: string, quantity = 1)
   `
   const data = await shopifyFetch<any>({
     query,
-    variables: { cartId, lines: [{ merchandiseId: variantId, quantity }] },
+    variables: { cartId, lines: [{ merchandiseId: variantId, quantity, ...(attributes.length ? { attributes } : {}) }] },
   })
   return data.cartLinesAdd.cart
 }
@@ -266,6 +268,7 @@ export async function getCart(cartId: string) {
             node {
               id
               quantity
+              attributes { key value }
               merchandise {
                 ... on ProductVariant {
                   id
@@ -303,6 +306,7 @@ export async function removeFromCart(cartId: string, lineId: string) {
               node {
                 id
                 quantity
+                attributes { key value }
                 merchandise {
                   ... on ProductVariant {
                     id

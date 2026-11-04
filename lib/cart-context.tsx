@@ -6,6 +6,7 @@ import { createCart, addToCart, getCart, removeFromCart } from '@/lib/shopify'
 interface CartItem {
   id: string
   quantity: number
+  attributes?: { key: string; value: string }[]
   merchandise: {
     id: string
     title: string
@@ -34,7 +35,7 @@ interface CartContextType {
   isLoading: boolean
   openCart: () => void
   closeCart: () => void
-  addItem: (variantId: string, quantity?: number) => Promise<void>
+  addItem: (variantId: string, quantity?: number, attributes?: { key: string; value: string }[], open?: boolean) => Promise<void>
   removeItem: (lineId: string) => Promise<void>
   itemCount: number
 }
@@ -61,13 +62,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return newCart
   }
 
-  const addItem = async (variantId: string, quantity = 1) => {
+  const addItem = async (variantId: string, quantity = 1, attributes: { key: string; value: string }[] = [], open = true) => {
     setIsLoading(true)
     try {
       const currentCart = await getOrCreateCart()
-      const updatedCart = await addToCart(currentCart.id, variantId, quantity)
+      const updatedCart = await addToCart(currentCart.id, variantId, quantity, attributes)
       setCart(updatedCart)
-      setIsOpen(true)
+      if (open) setIsOpen(true)
     } finally {
       setIsLoading(false)
     }
@@ -85,6 +86,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   const itemCount = cart?.lines.edges.reduce((sum, { node }) => sum + node.quantity, 0) ?? 0
+
+  // Emma's routine (plain DOM code in the chat) adds Systems and opens the cart through this.
+  useEffect(() => {
+    const w = window as any
+    w.__smCart = { addItem, openCart: () => setIsOpen(true) }
+  })
 
   return (
     <CartContext.Provider value={{

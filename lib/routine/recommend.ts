@@ -75,7 +75,7 @@ function candidates(m: Member, tier: string): Sys[] {
   return catalog.systems.filter(s => s.bracket === g.bracket && s.formula === g.formula && s.tier === tier)
 }
 
-function choose(m: Member, tier: string, live: Live | null): Pick | null {
+export function choose(m: Member, tier: string, live: Live | null): Pick | null {
   const all = candidates(m, tier)
   if (!all.length) return null
   const want = FLAVOR[m.flavor] || 'Mint'
@@ -95,7 +95,7 @@ function choose(m: Member, tier: string, live: Live | null): Pick | null {
 }
 
 /** Tiers still sellable for this member, in ladder order. */
-function sellableTiers(m: Member, live: Live | null): string[] {
+export function sellableTiers(m: Member, live: Live | null): string[] {
   return ladderFor(m).filter(t => choose(m, t, live))
 }
 

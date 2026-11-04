@@ -84,7 +84,8 @@ export default function QunicerAgent() {
   // restored conversation opens.
   useEffect(() => {
     let t: ReturnType<typeof setTimeout> | undefined
-    const later = (ms: number) => { clearTimeout(t); t = setTimeout(() => { if (!isLocalInterviewActive() && !inPostHandoff()) ensureRoutineButtons() }, ms) }
+    // Version 2 runs the whole interview on the page, so the version 1 tool-driven buttons are off.
+    const later = (ms: number) => { clearTimeout(t); t = setTimeout(() => { if (false && !isLocalInterviewActive() && !inPostHandoff()) ensureRoutineButtons() }, ms) }
     const onDone = () => {
       afterEmmaReply()
       later(700)

@@ -63,6 +63,9 @@ export default function CartDrawer() {
                       {item.merchandise.title !== 'Default Title' && (
                         <p className="text-sm-gray text-xs">{item.merchandise.title}</p>
                       )}
+                      {item.attributes?.find(a => a.key === 'For')?.value && (
+                        <p className="text-sm-accent text-xs">For {item.attributes.find(a => a.key === 'For')!.value}</p>
+                      )}
                       <div className="flex items-center justify-between mt-1">
                         <p className="text-sm-accent text-sm font-semibold">
                           ${(price * item.quantity).toFixed(2)}
