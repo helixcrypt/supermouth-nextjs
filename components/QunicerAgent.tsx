@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { openEmma, cleanRoutineCode, EMMA_BUILD_ROUTINE } from '@/lib/emma'
 import { ensureRoutineButtons, hideStateTokens } from '@/lib/routine-buttons-client'
-import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive, inPostHandoff, hideSideMarks, fixDashes } from '@/lib/routine-local'
+import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive, inPostHandoff, hideSideMarks, fixDashes, snapshotChat, syncTalkButton } from '@/lib/routine-local'
 import { logEmmaReply } from '@/lib/routine-log-client'
 
 const WIDGET_SRC = 'https://chat.quincer.com/api/embed/widget.js'
@@ -109,7 +109,7 @@ export default function QunicerAgent() {
     const clean = () => {
       if (!box) return
       obs.disconnect()
-      try { hideStateTokens(box); hideSideMarks(box); fixDashes(box) } finally {
+      try { hideStateTokens(box); hideSideMarks(box); fixDashes(box); syncTalkButton(); snapshotChat() } finally {
         obs.observe(box, { childList: true, subtree: true, characterData: true })
       }
     }

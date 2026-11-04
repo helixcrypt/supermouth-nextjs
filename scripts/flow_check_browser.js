@@ -27,7 +27,7 @@ const pick = tod => [...PICK, `Nothing ${tod === 'day' ? 'during the day' : tod 
 window.__rt = {
   box: () => document.querySelector('.cw-messages'),
   last() { const b = [...this.box().querySelectorAll('.cw-msg-bot')]; return (b[b.length - 1]?.innerText || '').trim() },
-  chips() { return [...this.box().querySelectorAll('.sm-routine-chips .cw-slot-chip:not([disabled])')].map(c => c.textContent.trim().replace(/^\d+\. /, '')) },
+  chips() { return [...this.box().querySelectorAll('.sm-routine-chips .cw-slot-chip:not([disabled])')].map(c => c.textContent.trim().replace(/^\d+\. /, '')).filter(c => c !== '← Back') },
   sleep: ms => new Promise(r => setTimeout(r, ms)),
   tap(l) { const c = [...this.box().querySelectorAll('.sm-routine-chips .cw-slot-chip:not([disabled])')].find(c => c.textContent.trim().replace(/^\d+\. /, '') === l); if (!c) return false; c.click(); return true },
   async waitChips(ms = 15000) { for (let t = 0; t < ms; t += 300) { if (this.chips().length) return true; await this.sleep(300) } return false },

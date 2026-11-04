@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/lib/cart-context'
+import SystemLineControls from '@/components/SystemLineControls'
 
 export default function CartDrawer() {
   const { cart, isOpen, isLoading, closeCart, removeItem } = useCart()
@@ -65,6 +66,9 @@ export default function CartDrawer() {
                       )}
                       {item.attributes?.find(a => a.key === 'For')?.value && (
                         <p className="text-sm-accent text-xs">For {item.attributes.find(a => a.key === 'For')!.value}</p>
+                      )}
+                      {item.attributes?.some(a => a.key === '_code') && (
+                        <SystemLineControls lineId={item.id} attributes={item.attributes} />
                       )}
                       <div className="flex items-center justify-between mt-1">
                         <p className="text-sm-accent text-sm font-semibold">

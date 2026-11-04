@@ -32,7 +32,8 @@ export const SIDE_MARK = '(Side question during my routine) '
 
 // ---------- state ----------
 
-interface Saved { people: Person[]; queue: Person[]; cur: Person | null; step: string; introduced: boolean }
+interface Snap { step: string; cur: Person | null; people: Person[]; queue: Person[] }
+interface Saved { people: Person[]; queue: Person[]; cur: Person | null; step: string; introduced: boolean; hist?: Snap[] }
 let S: Saved | null = null
 let resumeAfterEmma = false
 let codeEntry = false
@@ -91,6 +92,44 @@ function chipBtn(label: string): HTMLButtonElement {
   const b = document.createElement('button'); b.type = 'button'; b.className = 'cw-slot-chip'; b.textContent = label; return b
 }
 
+// ---------- Back ----------
+
+/** Questions you can step back to (steps that only show text are skipped). */
+const ASKS = new Set(['who', 'age', 'teeth', 'teething', 'morning', 'day', 'night', 'cavities', 'concerns', 'special', 'fluoride', 'flavor', 'recap', 'fix', 'manageable', 'simplify', 'better', 'prod_morning', 'prod_day', 'prod_night', 'system', 'smaller', 'less', 'anyone'])
+const clone = <T,>(x: T): T => JSON.parse(JSON.stringify(x))
+
+function canBack(): boolean {
+  if (!S || !S.hist || S.hist.length < 2) return false
+  const prev = S.hist[S.hist.length - 2]
+  // never step back past a System that went into the cart
+  return S.step !== 'anyone' && prev.people.length === S.people.length
+}
+
+function back() {
+  if (!S || !canBack()) return
+  typedHandler = null
+  S.hist!.pop()
+  const prev = S.hist![S.hist!.length - 1]
+  S.cur = clone(prev.cur); S.people = clone(prev.people); S.queue = clone(prev.queue)
+  addUser('← Back')
+  say("Let's go back a step.")
+  logEvent({ kind: 'answer', step: S.step, value: 'back' })
+  S.step = prev.step; save()
+  STEPS[prev.step]()
+}
+
+function addBack(row: HTMLElement, wrap: HTMLElement) {
+  if (!canBack()) return
+  const btn = chipBtn('← Back')
+  btn.style.opacity = '.75'
+  btn.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation()
+    wrap.querySelectorAll('.cw-slot-chip').forEach(x => x.setAttribute('disabled', 'true'))
+    back()
+  })
+  row.appendChild(btn)
+}
+
 /** Single choice: tap one. */
 function chips<T>(list: [string, T][], on: (v: T, label: string) => void) {
   const b = box(); if (!b) return
@@ -108,6 +147,7 @@ function chips<T>(list: [string, T][], on: (v: T, label: string) => void) {
     })
     row.appendChild(btn)
   }
+  addBack(row, wrap)
   b.appendChild(wrap); scrollEnd(wrap)
 }
 
@@ -162,6 +202,7 @@ function multi(list: [string, string][], opts: { none?: string; other?: string }
   }
   done.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); finish() })
   row.appendChild(done)
+  addBack(row, wrap)
   b.appendChild(wrap); scrollEnd(wrap)
 }
 
@@ -204,6 +245,7 @@ function orderPicker(tod: Tod, on: (order: Item[], extra: string[]) => void) {
     typedHandler = t => { extra.push(t); addUser(t); const tag = chipBtn(t); tag.setAttribute('style', ON_STYLE); row.insertBefore(tag, done); b.appendChild(wrap); scrollEnd(wrap) }
   })
   row.append(done, none, other)
+  addBack(row, wrap)
   b.appendChild(wrap); scrollEnd(wrap)
 }
 
@@ -212,7 +254,11 @@ function orderPicker(tod: Tod, on: (order: Item[], extra: string[]) => void) {
 const STEPS: Record<string, () => void> = {}
 function go(name: string) {
   if (!S) return
-  S.step = name; save()
+  S.step = name
+  if (ASKS.has(name) && S.hist?.[S.hist.length - 1]?.step !== name) {
+    S.hist = [...(S.hist || []), { step: name, cur: clone(S.cur), people: clone(S.people), queue: clone(S.queue) }].slice(-40)
+  }
+  save()
   logEvent({ kind: 'question', step: name, about: S.cur ? S.cur.label : undefined })
   STEPS[name]()
 }
@@ -485,7 +531,7 @@ async function addToCart(s: Sys) {
   const p = cur()
   const cart = w().__smCart
   let ok = false
-  try { if (cart?.addItem) { await cart.addItem(s.gid, 1, [{ key: 'For', value: p.who === 'me' ? 'you' : p.label }], false); ok = true } } catch { /* below */ }
+  try { if (cart?.addItem) { await cart.addItem(s.gid, 1, [{ key: 'For', value: p.who === 'me' ? 'you' : p.label }, { key: '_code', value: codeFor(p) }, { key: '_size', value: s.tier }], false); ok = true } } catch { /* below */ }
   if (!ok) { say(`I couldn't reach the cart just now. You can add it from the product page: ${s.title}.`); return }
   S!.people.push(p); S!.cur = null; added = true; save()
   logEvent({ kind: 'answer', step: 'cart', value: `${codeFor(p)} ${s.tier}` })
@@ -581,18 +627,74 @@ function tryCode(text: string) {
   go('recap')
 }
 
+// ---------- keeping the chat after a reload ----------
+
+const CHAT_KEY = 'sm_chat_html_v1'
+let snapTimer: ReturnType<typeof setTimeout> | undefined
+
+/** Save the chat window's messages (only once the page has drawn some of its own). */
+export function snapshotChat() {
+  clearTimeout(snapTimer)
+  snapTimer = setTimeout(() => {
+    const b = box()
+    if (!b || !b.querySelector('.sm-local')) return
+    try {
+      const html = b.innerHTML
+      if (html.length < 400_000) sessionStorage.setItem(CHAT_KEY, html)
+    } catch { /* storage full or blocked */ }
+  }, 600)
+}
+
+/** After a reload, put back the messages Quincer doesn't restore (the page-drawn interview). */
+function restoreChat(): boolean {
+  const b = box()
+  if (!b || b.querySelector('.sm-local')) return false
+  let html: string | null = null
+  try { html = sessionStorage.getItem(CHAT_KEY) } catch { /* ignore */ }
+  if (!html) return false
+  b.innerHTML = html
+  // old buttons lost their actions: drop the page's own, and Quincer's
+  b.querySelectorAll('.cw-reply-chips').forEach(n => n.remove())
+  b.querySelectorAll('.sm-cards a, a.sm-card').forEach(a => a.addEventListener('click', e => {
+    const href = (a as HTMLAnchorElement).href
+    if (!href || (e as MouseEvent).metaKey || (e as MouseEvent).ctrlKey) return
+    e.preventDefault(); e.stopPropagation()
+    window.dispatchEvent(new CustomEvent('sm:navigate', { detail: href }))
+  }, true))
+  try { b.scrollTop = b.scrollHeight } catch { /* ignore */ }
+  return true
+}
+
+/** Hide "Talk instead" while the page runs the interview (voice can't follow the page's questions). */
+export function syncTalkButton() {
+  document.querySelectorAll('button, a').forEach(el => {
+    if (!/^talk instead$/i.test((el.textContent || '').trim())) return
+    const h = el as HTMLElement
+    if (S) { if (h.style.display !== 'none') { h.dataset.smHidden = '1'; h.style.display = 'none' } }
+    else if (h.dataset.smHidden) { delete h.dataset.smHidden; h.style.display = '' }
+  })
+}
+
 export function resumeLocalInterview() {
   let raw: string | null = null
   try { raw = sessionStorage.getItem(KEY) } catch { /* ignore */ }
-  if (!raw) return
-  try { S = JSON.parse(raw) } catch { S = null; return }
-  if (!S || !STEPS[S.step]) { S = null; return }
+  let saved: Saved | null = null
+  if (raw) { try { saved = JSON.parse(raw) } catch { saved = null } }
+  if (saved && !STEPS[saved.step]) saved = null
   let tries = 0
   const tick = () => {
-    if (!document.querySelector('.cw-messages')) { if (++tries < 60) setTimeout(tick, 250); return }
-    logResume()
-    say("Let's pick up where we left off.")
-    go(S!.step)
+    if (!document.querySelector('.cw-messages')) { if (++tries < 80) setTimeout(tick, 250); return }
+    // give Quincer a moment to restore its own messages first
+    setTimeout(() => {
+      const restored = restoreChat()
+      if (!saved) return
+      S = saved
+      logResume()
+      if (!restored) say("Let's pick up where we left off.")
+      const step = S.step
+      if (S.hist?.length && S.hist[S.hist.length - 1].step === step) STEPS[step]()
+      else go(step)
+    }, 900)
   }
   tick()
 }
