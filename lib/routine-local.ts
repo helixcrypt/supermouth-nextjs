@@ -691,6 +691,11 @@ export function resumeLocalInterview() {
       S = saved
       logResume()
       if (!restored) say("Let's pick up where we left off.")
+      else {
+        // the question is asked again below with live buttons, so drop its restored copy
+        const lastEl = box()?.lastElementChild
+        if (lastEl?.classList.contains('cw-msg-bot') && lastEl.classList.contains('sm-local')) lastEl.remove()
+      }
       const step = S.step
       if (S.hist?.length && S.hist[S.hist.length - 1].step === step) STEPS[step]()
       else go(step)
