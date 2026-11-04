@@ -54,8 +54,8 @@ export function formulaOf(p: Person): 'F' | 'N' | 'O' {
   let f: 'F' | 'N'
   if (p.fluoride === 'f') f = 'F'
   else if (p.fluoride === 'ff') f = 'N'
-  else f = (p.ortho && !p.pregnant) || isRisk(p) ? 'F' : 'N'
-  if (p.ortho && !p.pregnant && f === 'F') return 'O'
+  else f = p.ortho || isRisk(p) ? 'F' : 'N'           // braces or aligners get fluoride, pregnancy included (Kami, Nov 4)
+  if (p.ortho && f === 'F') return 'O'
   return f
 }
 
@@ -73,7 +73,7 @@ export function fluorideNote(p: Person) {
 }
 
 export function pathway(p: Person) {
-  if (p.pregnant) return 'Pregnancy'
+  if (p.pregnant && formulaOf(p) !== 'O') return 'Pregnancy'   // pregnant in braces gets Ortho unless fluoride-free
   if (p.ortho) return 'Orthodontics'
   return { baby: 'Babies & Toddlers', little: 'Little Kids', big: 'Big Kids', teen: 'Teens & Adults' }[p.age]
 }

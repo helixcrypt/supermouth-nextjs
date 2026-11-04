@@ -1,5 +1,5 @@
 /** Checks for the version 2 routine engine (lib/routine2/engine.ts). Run: npx tsx scripts/test_routine2.ts */
-import { newPerson, formulaOf, tierOf, smallerTiers, dropForTier, codeFor, peopleFromCodes, steps, products, priceLines, Person } from '../lib/routine2/engine'
+import { newPerson, formulaOf, tierOf, smallerTiers, dropForTier, codeFor, peopleFromCodes, pathway, steps, products, priceLines, Person } from '../lib/routine2/engine'
 
 let pass = 0, fail = 0
 function check(name: string, cond: boolean, detail = '') { if (cond) { pass++; console.log('PASS', name) } else { fail++; console.log('FAIL', name, detail) } }
@@ -15,7 +15,12 @@ check('recommend, braces -> ortho', formulaOf(adult({ fluoride: 'choose', ortho:
 check('fluoride + braces -> ortho', formulaOf(adult({ fluoride: 'f', ortho: true })) === 'O')
 check('fluoride-free + braces -> fluoride-free', formulaOf(adult({ fluoride: 'ff', ortho: true })) === 'N')
 check('pregnant, recommend, low risk -> fluoride-free', formulaOf(adult({ fluoride: 'choose', pregnant: true })) === 'N')
-check('pregnant + braces, recommend -> fluoride-free', formulaOf(adult({ fluoride: 'choose', pregnant: true, ortho: true })) === 'N')
+check('pregnant + braces, recommend -> Ortho', formulaOf(adult({ fluoride: 'choose', pregnant: true, ortho: true })) === 'O')
+check('pregnant + braces, recommend -> Orthodontics pathway', pathway(adult({ fluoride: 'choose', pregnant: true, ortho: true })) === 'Orthodontics')
+check('pregnant + braces, fluoride -> Ortho', formulaOf(adult({ fluoride: 'f', pregnant: true, ortho: true })) === 'O')
+check('pregnant + braces, fluoride-free -> Pregnancy pathway', pathway(adult({ fluoride: 'ff', pregnant: true, ortho: true })) === 'Pregnancy')
+check('code POM round-trips to pregnant + Ortho', (() => { const c = codeFor(adult({ pregnant: true, ortho: true, fluoride: 'choose', flavor: 'Mint' })); const b = peopleFromCodes([c])[0]; return c === 'POM' && b.pregnant && b.ortho && formulaOf(b) === 'O' })())
+check('pregnant, no braces -> Pregnancy pathway', pathway(adult({ fluoride: 'choose', pregnant: true })) === 'Pregnancy')
 const baby = Object.assign(newPerson('child'), { age: 'baby' as const, fluoride: 'f' as const })
 check('baby always fluoride-free', formulaOf(baby) === 'N')
 
