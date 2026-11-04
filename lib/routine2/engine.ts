@@ -163,7 +163,7 @@ export function recapText(p: Person, code: string) {
   const w = pronoun(p)
   const are = isMe(p) ? "you're" : "they're"
   const stage = { baby: 'a baby or toddler', little: 'a little kid', big: 'a big kid', teen: p.who === 'child' ? 'a teen' : 'an adult' }[p.age]
-  if (p.fromCode) return `Here's what I have from the code: ${are} ${stage}${p.ortho ? ', in braces or aligners' : ''}${p.pregnant ? ', pregnant' : ''}, ${formulaName(p).toLowerCase()} toothpaste, ${p.flavor} flavor (**${code}**). Is that right?`
+  if (p.fromCode) return `Here's what I have from the code: ${are} ${stage}${p.ortho ? ', in braces or aligners' : ''}${p.pregnant ? ', pregnant' : ''}, ${({ F: 'fluoride', N: 'fluoride-free', O: 'ortho (with fluoride)' } as Record<string, string>)[formulaOf(p)]} toothpaste, ${p.flavor} flavor (**${code}**). Is that right?`
   if (p.age === 'baby') {
     const teeth = { none: 'no teeth yet', few: 'a few teeth', '68': '6 to 8 teeth', more: 'more than 8 teeth' }[p.teeth || 'few']
     return `Here's what I heard: ${are} a baby or toddler with ${teeth}${p.teething ? ', teething right now' : ''}. ${p.flavor} flavor. Routine code **${code}**. Did I get that right?`
