@@ -138,8 +138,6 @@ export async function POST(req: Request) {
         const out: any = await callTool(msg.params?.name, args)
         // log shape only: tool, number of answers, step and problems; never the shopper's words
         console.log(JSON.stringify({ routine: msg.params?.name, answers: toList(args.answers).length, code: !!args.routine_code, declined: toList(args.declined).length || undefined, step: out.step ?? null, ok: out.ok, skipped: out.skipped_answers?.length || undefined, problem: out.last_answer_problem ?? out.error ?? null }))
-        // TEMP (shadow-site testing only, remove before supermouth.com): rejected answers, truncated
-        if (out.skipped_answers?.length) console.log(JSON.stringify({ routine_debug_skipped: out.skipped_answers.map((s: string) => s.slice(0, 40)), answers_tail: toList(args.answers).slice(-4).map((s: string) => s.slice(0, 40)) }))
         return rpc(msg.id, { content: [{ type: 'text', text: JSON.stringify(out) }], isError: false })
       } catch (e: any) {
         if (e?.code === -32601) return rpc(msg.id, undefined, { code: -32602, message: e.message })

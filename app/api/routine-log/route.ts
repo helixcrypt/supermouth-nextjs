@@ -5,8 +5,10 @@ import { recommend } from '@/lib/routine/recommend'
 /**
  * Receives anonymous routine-interview events from the page and writes them to the SuperMouth
  * Supabase project with the server-only service key. Needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
- * Quality check: when Emma's first reply after the handoff arrives, compare the systems she named
- * with the systems the tool picks for the same codes.
+ * Version 2 (page-run interview, habit = 'v2'): the page picks the Systems and adds them to the
+ * cart, so the session records what went into the cart (expected_systems holds "code size" per
+ * person) and emma_match stays empty. Version 1 sessions keep the old quality check: compare the
+ * systems Emma named with the systems the tool picks for the same codes.
  */
 export const dynamic = 'force-dynamic'
 
@@ -64,7 +66,7 @@ export async function POST(req: Request) {
   if (clean.length) await sb('routine_events', { method: 'POST', body: JSON.stringify(clean) })
 
   // counters and last step, recomputed from the events (cheap at this size)
-  const r = await sb(`routine_events?session_id=eq.${id}&select=kind,step,text&order=at.asc`)
+  const r = await sb(`routine_events?session_id=eq.${id}&select=kind,step,text,value&order=at.asc`)
   const all: any[] = r.ok ? await r.json() : []
   const lastQ = [...all].reverse().find(e => e.kind === 'question')
   const upd: Record<string, unknown> = {
@@ -76,9 +78,13 @@ export async function POST(req: Request) {
     followups: all.filter(e => e.kind === 'shopper_followup').length,
   }
 
-  // quality check on Emma's first reply after the handoff
+  // version 2: what went into the cart, one "code size" per person
+  const carted = all.filter(e => e.kind === 'answer' && e.step === 'cart').map(e => String(e.value || ''))
+  if (carted.length) upd.expected_systems = carted
+
+  // version 1 quality check on Emma's first reply after the handoff
   const firstReply = all.find(e => e.kind === 'emma_reply')?.text as string | undefined
-  if (firstReply && clean.some(e => e.kind === 'emma_reply')) {
+  if (!carted.length && firstReply && clean.some(e => e.kind === 'emma_reply')) {
     const sr = await sb(`routine_sessions?id=eq.${id}&select=codes,emma_match`)
     const srow = sr.ok ? (await sr.json())[0] : null
     if (srow?.codes && srow.emma_match === null) {
