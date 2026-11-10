@@ -55,10 +55,11 @@ function userTexts(root?: Element | null): string[] {
 
 interface Btn { label: string; send: string }
 
-function lastQuestion(text: string): string {
+/** The closing question; with colons=true, only the part after a colon ("Which flavor: A, B or C?" gives "A, B or C?"). */
+function lastQuestion(text: string, colons = true): string {
   const t = text.trim().replace(/\s+/g, ' ')
   if (!/\?\s*$/.test(t)) return ''
-  const parts = t.split(/(?<=[.!?:])\s+/)
+  const parts = t.split(colons ? /(?<=[.!?:])\s+/ : /(?<=[.!?])\s+/)
   return parts[parts.length - 1] || ''
 }
 
@@ -68,7 +69,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 export function buttonsFor(reply: string, box?: Element | null): Btn[] {
   const q = lastQuestion(reply)
   if (!q) return []
-  const ql = q.toLowerCase()
+  const ql = lastQuestion(reply, false).toLowerCase()   // the whole sentence, for spotting the topic
   const all = reply.toLowerCase()
 
   // fluoride
@@ -85,7 +86,7 @@ export function buttonsFor(reply: string, box?: Element | null): Btn[] {
   }
 
   // flavor
-  if (/flavou?r|taste/.test(ql) && !/^(do|does|is|are)\b/.test(ql)) {
+  if (/flavou?r|taste/.test(ql) && !/^(do|does|is|are|can|could|would|should|want|shall)\b/.test(ql)) {
     let named = [...new Set((all.match(FLAVOR_RE) || []).map(canonFlavor))]
     if (named.includes('Cool Mint')) named = named.filter(f => f !== 'Mint')
     if (named.includes('Dubai Chocolate') && !/\bchocolate\b/i.test(all.replace(/dubai chocolate/gi, ''))) named = named.filter(f => f !== 'Chocolate')

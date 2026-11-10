@@ -16,6 +16,8 @@ const cases: [string, string[], string[]][] = [
   ['Which stage fits you best?', [], []],
   ['Is it for you or someone else?', [], ['You', 'Someone else']],
   ['That is all set.', [], []],
+  ['Tap the card to add it.\n\nWhich flavor would he like: Mint, Cool Mint, Chocolate, Strawberry or Vanilla?', ['Fluoride-free', 'Cool Mint please', 'Fluoride-free, same as before'], ['Cool Mint (same as before)', 'Chocolate', 'Strawberry', 'Vanilla']],
+  ['Would you like the same flavor as yours?', [], ['Yes', 'No']],
 ]
 let bad = 0
 for (const [reply, users, want] of cases) {
