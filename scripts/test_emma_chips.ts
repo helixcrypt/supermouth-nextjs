@@ -19,6 +19,7 @@ const cases: [string, string[], string[]][] = [
   ['Tap the card to add it.\n\nWhich flavor would he like: Mint, Cool Mint, Chocolate, Strawberry or Vanilla?', ['Fluoride-free', 'Cool Mint please', 'Fluoride-free, same as before'], ['Cool Mint (same as before)', 'Chocolate', 'Strawberry', 'Vanilla']],
   ['Would you like the same flavor as yours?', [], ['Yes', 'No']],
   ['Here it is for $18.99.\n\nQuick check so I point you to the right one: do you wear braces or aligners right now?', [], ['Yes', 'No']],
+  ['One quick thing so I point you to the right one: are braces or aligners in the picture?', [], ['Yes', 'No']],
   ['For your son, does he want fluoride or fluoride-free?', ['I want a fluoride mouthwash for me, I am an adult', 'Mint'], ['Fluoride (same as before)', 'Fluoride-free']],
 ]
 let bad = 0
