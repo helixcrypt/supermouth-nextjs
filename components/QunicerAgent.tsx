@@ -105,7 +105,8 @@ export default function QunicerAgent() {
     const uninstall = installRoutineInterception()
     resumeLocalInterview()
     window.addEventListener('quincer:done', onDone)
-    const first = setTimeout(() => later(0), 4000)
+    // a restored conversation: put buttons back on Emma's last question
+    const first = setTimeout(() => { later(0); if (!isLocalInterviewActive()) ensureEmmaChips() }, 4000)
     // hide Emma's interview state tokens as soon as they appear (also while a reply streams in)
     let box: Element | null = null
     // our own edits are made with the observer paused, so they can never re-trigger it

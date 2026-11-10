@@ -484,6 +484,8 @@ function systemCard(s: Sys, sub: string) {
   b.appendChild(a); scrollEnd(a)
 }
 
+const perDay = (d: number) => (d >= 1 ? `$${d.toFixed(2)}` : `${Math.round(d * 100)} cents`)
+
 let lastSystem: Sys | null = null
 let added = false   // the last person's System went into the cart
 
@@ -507,7 +509,7 @@ STEPS.system = async () => {
   if (s.substituted) say(s.substituted + '.')
   const pr = priceLines(s.price)
   const free = s.tier === 'Complete' || s.price >= 50
-  say(`Purchased separately, these products would cost **$${pr.separate.toFixed(2)}**. As a System, you save 15%, bringing it to **$${pr.oneTime.toFixed(2)}** for 90 days, about ${Math.round((pr.oneTime / 90) * 100)} cents a day.${free ? ' Shipping is free, and' : ''} you're covered by our 30-day money-back guarantee.\n\nHow does that sound?`)
+  say(`Purchased separately, these products would cost **$${pr.separate.toFixed(2)}**. As a System, you save 15%, bringing it to **$${pr.oneTime.toFixed(2)}** for 90 days, about ${perDay(pr.oneTime / 90)} a day.${free ? ' Shipping is free, and' : ''} you're covered by our 30-day money-back guarantee.\n\nHow does that sound?`)
   chips([['Add to cart', 'add'], ['Show me a smaller option', 'small']], v => v === 'add' ? addToCart(s) : go('smaller'))
 }
 
