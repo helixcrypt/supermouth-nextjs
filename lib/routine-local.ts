@@ -19,6 +19,9 @@ import {
   recapText, routineIntro, codeFor, peopleFromCodes, priceLines, pronoun, isMe, TOD_LABEL, NAMES, pathway,
 } from './routine2/engine'
 import { logStart, logResume, logEvent, logHandoff, logShopperFollowup } from './routine-log-client'
+import { priorFluoride, priorFlavor } from './emma-chips-client'
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 const KEY = 'sm_routine_v2'
 const START_TEXT = /^\s*(build my routine|find my routine|find my oral care routine|shop for my family)\s*[.!]*\s*$/i
@@ -333,15 +336,34 @@ STEPS.special = () => {
     go('fluoride')
   })
 }
+/** The previous person's choice, or the shopper's earlier pick in this chat; first, marked "same as". */
+function preferPrevious<T>(list: [string, T][], prevVal: T | null | undefined, who: string): [string, T][] {
+  if (prevVal == null) return list
+  const i = list.findIndex(([, v]) => v === prevVal)
+  if (i < 0) return list
+  const [[label, v]] = list.splice(i, 1)
+  return [[`${label} (same as ${who})`, v], ...list]
+}
+const prevPerson = () => S!.people[S!.people.length - 1]
+
 STEPS.fluoride = () => {
-  say("Prefer fluoride, fluoride-free, or would you like me to recommend based on what you've told me?")
-  chips<Person['fluoride']>([['Fluoride', 'f'], ['Fluoride-free', 'ff'], ['Recommend for me', 'choose']], v => { cur().fluoride = v; go('flavor') })
+  const prev = prevPerson()
+  const prevF = prev ? (prev.fluoride === 'choose' ? null : prev.fluoride) : priorFluoride()
+  const who = prev ? forWhom(prev) : 'before'
+  say(prevF
+    ? `Prefer fluoride or fluoride-free? ${prev ? `${cap(forWhom(prev))} went ${prevF === 'f' ? 'with fluoride' : 'fluoride-free'}` : `Earlier you picked ${prevF === 'f' ? 'fluoride' : 'fluoride-free'}`}, so that's first; or I can recommend based on what you've told me.`
+    : "Prefer fluoride, fluoride-free, or would you like me to recommend based on what you've told me?")
+  chips<Person['fluoride']>(preferPrevious([['Fluoride', 'f'], ['Fluoride-free', 'ff'], ['Recommend for me', 'choose']], prevF, who), v => { cur().fluoride = v; go('flavor') })
 }
 STEPS.flavor = () => {
-  say('Which flavor?')
   const kid = cur().age === 'baby' || cur().age === 'little'
   const f: [string, Person['flavor']][] = kid ? [['🍓 Strawberry', 'Strawberry'], ['🍦 Vanilla', 'Vanilla'], ['🍫 Chocolate', 'Chocolate']] : [['🌿 Mint', 'Mint'], ['🍓 Strawberry', 'Strawberry'], ['🍦 Vanilla', 'Vanilla'], ['🍫 Chocolate', 'Chocolate']]
-  chips(f, v => { cur().flavor = v; go('recap') })
+  const prev = prevPerson()
+  const earlier = priorFlavor()
+  const prevFl = prev ? prev.flavor : (earlier ? (/mint/i.test(earlier) ? 'Mint' : f.find(([, v]) => v === earlier)?.[1]) : null)
+  const list = preferPrevious(f, prevFl, prev ? forWhom(prev) : 'before')
+  say(list[0][0].includes('same as') ? `Which flavor? ${prev ? `${cap(forWhom(prev))} chose ${prevFl}` : `Earlier you picked ${earlier}`}, so that's first.` : 'Which flavor?')
+  chips(list, v => { cur().flavor = v; go('recap') })
 }
 STEPS.recap = () => {
   say(recapText(cur(), codeFor(cur())))
@@ -794,7 +816,7 @@ function interceptTyped(): boolean {
   if (typedHandler) { const h = typedHandler; typedHandler = null; h(text); return true }
   // a typed button label counts as tapping it
   const chip = [...(box()?.querySelectorAll('.sm-routine-chips .cw-slot-chip:not([disabled])') || [])]
-    .find(c => (c.textContent || '').replace(/^[^A-Za-z0-9]+/, '').trim().toLowerCase() === text.toLowerCase()) as HTMLElement | undefined
+    .find(c => (c.textContent || '').replace(/^[^A-Za-z0-9]+/, '').replace(/\s*\(same as [^)]*\)\s*$/, '').trim().toLowerCase() === text.toLowerCase().replace(/[.!]+$/, '')) as HTMLElement | undefined
   if (chip) { chip.click(); return true }
   addUser(text)
   if (RED.test(text)) {

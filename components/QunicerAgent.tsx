@@ -6,6 +6,7 @@ import { openEmma, cleanRoutineCode, EMMA_BUILD_ROUTINE } from '@/lib/emma'
 import { ensureRoutineButtons, hideStateTokens } from '@/lib/routine-buttons-client'
 import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive, inPostHandoff, hideSideMarks, fixDashes, snapshotChat, syncTalkButton } from '@/lib/routine-local'
 import { logEmmaReply } from '@/lib/routine-log-client'
+import { ensureEmmaChips } from '@/lib/emma-chips-client'
 
 const WIDGET_SRC = 'https://chat.quincer.com/api/embed/widget.js'
 
@@ -89,6 +90,8 @@ export default function QunicerAgent() {
     const onDone = () => {
       afterEmmaReply()
       later(700)
+      // buttons for Emma's own questions when Quincer leaves them out (runs after afterEmmaReply's cleanup)
+      setTimeout(() => { if (!isLocalInterviewActive()) ensureEmmaChips() }, 900)
       // quality log: Emma's replies right after a routine handoff (her text only, token removed)
       setTimeout(() => {
         const b = document.querySelector('.cw-messages')
