@@ -105,7 +105,9 @@ export function buttonsFor(reply: string, box?: Element | null): Btn[] {
   // "A, B, or C?"
   const body = q.replace(/\?\s*$/, '')
     .replace(/^(so\s+)?(would you (like|prefer|rather)|do you (want|prefer|need)|should i|shall i|want me to|can i|could i|are you (looking for|after)|is (it|this|that) for|which (one|would you like|sounds good|works))\s*(me to\s+)?(for\s+)?/i, '')
-  if (/\bor\b/i.test(body) && !/\bor (anything|something) else\b/i.test(body)) {
+  // "do you wear braces or aligners?" is still a yes/no question: the choice didn't survive the prefix
+  const stillAsking = /^(do|does|did|are|is|was|were|have|has|can|could|will|would)\s+(you|he|she|they|it|your|his|her|their)\b/i.test(body)
+  if (!stillAsking && /\bor\b/i.test(body) && !/\bor (anything|something) else\b/i.test(body)) {
     const opts = body.split(/\s*,\s*(?:or\s+)?|\s+or\s+/i).map(s => s.replace(/^(to\s+|just\s+)/i, '').trim()).filter(Boolean)
     if (opts.length >= 2 && opts.length <= 4 && opts.every(o => o.length <= 42 && o.split(' ').length <= 7)) {
       return opts.map(o => {
