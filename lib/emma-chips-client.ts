@@ -145,9 +145,11 @@ export function ensureEmmaChips() {
   for (let n = bot.nextElementSibling; n; n = n.nextElementSibling) after.push(n)
   if (after.some(n => n.classList.contains('cw-msg-user') || n.classList.contains('cw-msg-bot'))) return
   const shown = shownChips(box)
-  if (shown && shown.length) return                       // Quincer drew real buttons; keep them
   const btns = buttonsFor(bot.innerText, box)
+  // keep Quincer's buttons when it drew a real choice; a lone button ("Yes, braces or aligners" with no "No") gets ours
+  if (shown && (shown.length > 1 || (shown.length === 1 && btns.length < 2))) return
   if (!btns.length) return
+  if (shown && shown.length) box.querySelectorAll('.cw-reply-chips:not(.sm-emma-chips):not(.sm-routine-chips)').forEach(n => n.remove())
   box.querySelectorAll('.cw-reply-chips').forEach(n => { if (!n.querySelector('.cw-slot-chip')) n.remove() })
   const wrap = document.createElement('div')
   wrap.className = 'cw-slot-chips cw-reply-chips sm-emma-chips'
