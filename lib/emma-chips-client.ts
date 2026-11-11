@@ -15,6 +15,7 @@
  */
 
 import { startLocalInterview } from './routine-local'
+import { tryCartIntent } from './emma-cart-client'
 
 export type Fluoride = 'f' | 'ff'
 
@@ -168,6 +169,9 @@ export function ensureEmmaChips() {
       wrap.remove()
       const w = window as any
       if (b.send === 'Build my routine') { startLocalInterview('emma_chip'); return }
+      if (tryCartIntent(b.send)) return          // "Add these to your cart": the page adds them
+      // "Yes" to "Want me to add it to your cart?"
+      if (b.send === 'Yes' && /\b(add|put)\b[^?]*\bcart\b[^?]*\?\s*$/i.test(bot.innerText.trim()) && tryCartIntent('Yes, add it to my cart')) return
       w.ChatWidget?.open?.(b.send)
     })
     row.appendChild(el)

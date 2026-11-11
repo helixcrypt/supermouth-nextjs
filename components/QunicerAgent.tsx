@@ -8,6 +8,7 @@ import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLoc
 import { logEmmaReply } from '@/lib/routine-log-client'
 import { ensureEmmaChips } from '@/lib/emma-chips-client'
 import { filterPanels } from '@/lib/emma-panel-filter'
+import { decorateCards, fixCartClaims } from '@/lib/emma-cart-client'
 
 const WIDGET_SRC = 'https://chat.quincer.com/api/embed/widget.js'
 
@@ -114,7 +115,7 @@ export default function QunicerAgent() {
     const clean = () => {
       if (!box) return
       obs.disconnect()
-      try { hideStateTokens(box); hideSideMarks(box); fixDashes(box); filterPanels(box); syncTalkButton(); snapshotChat() } finally {
+      try { hideStateTokens(box); hideSideMarks(box); fixDashes(box); filterPanels(box); decorateCards(box); fixCartClaims(box); syncTalkButton(); snapshotChat() } finally {
         obs.observe(box, { childList: true, subtree: true, characterData: true })
       }
     }

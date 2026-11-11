@@ -20,6 +20,7 @@ import {
 } from './routine2/engine'
 import { logStart, logResume, logEvent, logHandoff, logShopperFollowup } from './routine-log-client'
 import { priorFluoride, priorFlavor } from './emma-chips-client'
+import { tryCartIntent } from './emma-cart-client'
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
@@ -783,6 +784,9 @@ export function installRoutineInterception(): () => void {
     if (chip && !chip.closest('.sm-routine-chips') && CODE_ASK_TEXT.test(chip.textContent || '')) {
       e.preventDefault(); e.stopImmediatePropagation(); startCodeEntry('starter_chip'); return
     }
+    if (chip && !S && !chip.closest('.sm-routine-chips') && !chip.closest('.sm-emma-chips') && !chip.closest('.sm-cart-chips') && tryCartIntent((chip.textContent || '').trim())) {
+      e.preventDefault(); e.stopImmediatePropagation(); chip.closest('.cw-reply-chips')?.remove(); return
+    }
     if (chip && !S && !chip.closest('.sm-routine-chips')) logShopperFollowup()
     const send = t?.closest?.('.cw-send')
     if (send && interceptTyped()) { e.preventDefault(); e.stopImmediatePropagation() }
@@ -811,6 +815,8 @@ function interceptTyped(): boolean {
     if (START_TEXT.test(text)) { clear(); startLocalInterview('typed'); return true }
     if (CODE_ASK_TEXT.test(text)) { clear(); startCodeEntry('typed'); return true }
     if (RED.test(text)) { clear(); addUser(text); say("That needs your doctor to take a look soon; please book that before changing your routine. When you've been seen, I'm happy to build a routine around what they recommend."); return true }
+    // "add it to my cart": the page adds it (Quincer can't reach the cart)
+    if (tryCartIntent(text)) { clear(); logEvent({ kind: 'cart_request' }); return true }
     logShopperFollowup()
     return false
   }
