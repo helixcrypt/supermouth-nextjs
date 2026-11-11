@@ -118,21 +118,46 @@ export function productsNamed(text: string): string[] {
   return out
 }
 
-/** What "it" means: products in Emma's latest reply, else the cards she just showed. */
+/** Narrow a set of cards to the ones the chat was about (fluoride or not, braces, bundle, kind of product). */
+export function narrow(handles: string[], context: string): string[] {
+  const c = context.toLowerCase()
+  const ff = /fluoride[\s-]*free|no fluoride|without fluoride/.test(c)
+  const f = !ff && /\bwith fluoride\b|\bfluoride (toothpaste|mouthwash|floss|version|formula)\b/.test(c)
+  const ortho = /\b(braces|aligners?|ortho)\b/.test(c) && !/\b(no|not|without|isn'?t|aren'?t)\b[^.]{0,20}\b(braces|aligners?)\b/.test(c)
+  const bundle = /\b(bundle|variety|sampler|4[\s-]*flavou?r|kit)\b/.test(c)
+  const kinds = TYPES.filter(x => c.includes(x))
+  const out = handles.filter(h => {
+    const t = (titles[h] || h.replace(/-/g, ' ')).toLowerCase()
+    if (ff && /fluoride/.test(t) && !/fluoride[\s-]*free|non[\s-]*fluoride/.test(t)) return false
+    if (f && /fluoride[\s-]*free|non[\s-]*fluoride/.test(t)) return false
+    if (!ortho && /\b(ortho|braces|aligners)\b/.test(t)) return false
+    if (!bundle && /\b(bundle|variety)\b/.test(t)) return false
+    if (kinds.length && !kinds.some(k => t.includes(k))) return false
+    return true
+  })
+  return out.length ? out : handles
+}
+
+/** What "it" means: products in Emma's latest reply, else the cards she just showed, narrowed by the chat. */
 function recentProducts(): string[] {
   const b = box(); if (!b) return []
   const kids = [...b.children]
+  const text = (el: Element) => ((el as HTMLElement).innerText || '')
   for (let i = kids.length - 1; i >= 0; i--) {
     const el = kids[i]
     if (el.classList.contains('cw-msg-user')) continue
     if (el.classList.contains('cw-msg-bot')) {
-      const named = productsNamed((el as HTMLElement).innerText || '')
+      const named = productsNamed(text(el))
       if (named.length) return named
     }
     if (el.classList.contains('cw-product-panel')) {
       const shown = [...el.querySelectorAll('.cw-product-card')].filter(c => (c as HTMLElement).style.display !== 'none')
-      const hs = shown.map(c => (c.querySelector('a[href*="/products/"]') as HTMLAnchorElement | null)?.href.match(/\/products\/([^/?#]+)/)?.[1]).filter(Boolean) as string[]
-      if (hs.length) return hs
+      const hs = shown.map(c => (c.querySelector('a[href*="/products/"]') as HTMLAnchorElement | null)?.href.match(/\/products\/([^/?#]+)/)?.[1]).filter(Boolean).map(h => decodeURIComponent(h!)) as string[]
+      if (!hs.length) continue
+      // the shopper's request and Emma's reply around this panel
+      const ctx: string[] = []
+      for (let j = i - 1; j >= 0 && ctx.length < 2; j--) if (kids[j].classList.contains('cw-msg')) ctx.push(text(kids[j]))
+      return narrow(hs, ctx.join('\n'))
     }
   }
   return []
@@ -227,14 +252,14 @@ export function tryCartIntent(text: string, echo = true): boolean {
   if (named.length > 1) {
     if (PLURAL.test(text) || /\band\b/i.test(text)) { addMany(named); return true }
     say('Which one should I add?')
-    chips(named.slice(0, 5).map(h => [titles[h], () => addProduct(h)] as [string, () => void]))
+    chips(named.slice(0, 6).map(h => [titles[h], () => addProduct(h)] as [string, () => void]))
     return true
   }
   if (recent.length === 1) { addProduct(recent[0]); return true }
   if (recent.length > 1) {
     if (PLURAL.test(text)) { addMany(recent); return true }
     say('Which one should I add?')
-    chips(recent.slice(0, 5).map(h => [titles[h], () => addProduct(h)] as [string, () => void]))
+    chips(recent.slice(0, 6).map(h => [titles[h], () => addProduct(h)] as [string, () => void]))
     return true
   }
   say("Happy to add it. Which product? Tell me its name, or tap **Add to cart** on any product card I show you.")
