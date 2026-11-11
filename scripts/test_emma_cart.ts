@@ -1,7 +1,7 @@
 // Checks which messages count as "add to my cart" and which products they name.
 // Run: npx tsx scripts/test_emma_cart.ts
 ;(globalThis as any).window = globalThis
-import { isCartRequest, productsNamed, narrow } from '../lib/emma-cart-client'
+import { isCartRequest, productsNamed, narrow, fromCatalog } from '../lib/emma-cart-client'
 import TITLES from '../lib/product-titles.json'
 const t = (h: string) => (TITLES as Record<string, string>)[h]
 
@@ -47,4 +47,9 @@ const got = narrow(allMw, "What's your fluoride-free mouthwash for adults?\nHere
 const ok = got.join('|') === wantMw.join('|')
 if (!ok) bad++
 console.log(ok ? 'ok  ' : 'FAIL', 'narrow', JSON.stringify(got.map(t)), inCatalog.length >= 0 ? '' : '')
+// the panel didn't include the product Emma described: find it in the catalog
+const cat = fromCatalog("What's your fluoride-free mouthwash for adults?\nHere it is, the fluoride-free one for teens and adults: alkaline, nano-hydroxyapatite, alcohol-free. Want me to add it to your routine?")
+const ok2 = cat.join('|') === wantMw.join('|')
+if (!ok2) bad++
+console.log(ok2 ? 'ok  ' : 'FAIL', 'catalog', JSON.stringify(cat.map(t)))
 process.exit(bad ? 1 : 0)

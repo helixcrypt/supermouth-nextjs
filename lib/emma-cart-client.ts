@@ -135,7 +135,15 @@ export function narrow(handles: string[], context: string): string[] {
     if (kinds.length && !kinds.some(k => t.includes(k))) return false
     return true
   })
-  return out.length ? out : handles
+  return out
+}
+
+/** The product the chat is about, from the whole catalog (Quincer's panel doesn't always show it). */
+export function fromCatalog(context: string): string[] {
+  const c = context.toLowerCase()
+  if (!TYPES.some(x => c.includes(x))) return []
+  const n = narrow(Object.keys(titles), context)
+  return n.length && n.length <= 3 ? n : []
 }
 
 /** What "it" means: products in Emma's latest reply, else the cards she just showed, narrowed by the chat. */
@@ -157,7 +165,11 @@ function recentProducts(): string[] {
       // the shopper's request and Emma's reply around this panel
       const ctx: string[] = []
       for (let j = i - 1; j >= 0 && ctx.length < 2; j--) if (kids[j].classList.contains('cw-msg')) ctx.push(text(kids[j]))
-      return narrow(hs, ctx.join('\n'))
+      const ctxText = ctx.join('\n')
+      const fits = narrow(hs, ctxText)
+      if (fits.length) return fits
+      const cat = fromCatalog(ctxText)
+      return cat.length ? cat : hs
     }
   }
   return []
