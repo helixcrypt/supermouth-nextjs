@@ -741,8 +741,39 @@ export function resumeLocalInterview() {
   tick()
 }
 
+// ---------- silent retry when Quincer sends its generic fallback ----------
+
+let retriedFor = ''          // the shopper message already retried once
+let echoToHide = ''          // the resent copy of that message, hidden when it appears
+
+/** Emma's latest reply is the generic fallback: hide it and resend the shopper's message once. */
+function tryAutoRetry(): boolean {
+  const b = box(); if (!b) return false
+  const bots = b.querySelectorAll('.cw-msg-bot:not(.sm-local)')
+  const last = bots[bots.length - 1] as HTMLElement | undefined
+  if (!last || last.style.display === 'none' || !FALLBACK.test((last.innerText || '').trim())) { retriedFor = ''; return false }
+  const users = [...b.querySelectorAll('.cw-msg-user')].filter(u => (u as HTMLElement).style.display !== 'none')
+  const again = ((users[users.length - 1] as HTMLElement | undefined)?.innerText || '').trim()
+  if (!again || retriedFor === again) return false
+  retriedFor = again; echoToHide = again
+  last.style.display = 'none'
+  b.querySelectorAll('.cw-reply-chips:not(.sm-routine-chips)').forEach(n => n.remove())
+  logEvent({ kind: 'fallback_retry' })
+  w().ChatWidget?.open?.((S ? SIDE_MARK : '') + again)
+  return true
+}
+
+/** Hide the resent copy of the shopper's message (they already see the first one). */
+export function hideRetryEcho(root: Element) {
+  if (!echoToHide) return
+  const users = [...root.querySelectorAll('.cw-msg-user')] as HTMLElement[]
+  const same = users.filter(u => u.style.display !== 'none' && u.innerText.trim().replace(SIDE_MARK, '') === echoToHide)
+  if (same.length > 1) { same.slice(1).forEach(u => { u.style.display = 'none' }); echoToHide = '' }
+}
+
 /** After each Emma reply: bring back the current question, or offer Try again on a failed turn. */
 export function afterEmmaReply() {
+  if (tryAutoRetry()) return          // the real answer comes with the next reply
   if (S && resumeAfterEmma) {
     resumeAfterEmma = false
     setTimeout(() => { if (S) go(S.step) }, 300)
@@ -751,11 +782,11 @@ export function afterEmmaReply() {
   setTimeout(() => {
     const b = box()
     if (!b || S) return
-    const bots = b.querySelectorAll('.cw-msg-bot:not(.sm-local)')
+    const bots = [...b.querySelectorAll('.cw-msg-bot:not(.sm-local)')].filter(x => (x as HTMLElement).style.display !== 'none')
     const last = bots[bots.length - 1] as HTMLElement | undefined
     const text = (last?.innerText || '').trim()
     if (FALLBACK.test(text)) {
-      const users = [...b.querySelectorAll('.cw-msg-user')].map(u => (u as HTMLElement).innerText.trim()).filter(Boolean)
+      const users = [...b.querySelectorAll('.cw-msg-user')].filter(u => (u as HTMLElement).style.display !== 'none').map(u => (u as HTMLElement).innerText.trim()).filter(Boolean)
       const again = users[users.length - 1]
       logEvent({ kind: 'fallback' })
       if (again) {

@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { openEmma, cleanRoutineCode, EMMA_BUILD_ROUTINE } from '@/lib/emma'
 import { ensureRoutineButtons, hideStateTokens } from '@/lib/routine-buttons-client'
-import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive, inPostHandoff, hideSideMarks, fixDashes, snapshotChat, syncTalkButton } from '@/lib/routine-local'
+import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive, inPostHandoff, hideSideMarks, hideRetryEcho, fixDashes, snapshotChat, syncTalkButton } from '@/lib/routine-local'
 import { logEmmaReply } from '@/lib/routine-log-client'
 import { ensureEmmaChips } from '@/lib/emma-chips-client'
 import { filterPanels } from '@/lib/emma-panel-filter'
@@ -115,7 +115,7 @@ export default function QunicerAgent() {
     const clean = () => {
       if (!box) return
       obs.disconnect()
-      try { hideStateTokens(box); hideSideMarks(box); fixDashes(box); filterPanels(box); decorateCards(box); fixCartClaims(box); syncTalkButton(); snapshotChat() } finally {
+      try { hideStateTokens(box); hideSideMarks(box); hideRetryEcho(box); fixDashes(box); filterPanels(box); decorateCards(box); fixCartClaims(box); syncTalkButton(); snapshotChat() } finally {
         obs.observe(box, { childList: true, subtree: true, characterData: true })
       }
     }

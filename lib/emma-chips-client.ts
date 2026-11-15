@@ -140,7 +140,7 @@ export function ensureEmmaChips() {
   if (!box) return
   const bots = box.querySelectorAll('.cw-msg-bot:not(.sm-local)')
   const bot = bots[bots.length - 1] as HTMLElement | undefined
-  if (!bot) return
+  if (!bot || bot.style.display === 'none') return     // a hidden fallback being retried
   // only when this reply is Emma's latest word (product panels and chip rows may follow it)
   const after: Element[] = []
   for (let n = bot.nextElementSibling; n; n = n.nextElementSibling) after.push(n)
