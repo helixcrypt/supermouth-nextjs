@@ -521,7 +521,7 @@ export function readCodes(text: unknown): { members: Member[]; errors: string[] 
     else if (b === 'B' && f !== 'N') err = 'baby systems are fluoride-free only (BN)'
     else if (f === 'O' && b !== 'A') err = 'ortho is for teens and adults (AO)'
     else if (b === 'L' && fl === 'M') err = 'mint is not offered for ages 2 to 5'
-    else if (extra && !(b === 'P' && f === 'N' && extra === 'B')) err = 'unexpected extra letter'
+    else if (extra && !(f === 'N' && extra === 'B' && b !== 'B')) err = 'unexpected extra letter'
     if (err) { errors.push(`${t}: ${err}`); continue }
     const isAdult = b === 'A' || b === 'P'
     const role: Member['role'] = isAdult && adults < 2 ? (adults++ === 0 ? 'M' : 'T') : 'C'

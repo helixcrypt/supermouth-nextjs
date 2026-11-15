@@ -16,11 +16,11 @@
 
 import {
   Person, Item, Tod, newPerson, steps, products, tierOf, smallerTiers, dropForTier, systemName,
-  recapText, routineIntro, codeFor, peopleFromCodes, priceLines, pronoun, isMe, TOD_LABEL, NAMES, pathway,
+  recapText, routineIntro, codeFor, peopleFromCodes, priceLines, pronoun, isMe, TOD_LABEL, NAMES, pathway, formulaOf,
 } from './routine2/engine'
 import { logStart, logResume, logEvent, logHandoff, logShopperFollowup } from './routine-log-client'
 import { priorFluoride, priorFlavor } from './emma-chips-client'
-import { tryCartIntent } from './emma-cart-client'
+import { tryCartIntent, addProduct } from './emma-cart-client'
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
@@ -328,7 +328,8 @@ STEPS.concerns = () => {
 }
 STEPS.special = () => {
   say('Any special considerations? Tap all that apply, then Done.')
-  const opts: [string, string][] = [['Braces', 'braces'], ['Clear aligners', 'aligners']]
+  // no braces or aligners for ages 2 to 5: the Ortho System isn't made for them (it has mouthwash)
+  const opts: [string, string][] = cur().age === 'little' ? [] : [['Braces', 'braces'], ['Clear aligners', 'aligners']]
   if (cur().age === 'teen') opts.push(['Pregnancy', 'preg'])
   multi(opts, { none: 'None', other: 'for example, a bridge or an implant' }, (vals, extra) => {
     cur().ortho = vals.includes('braces') || vals.includes('aligners')
@@ -560,6 +561,17 @@ async function addToCart(s: Sys) {
   if (!ok) { say(`I couldn't reach the cart just now. You can add it from the product page: ${s.title}.`); return }
   S!.people.push(p); S!.cur = null; added = true; save()
   logEvent({ kind: 'answer', step: 'cart', value: `${codeFor(p)} ${s.tier}` })
+  // braces with fluoride-free: the Ortho System has fluoride, so offer the OrthoBrush with the fluoride-free System
+  if (p.ortho && formulaOf(p) === 'N') {
+    say(`It's in your cart. Since the Ortho System contains fluoride, this is the fluoride-free System. For braces or aligners, add the **OrthoBrush**: shaped for brackets and wires, $9.99.`)
+    return chips([['Add the OrthoBrush', true], ['No thanks', false]], v => {
+      if (!v) return nextPerson()
+      addProduct('ortho-toothbrush-s-bristles-braces', () => { added = false; nextPerson() })
+    })
+  }
+  nextPerson()
+}
+function nextPerson() {
   if (S!.queue.length) {
     S!.cur = S!.queue.shift()!; S!.cur.label = labelFor(S!.cur); save()
     say("It's in your cart. Next person from your codes:")

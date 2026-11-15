@@ -73,8 +73,10 @@ export function fluorideNote(p: Person) {
 }
 
 export function pathway(p: Person) {
-  if (p.pregnant && formulaOf(p) !== 'O') return 'Pregnancy'   // pregnant in braces gets Ortho unless fluoride-free
-  if (p.ortho) return 'Orthodontics'
+  // the Pregnancy System is fluoride-free: pregnant and wanting fluoride gets the adult fluoride System; in braces, Ortho
+  if (p.pregnant && formulaOf(p) === 'N') return 'Pregnancy'
+  // the Ortho System contains fluoride: braces with fluoride-free get their stage's fluoride-free System (plus the OrthoBrush)
+  if (p.ortho && formulaOf(p) === 'O') return 'Orthodontics'
   return { baby: 'Babies & Toddlers', little: 'Little Kids', big: 'Big Kids', teen: 'Teens & Adults' }[p.age]
 }
 
@@ -197,10 +199,10 @@ export function bracketOf(p: Person) {
   return { baby: 'B', little: 'L', big: 'K', teen: 'A' }[p.age]
 }
 
-/** Three letters: stage, formula, flavor (PNxB for pregnant, fluoride-free and in braces). */
+/** Three letters: stage, formula, flavor; a fourth letter B for fluoride-free in braces (ANMB, PNSB). */
 export function codeFor(p: Person) {
   const f = formulaOf(p)
-  return bracketOf(p) + f + (FLAVOR_LETTER[p.flavor] || 'M') + (p.pregnant && p.ortho && f === 'N' ? 'B' : '')
+  return bracketOf(p) + f + (FLAVOR_LETTER[p.flavor] || 'M') + (p.ortho && f === 'N' ? 'B' : '')
 }
 
 /** Read one or more codes ("AFM KNS"). Returns people, or null for a code that doesn't read. */
@@ -210,7 +212,8 @@ export function peopleFromCodes(text: string): Person[] | null {
   for (const chunk of raw.split(/\s+/).filter(Boolean)) {
     let s = chunk
     while (s.length >= 3) {
-      const take = s.length >= 4 && s[0] === 'P' && s[1] === 'N' && s[3] === 'B' ? 4 : 3
+      // a 4-letter code (xNxB) only when the rest still splits into whole codes ("ANMBNS" is ANM + BNS? no: ANMB then NS fails)
+      const take = s.length >= 4 && s[1] === 'N' && s[3] === 'B' && (s.length - 4) % 3 === 0 ? 4 : 3
       tokens.push(s.slice(0, take)); s = s.slice(take)
     }
     if (s.length) return null
@@ -223,7 +226,8 @@ export function peopleFromCodes(text: string): Person[] | null {
     if (!'BLKAP'.includes(b) || !'FNO'.includes(f) || !'MSCVX'.includes(fl)) return null
     if (b === 'B' && f !== 'N') return null
     if (b === 'L' && fl === 'M') return null
-    if (extra && !(b === 'P' && f === 'N' && extra === 'B')) return null
+    if (b === 'L' && (f === 'O' || extra)) return null     // no braces for ages 2 to 5
+    if (extra && !(f === 'N' && extra === 'B' && b !== 'B')) return null
     const adult = b === 'A' || b === 'P'
     const who: Person['who'] = adult && adults < 2 ? (adults++ === 0 ? 'me' : 'adult') : 'child'
     const p = newPerson(who)
