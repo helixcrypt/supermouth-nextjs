@@ -746,12 +746,23 @@ export function resumeLocalInterview() {
 let retriedFor = ''          // the shopper message already retried once
 let echoToHide = ''          // the resent copy of that message, hidden when it appears
 
+/** The model's own notes leaking into a reply (tool names, "I need to", rule numbers). */
+const LEAK = /tool call|\[tool activity|build_personalized_page|search_products|i need to (actually|be careful)|the user (said|wants|asked|is asking)|\brule \d+ says\b|<\/?think>/i
+
+/** Keep leaked notes out of sight while they stream in; the reply is retried when it ends. */
+export function hideLeaks(root: Element) {
+  root.querySelectorAll('.cw-msg-bot:not(.sm-local):not([data-sm-leak])').forEach(bot => {
+    if (LEAK.test(bot.textContent || '')) { bot.setAttribute('data-sm-leak', '1'); (bot as HTMLElement).style.visibility = 'hidden' }
+  })
+}
+
 /** Emma's latest reply is the generic fallback: hide it and resend the shopper's message once. */
 function tryAutoRetry(): boolean {
   const b = box(); if (!b) return false
   const bots = b.querySelectorAll('.cw-msg-bot:not(.sm-local)')
   const last = bots[bots.length - 1] as HTMLElement | undefined
-  if (!last || last.style.display === 'none' || !FALLBACK.test((last.innerText || '').trim())) { retriedFor = ''; return false }
+  const bad = !!last && (FALLBACK.test((last.innerText || '').trim()) || last.hasAttribute('data-sm-leak'))
+  if (!last || last.style.display === 'none' || !bad) { retriedFor = ''; return false }
   const users = [...b.querySelectorAll('.cw-msg-user')].filter(u => (u as HTMLElement).style.display !== 'none')
   const again = ((users[users.length - 1] as HTMLElement | undefined)?.innerText || '').trim()
   if (!again || retriedFor === again) return false
@@ -785,7 +796,12 @@ export function afterEmmaReply() {
     const bots = [...b.querySelectorAll('.cw-msg-bot:not(.sm-local)')].filter(x => (x as HTMLElement).style.display !== 'none')
     const last = bots[bots.length - 1] as HTMLElement | undefined
     const text = (last?.innerText || '').trim()
-    if (FALLBACK.test(text)) {
+    if (last?.hasAttribute('data-sm-leak')) {
+      // second try leaked too: replace it with a plain line and offer Try again
+      last.style.visibility = ''
+      last.textContent = "Sorry, I lost my train of thought there. Tap Try again, or ask me another way."
+    }
+    if (FALLBACK.test(text) || last?.hasAttribute('data-sm-leak')) {
       const users = [...b.querySelectorAll('.cw-msg-user')].filter(u => (u as HTMLElement).style.display !== 'none').map(u => (u as HTMLElement).innerText.trim()).filter(Boolean)
       const again = users[users.length - 1]
       logEvent({ kind: 'fallback' })
