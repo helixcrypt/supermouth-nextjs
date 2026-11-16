@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { openEmma, cleanRoutineCode, EMMA_BUILD_ROUTINE } from '@/lib/emma'
 import { ensureRoutineButtons, hideStateTokens } from '@/lib/routine-buttons-client'
-import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, isLocalInterviewActive, inPostHandoff, hideSideMarks, hideRetryEcho, hideLeaks, fixDashes, snapshotChat, syncTalkButton } from '@/lib/routine-local'
+import { installRoutineInterception, resumeLocalInterview, afterEmmaReply, noteDone, isLocalInterviewActive, inPostHandoff, hideSideMarks, hideRetryEcho, hideLeaks, fixDashes, snapshotChat, syncTalkButton } from '@/lib/routine-local'
 import { logEmmaReply } from '@/lib/routine-log-client'
 import { ensureEmmaChips } from '@/lib/emma-chips-client'
 import { filterPanels } from '@/lib/emma-panel-filter'
@@ -89,7 +89,8 @@ export default function QunicerAgent() {
     let t: ReturnType<typeof setTimeout> | undefined
     // Version 2 runs the whole interview on the page, so the version 1 tool-driven buttons are off.
     const later = (ms: number) => { clearTimeout(t); t = setTimeout(() => { if (false && !isLocalInterviewActive() && !inPostHandoff()) ensureRoutineButtons() }, ms) }
-    const onDone = () => {
+    const onDone = (e: Event) => {
+      noteDone((e as CustomEvent).detail)
       afterEmmaReply()
       later(700)
       // buttons for Emma's own questions when Quincer leaves them out (runs after afterEmmaReply's cleanup)

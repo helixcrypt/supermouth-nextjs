@@ -746,8 +746,25 @@ export function resumeLocalInterview() {
 let retriedFor = ''          // the shopper message already retried once
 let echoToHide = ''          // the resent copy of that message, hidden when it appears
 
+/** Quincer's per-reply flags from the quincer:done event (fallback, fallbackReason, conversationId). */
+type DoneInfo = { fallback?: boolean; fallbackReason?: string; conversationId?: string }
+let lastDone: DoneInfo = {}
+
+/** Record Quincer's flags for the reply that just finished. Called from the quincer:done listener. */
+export function noteDone(detail: unknown) {
+  const d = (detail && typeof detail === 'object' ? detail : {}) as DoneInfo
+  lastDone = { fallback: !!d.fallback, fallbackReason: d.fallbackReason, conversationId: d.conversationId }
+  if (lastDone.fallback) {
+    try { (w().__smFallbacks ||= []).push({ ...lastDone, at: Date.now() }) } catch { /* ignore */ }
+    console.info('[Emma] Quincer fallback:', lastDone.fallbackReason, lastDone.conversationId)
+  }
+}
+
+/** Quincer flagged the latest reply as a stock fallback (text match kept as a backup). */
+const isFallback = (text: string) => !!lastDone.fallback || FALLBACK.test(text)
+
 /** The model's own notes leaking into a reply (tool names, "I need to", rule numbers). */
-const LEAK = /tool call|\[tool activity|build_personalized_page|search_products|i need to (actually|be careful)|the user (said|wants|asked|is asking)|\brule \d+ says\b|<\/?think>/i
+const LEAK = /tool call|\[tool activity|\[tool results|\[end of assistant turn|^tool: \w+|build_personalized_page|search_products|i need to (actually|be careful)|the user (said|wants|asked|is asking)|\brule \d+ says\b|<\/?think>/i
 
 /** Keep leaked notes out of sight while they stream in; the reply is retried when it ends. */
 export function hideLeaks(root: Element) {
@@ -761,7 +778,7 @@ function tryAutoRetry(): boolean {
   const b = box(); if (!b) return false
   const bots = b.querySelectorAll('.cw-msg-bot:not(.sm-local)')
   const last = bots[bots.length - 1] as HTMLElement | undefined
-  const bad = !!last && (FALLBACK.test((last.innerText || '').trim()) || last.hasAttribute('data-sm-leak'))
+  const bad = !!last && (isFallback((last.innerText || '').trim()) || last.hasAttribute('data-sm-leak'))
   if (!last || last.style.display === 'none' || !bad) { retriedFor = ''; return false }
   const users = [...b.querySelectorAll('.cw-msg-user')].filter(u => (u as HTMLElement).style.display !== 'none')
   const again = ((users[users.length - 1] as HTMLElement | undefined)?.innerText || '').trim()
@@ -769,7 +786,8 @@ function tryAutoRetry(): boolean {
   retriedFor = again; echoToHide = again
   last.style.display = 'none'
   b.querySelectorAll('.cw-reply-chips:not(.sm-routine-chips)').forEach(n => n.remove())
-  logEvent({ kind: 'fallback_retry' })
+  logEvent({ kind: 'fallback_retry', value: lastDone.fallbackReason || (last.hasAttribute('data-sm-leak') ? 'leak' : 'text'), state: lastDone.conversationId })
+  lastDone = {}
   w().ChatWidget?.open?.((S ? SIDE_MARK : '') + again)
   return true
 }
@@ -801,10 +819,10 @@ export function afterEmmaReply() {
       last.style.visibility = ''
       last.textContent = "Sorry, I lost my train of thought there. Tap Try again, or ask me another way."
     }
-    if (FALLBACK.test(text) || last?.hasAttribute('data-sm-leak')) {
+    if (isFallback(text) || last?.hasAttribute('data-sm-leak')) {
       const users = [...b.querySelectorAll('.cw-msg-user')].filter(u => (u as HTMLElement).style.display !== 'none').map(u => (u as HTMLElement).innerText.trim()).filter(Boolean)
       const again = users[users.length - 1]
-      logEvent({ kind: 'fallback' })
+      logEvent({ kind: 'fallback', value: lastDone.fallbackReason || (last?.hasAttribute('data-sm-leak') ? 'leak' : 'text'), state: lastDone.conversationId })
       if (again) {
         const [wrap, row] = chipRow(); const btn = chipBtn('Try again')
         btn.addEventListener('click', () => { wrap.remove(); w().ChatWidget?.open?.(again) })
